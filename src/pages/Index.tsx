@@ -1,3 +1,4 @@
+import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import MajorCard from "@/components/MajorCard";
 import { 
@@ -54,6 +55,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-visible">
         <div 
