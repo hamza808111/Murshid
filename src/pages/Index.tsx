@@ -55,7 +55,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-visible">
         <div 
           className="absolute inset-0 z-0"
           style={{
@@ -74,9 +74,9 @@ const Index = () => {
               <span className="text-sm font-medium">Your Future Starts Here</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold text-primary-foreground leading-tight pb-2">
+            <h1 className="text-5xl md:text-7xl font-bold text-primary-foreground leading-[1.25] md:leading-[1.12] pb-4 overflow-visible">
               Find Your Perfect
-              <span className="block bg-gradient-to-r from-white to-primary-foreground/80 bg-clip-text text-transparent py-1">
+              <span className="block bg-gradient-to-r from-white to-primary-foreground/80 bg-clip-text text-transparent py-2 leading-[1.2] md:leading-[1.1] pb-[0.3em]">
                 College Major
               </span>
             </h1>
