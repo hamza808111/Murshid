@@ -74,9 +74,9 @@ const Index = () => {
               <span className="text-sm font-medium">Your Future Starts Here</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold text-primary-foreground leading-tight">
+            <h1 className="text-5xl md:text-7xl font-bold text-primary-foreground leading-tight pb-2">
               Find Your Perfect
-              <span className="block bg-gradient-to-r from-white to-primary-foreground/80 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-white to-primary-foreground/80 bg-clip-text text-transparent py-1">
                 College Major
               </span>
             </h1>
