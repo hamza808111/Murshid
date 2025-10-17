@@ -23,14 +23,6 @@ const Navbar = () => {
           </Link>
 
           <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button 
-                variant={isActive("/") ? "default" : "ghost"}
-                className={isActive("/") ? "" : "hover:bg-accent/10"}
-              >
-                Home
-              </Button>
-            </Link>
             
             {user ? (
               <div className="flex items-center gap-3">
