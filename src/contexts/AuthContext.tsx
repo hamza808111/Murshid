@@ -16,6 +16,7 @@ interface AuthContextType {
   signup: (email: string, password: string, name?: string) => Promise<void>;
   loginAsGuest: () => Promise<void>;
   logout: () => void;
+  updateProfile: (name: string, email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -139,14 +140,55 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     // TODO: Call Spring Boot logout endpoint if needed
+    // Example:
+    // fetch('http://your-backend.com/api/auth/logout', {
+    //   method: 'POST',
+    //   headers: { 'Authorization': `Bearer ${token}` }
+    // });
+    
     setUser(null);
     localStorage.removeItem("murshid_user");
+    localStorage.removeItem("murshid_token"); // Store JWT token here
     toast.success("Logged out successfully");
     navigate("/login");
   };
 
+  const updateProfile = async (name: string, email: string) => {
+    try {
+      setLoading(true);
+      
+      // TODO: Replace with actual Spring Boot API call
+      // Example:
+      // const token = localStorage.getItem("murshid_token");
+      // const response = await fetch('http://your-backend.com/api/users/profile', {
+      //   method: 'PUT',
+      //   headers: { 
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${token}`
+      //   },
+      //   body: JSON.stringify({ name, email })
+      // });
+      // const data = await response.json();
+      
+      // For now, updating locally
+      const updatedUser: User = {
+        ...user!,
+        name,
+        email
+      };
+      
+      setUser(updatedUser);
+      localStorage.setItem("murshid_user", JSON.stringify(updatedUser));
+    } catch (error) {
+      toast.error("Failed to update profile");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, loginAsGuest, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, loginAsGuest, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

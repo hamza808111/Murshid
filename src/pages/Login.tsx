@@ -135,12 +135,19 @@ const Login = () => {
               </Button>
             </form>
 
-            <p className="text-center text-sm text-muted-foreground mt-4">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-primary hover:underline">
-                Sign up
-              </Link>
-            </p>
+            <div className="text-center mt-4 space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Don't have an account?{" "}
+                <Link to="/signup" className="text-primary hover:underline font-semibold">
+                  Sign up
+                </Link>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <Link to="/forgot-password" className="text-primary hover:underline font-semibold">
+                  Forgot your password?
+                </Link>
+              </p>
+            </div>
           </CardContent>
         </Card>
 

@@ -17,9 +17,12 @@ import {
 } from "lucide-react";
 import heroImage from "@/assets/hero-image.jpg";
 import { useState } from "react";
+import ProfileSection from "@/components/ProfileSection";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useAuth();
 
   const majors = [
     {
@@ -114,6 +117,10 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      
+      {/* Profile Section - Only show for registered users */}
+      {user && user.id !== "guest" && <ProfileSection />}
+      
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-visible">
         <div 
