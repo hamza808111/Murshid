@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, LogIn, LogOut } from "lucide-react";
+import { GraduationCap, LogIn, LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
@@ -37,6 +37,15 @@ const Navbar = () => {
                 <span className="text-sm text-muted-foreground hidden sm:block">
                   {user.email}
                 </span>
+                <Link to="/profile">
+                  <Button 
+                    variant={isActive("/profile") ? "default" : "ghost"}
+                    className={isActive("/profile") ? "" : "hover:bg-accent/10"}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Profile
+                  </Button>
+                </Link>
                 <Button 
                   onClick={logout}
                   variant="outline"

@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import heroImage from "@/assets/hero-image.jpg";
 import { useState } from "react";
-import ProfileSection from "@/components/ProfileSection";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
@@ -118,8 +117,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* Profile Section - Only show for registered users */}
-      {user && user.id !== "guest" && <ProfileSection />}
+      {/* Profile Section moved to dedicated /profile page */}
       
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-visible">
