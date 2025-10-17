@@ -156,7 +156,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-2 border-white/30 text-primary-foreground hover:bg-white/10 backdrop-blur-sm text-lg px-8 py-6"
+                className="border-2 border-white bg-white/10 text-white hover:bg-white hover:text-primary backdrop-blur-sm text-lg px-8 py-6 transition-all duration-300"
               >
                 Take Assessment
               </Button>
@@ -191,12 +191,18 @@ const Index = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="majors" className="max-w-7xl mx-auto">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-              <TabsTrigger value="majors" className="text-base">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8 bg-blue-100 dark:bg-blue-950 p-1">
+              <TabsTrigger 
+                value="majors" 
+                className="text-base data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+              >
                 <GraduationCap className="w-4 h-4 mr-2" />
                 Majors
               </TabsTrigger>
-              <TabsTrigger value="universities" className="text-base">
+              <TabsTrigger 
+                value="universities" 
+                className="text-base data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+              >
                 <Building2 className="w-4 h-4 mr-2" />
                 Universities
               </TabsTrigger>
