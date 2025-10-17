@@ -47,10 +47,10 @@ const Navbar = () => {
                 </Button>
               </div>
             ) : (
-              <Link to="/auth">
+              <Link to="/login">
                 <Button 
-                  variant={isActive("/auth") ? "default" : "outline"}
-                  className={isActive("/auth") ? "" : "border-primary/50 hover:bg-primary/10"}
+                  variant={isActive("/login") ? "default" : "outline"}
+                  className={isActive("/login") ? "" : "border-primary/50 hover:bg-primary/10"}
                 >
                   <LogIn className="w-4 h-4 mr-2" />
                   Login

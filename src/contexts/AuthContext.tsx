@@ -14,6 +14,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name?: string) => Promise<void>;
+  loginAsGuest: () => Promise<void>;
   logout: () => void;
 }
 
@@ -112,16 +113,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const loginAsGuest = async () => {
+    try {
+      setLoading(true);
+      
+      // Guest user doesn't require backend authentication
+      const guestUser: User = {
+        id: "guest",
+        email: "guest@murshid.com",
+        name: "Guest User"
+      };
+      
+      setUser(guestUser);
+      localStorage.setItem("murshid_user", JSON.stringify(guestUser));
+      
+      toast.success("Logged in as guest!");
+      navigate("/");
+    } catch (error) {
+      toast.error("Guest login failed. Please try again.");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     // TODO: Call Spring Boot logout endpoint if needed
     setUser(null);
     localStorage.removeItem("murshid_user");
     toast.success("Logged out successfully");
-    navigate("/auth");
+    navigate("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, loginAsGuest, logout }}>
       {children}
     </AuthContext.Provider>
   );
