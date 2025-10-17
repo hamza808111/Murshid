@@ -1,5 +1,7 @@
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MajorCard from "@/components/MajorCard";
 import { 
   Cpu, 
@@ -9,11 +11,16 @@ import {
   FlaskConical, 
   Scale,
   GraduationCap,
-  Sparkles
+  Sparkles,
+  Search,
+  Building2
 } from "lucide-react";
 import heroImage from "@/assets/hero-image.jpg";
+import { useState } from "react";
 
 const Index = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+
   const majors = [
     {
       icon: Cpu,
@@ -52,6 +59,57 @@ const Index = () => {
       examples: ["Law", "Psychology", "Sociology", "Political Science"]
     }
   ];
+
+  const universities = [
+    {
+      icon: Building2,
+      title: "King Saud University",
+      description: "Leading research university in Riyadh",
+      examples: ["Engineering", "Medicine", "Sciences", "Humanities"]
+    },
+    {
+      icon: Building2,
+      title: "King Abdulaziz University",
+      description: "Premier institution in Jeddah",
+      examples: ["Engineering", "Medicine", "Business", "Marine Sciences"]
+    },
+    {
+      icon: Building2,
+      title: "King Fahd University of Petroleum & Minerals",
+      description: "Top-ranked engineering and technology university",
+      examples: ["Petroleum Engineering", "Chemical Engineering", "Computer Science"]
+    },
+    {
+      icon: Building2,
+      title: "Imam Abdulrahman Bin Faisal University",
+      description: "Comprehensive university in Dammam",
+      examples: ["Medicine", "Engineering", "Architecture", "Business"]
+    },
+    {
+      icon: Building2,
+      title: "King Khalid University",
+      description: "Growing university in Abha",
+      examples: ["Medicine", "Engineering", "Education", "Sciences"]
+    },
+    {
+      icon: Building2,
+      title: "Umm Al-Qura University",
+      description: "Historic university in Makkah",
+      examples: ["Islamic Studies", "Engineering", "Medicine", "Social Sciences"]
+    }
+  ];
+
+  const filteredMajors = majors.filter(major =>
+    major.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    major.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    major.examples.some(ex => ex.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const filteredUniversities = universities.filter(university =>
+    university.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    university.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    university.examples.some(ex => ex.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -110,20 +168,68 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Discover Your Path
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-muted-foreground mb-8">
               Explore diverse fields of study and find the major that aligns with your passions, strengths, and career goals.
             </p>
+            
+            {/* Search Bar */}
+            <div className="relative max-w-xl mx-auto">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search majors or universities..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 py-6 text-lg border-border/50 focus:border-primary"
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-            {majors.map((major, index) => (
-              <MajorCard key={index} {...major} />
-            ))}
-          </div>
+          {/* Tabs */}
+          <Tabs defaultValue="majors" className="max-w-7xl mx-auto">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+              <TabsTrigger value="majors" className="text-base">
+                <GraduationCap className="w-4 h-4 mr-2" />
+                Majors
+              </TabsTrigger>
+              <TabsTrigger value="universities" className="text-base">
+                <Building2 className="w-4 h-4 mr-2" />
+                Universities
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="majors" className="animate-fade-in">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredMajors.length > 0 ? (
+                  filteredMajors.map((major, index) => (
+                    <MajorCard key={index} {...major} />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-muted-foreground text-lg">No majors found matching "{searchQuery}"</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="universities" className="animate-fade-in">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredUniversities.length > 0 ? (
+                  filteredUniversities.map((university, index) => (
+                    <MajorCard key={index} {...university} />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-muted-foreground text-lg">No universities found matching "{searchQuery}"</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
 
