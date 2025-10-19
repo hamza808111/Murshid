@@ -9,10 +9,15 @@ import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import PasswordValidationPopup from "@/components/PasswordValidationPopup";
 
 const signupSchema = z.object({
   email: z.string().trim().email({ message: "Invalid email address" }).max(255),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }).max(100),
+  password: z.string()
+    .min(8, { message: "Password must be at least 8 characters" })
+    .max(100)
+    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" }),
   name: z.string().trim().min(2, { message: "Name must be at least 2 characters" }).max(100).optional(),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -26,6 +31,7 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPasswordValidation, setShowPasswordValidation] = useState(false);
 
   const { user, signup, loginAsGuest } = useAuth();
   const navigate = useNavigate();
@@ -111,7 +117,7 @@ const Signup = () => {
                   disabled={isLoading}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 relative">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
@@ -119,8 +125,14 @@ const Signup = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setShowPasswordValidation(true)}
+                  onBlur={() => setShowPasswordValidation(false)}
                   required
                   disabled={isLoading}
+                />
+                <PasswordValidationPopup 
+                  password={password} 
+                  isVisible={showPasswordValidation} 
                 />
               </div>
               <div className="space-y-2">
