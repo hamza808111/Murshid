@@ -16,12 +16,15 @@ import {
   Building2
 } from "lucide-react";
 import heroImage from "@/assets/hero-image.jpg";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("majors");
   const { user } = useAuth();
+  const majorsSectionRef = useRef<HTMLElement>(null);
 
   const majors = [
     {
@@ -113,6 +116,21 @@ const Index = () => {
     university.examples.some(ex => ex.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  const scrollToMajors = () => {
+    majorsSectionRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
+  const scrollToUniversities = () => {
+    setActiveTab("universities");
+    majorsSectionRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -150,28 +168,41 @@ const Index = () => {
               Murshid guides high school students through the journey of discovering their ideal academic path with expert insights and personalized recommendations.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-              <Button 
-                size="lg" 
-                className="bg-white text-primary hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-lg px-8 py-6"
-              >
-                <GraduationCap className="w-5 h-5 mr-2" />
-                Explore Majors
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-2 border-white bg-white/10 text-white hover:bg-white hover:text-primary backdrop-blur-sm text-lg px-8 py-6 transition-all duration-300"
-              >
-                Take Assessment
-              </Button>
+            <div className="flex flex-col gap-4 justify-center items-center pt-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Button 
+                  size="lg" 
+                  className="bg-white text-primary hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-lg px-8 py-6"
+                  onClick={scrollToMajors}
+                >
+                  <GraduationCap className="w-5 h-5 mr-2" />
+                  Explore Majors
+                </Button>
+                <Button 
+                  size="lg" 
+                  className="bg-white text-primary hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-lg px-8 py-6"
+                  onClick={scrollToUniversities}
+                >
+                  <Building2 className="w-5 h-5 mr-2" />
+                  Explore Universities
+                </Button>
+              </div>
+              <Link to="/assessment">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-2 border-white bg-white/10 text-white hover:bg-white hover:text-primary backdrop-blur-sm text-lg px-8 py-6 transition-all duration-300"
+                >
+                  Take Assessment
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-secondary/30">
+      <section ref={majorsSectionRef} className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
@@ -195,7 +226,7 @@ const Index = () => {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue="majors" className="max-w-7xl mx-auto">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-7xl mx-auto">
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8 bg-blue-100 dark:bg-blue-950 p-1">
               <TabsTrigger 
                 value="majors" 
