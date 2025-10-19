@@ -9,6 +9,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import PasswordInput from "@/components/PasswordInput";
 
 const loginSchema = z.object({
   email: z.string().trim().email({ message: "Invalid email address" }).max(255),
@@ -90,9 +91,8 @@ const Login = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input
+                <PasswordInput
                   id="password"
-                  type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

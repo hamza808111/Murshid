@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import PasswordValidationPopup from "@/components/PasswordValidationPopup";
+import PasswordInput from "@/components/PasswordInput";
 
 const signupSchema = z.object({
   email: z.string().trim().email({ message: "Invalid email address" }).max(255),
@@ -18,7 +19,7 @@ const signupSchema = z.object({
     .max(100)
     .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
     .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" }),
-  name: z.string().trim().min(2, { message: "Name must be at least 2 characters" }).max(100).optional(),
+  name: z.string().trim().min(2, { message: "Name must be at least 2 characters" }).max(100),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -95,13 +96,14 @@ const Signup = () => {
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name (Optional)</Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
                   type="text"
                   placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  required
                   disabled={isLoading}
                 />
               </div>
@@ -119,9 +121,8 @@ const Signup = () => {
               </div>
               <div className="space-y-2 relative">
                 <Label htmlFor="password">Password</Label>
-                <Input
+                <PasswordInput
                   id="password"
-                  type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -137,9 +138,8 @@ const Signup = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirm Password</Label>
-                <Input
+                <PasswordInput
                   id="confirm-password"
-                  type="password"
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
