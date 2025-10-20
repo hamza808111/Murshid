@@ -1,0 +1,5 @@
+body { font-family: Arial, Helvetica, sans-serif; padding: 2rem; }
+.app { max-width: 420px; margin: 0 auto; }
+.auth input { display:block; width:100%; padding:8px; margin:8px 0 }
+.buttons button { margin-right:8px }
+.message { margin-top: 12px; color: #333 }
