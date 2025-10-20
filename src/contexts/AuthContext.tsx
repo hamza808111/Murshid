@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("murshid_user", JSON.stringify(mockUser));
       
       toast.success("Successfully logged in!");
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (error) {
       toast.error("Login failed. Please check your credentials.");
       throw error;
@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("murshid_user", JSON.stringify(mockUser));
       
       toast.success("Account created successfully!");
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (error) {
       toast.error("Signup failed. Please try again.");
       throw error;
@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("murshid_user", JSON.stringify(guestUser));
       
       toast.success("Logged in as guest!");
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (error) {
       toast.error("Guest login failed. Please try again.");
       throw error;

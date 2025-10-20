@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { GraduationCap, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { useEffect } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import PasswordInput from "@/components/PasswordInput";
@@ -23,10 +22,13 @@ const Login = () => {
 
   const { user, login, loginAsGuest } = useAuth();
   const navigate = useNavigate();
+  const hasRedirected = useRef(false);
 
+  // Only redirect if user is already logged in and this is the initial load
   useEffect(() => {
-    if (user) {
-      navigate("/");
+    if (user && !hasRedirected.current) {
+      hasRedirected.current = true;
+      navigate("/", { replace: true });
     }
   }, [user, navigate]);
 
