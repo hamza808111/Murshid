@@ -152,14 +152,14 @@ const Index = () => {
                 <Button
                   onClick={() => onNavigate('majors')}
                   variant="outline"
-                  className="rounded-2xl px-8 py-6 border-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                 >
                   {t('homepage.browseMajors')}
                 </Button>
                 <Button
                   onClick={() => onNavigate('universities')}
                   variant="outline"
-                  className="rounded-2xl px-8 py-6 border-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                 >
                   {t('homepage.browseUniversities')}
                 </Button>
@@ -308,7 +308,7 @@ const Index = () => {
           </p>
           <Button
             onClick={() => onNavigate('quiz')}
-            className="bg-white text-blue-600 hover:bg-gray-100 rounded-2xl px-8 py-6 shadow-lg"
+            className="bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-2xl px-8 py-6 shadow-lg"
           >
             {t('homepage.startFreeTest')}
           </Button>

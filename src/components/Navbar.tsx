@@ -24,7 +24,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
     if (currentPage) return currentPage;
     if (location.pathname === '/') return 'home';
     if (location.pathname === '/majors') return 'majors';
-    if (location.pathname === '/universities') return 'majors'; // Group universities under majors
+    if (location.pathname === '/universities') return 'universities';
     if (location.pathname === '/assessment') return 'quiz';
     if (location.pathname === '/profile') return 'profile';
     return 'home';
@@ -42,15 +42,15 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
         case 'majors':
           navigate('/majors');
           break;
+        case 'universities':
+          navigate('/universities');
+          break;
         case 'quiz':
           if (user) {
             navigate('/assessment');
           } else {
             navigate('/login');
           }
-          break;
-        case 'about':
-          // You can implement about page later
           break;
         case 'contact':
           // You can implement contact page later
@@ -66,14 +66,14 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
   const navItems = [
     { id: 'home', label: t('navbar.home') },
     { id: 'majors', label: t('navbar.majors') },
+    { id: 'universities', label: t('navbar.universities') },
     { id: 'quiz', label: t('navbar.quiz') },
-    { id: 'about', label: t('navbar.about') },
     { id: 'contact', label: t('navbar.contact') },
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 shadow-sm" dir="ltr">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" dir="ltr">
         <div className="flex justify-between items-center h-20">
           {/* Logo/Brand */}
           <button
@@ -94,10 +94,9 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                 onClick={() => handleNavigate(item.id)}
                 className={`px-4 py-2 rounded-xl transition-all ${
                   isActive(item.id)
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
-                dir={language}
               >
                 {item.label}
               </button>
@@ -115,9 +114,6 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             {/* Auth Buttons */}
             {user ? (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground hidden lg:block">
-                  {user.email}
-                </span>
                 <Link to="/profile">
                   <Button 
                     variant="ghost"
@@ -128,7 +124,10 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                   </Button>
                 </Link>
                 <Button 
-                  onClick={logout}
+                  onClick={() => {
+                    logout();
+                    navigate('/');
+                  }}
                   variant="outline"
                   className="rounded-xl border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                 >
@@ -186,10 +185,9 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                 }}
                 className={`w-full text-right px-4 py-3 rounded-xl transition-all ${
                   isActive(item.id)
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
-                dir={language}
               >
                 {item.label}
               </button>
@@ -210,6 +208,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                     onClick={() => {
                       logout();
                       setMobileMenuOpen(false);
+                      navigate('/');
                     }}
                     variant="outline"
                     className="w-full rounded-xl border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"

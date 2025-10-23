@@ -196,7 +196,7 @@ export default function MajorsPage() {
                 className={`rounded-2xl px-6 gap-2 ${
                   selectedCategory === category.id
                     ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-white shadow-md'
-                    : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    : 'bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
                 }`}
                 dir={language}
               >
@@ -277,7 +277,7 @@ export default function MajorsPage() {
             </p>
             <Button 
               onClick={handleStartTest}
-              className="bg-white text-blue-600 hover:bg-gray-100 rounded-2xl px-8 py-6 shadow-lg"
+              className="bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-2xl px-8 py-6 shadow-lg"
             >
               {t('majors.startTestNow')}
             </Button>
