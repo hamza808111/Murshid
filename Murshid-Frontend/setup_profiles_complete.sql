@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   role TEXT,
   student_type TEXT,
   track TEXT,
+  is_admin BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -25,6 +26,7 @@ BEGIN
   ALTER TABLE profiles ADD COLUMN IF NOT EXISTS role TEXT;
   ALTER TABLE profiles ADD COLUMN IF NOT EXISTS student_type TEXT;
   ALTER TABLE profiles ADD COLUMN IF NOT EXISTS track TEXT;
+  ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
   ALTER TABLE profiles ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now());
   ALTER TABLE profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now());
 EXCEPTION
@@ -41,6 +43,7 @@ COMMENT ON COLUMN profiles.gender IS 'User gender (Male, Female)';
 COMMENT ON COLUMN profiles.role IS 'User role (Student, Specialist)';
 COMMENT ON COLUMN profiles.student_type IS 'Student type (High School, University)';
 COMMENT ON COLUMN profiles.track IS 'Academic track (Science, Medicine, Literature, Business)';
+COMMENT ON COLUMN profiles.is_admin IS 'Whether the user has admin privileges';
 
 -- Step 4: Create function to automatically update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -154,8 +157,28 @@ SELECT
   role,
   student_type,
   level,
+  is_admin,
   created_at,
   updated_at
 FROM profiles
 LIMIT 5;
+
+-- IMPORTANT: Create Admin User
+-- After running this script, you need to create an admin account manually:
+-- 1. Sign up normally with email: admin@murshid.com (or your preferred admin email)
+-- 2. Then run this SQL to make that user an admin:
+/*
+UPDATE profiles 
+SET is_admin = TRUE 
+WHERE email IN (
+  SELECT email FROM auth.users WHERE email = 'admin@murshid.com'
+);
+*/
+
+-- Or if you want to make your current user an admin:
+/*
+UPDATE profiles 
+SET is_admin = TRUE 
+WHERE id = auth.uid();
+*/
 

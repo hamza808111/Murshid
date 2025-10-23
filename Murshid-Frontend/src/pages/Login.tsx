@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap, Loader2 } from "lucide-react";
+import { GraduationCap, Loader2, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
@@ -72,8 +72,13 @@ const Login = () => {
 
         <Card className="border-border/50 shadow-[var(--shadow-soft)]">
           <CardHeader>
-            <CardTitle>Welcome Back</CardTitle>
-            <CardDescription>Login to continue your journey</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Welcome Back</CardTitle>
+                <CardDescription>Login to continue your journey</CardDescription>
+              </div>
+              <Shield className="w-8 h-8 text-muted-foreground/30" />
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">

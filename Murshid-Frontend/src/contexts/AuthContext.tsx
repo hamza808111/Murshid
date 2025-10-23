@@ -14,6 +14,7 @@ interface AppUser {
   role?: string;
   student_type?: string;
   track?: string;
+  is_admin?: boolean;
 }
 
 interface AuthContextType {
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Always load profile data to get all fields, regardless of whether name is in metadata
     const { data: profileData, error } = await supabase
       .from("profiles")
-      .select("name, establishment_name, level, gender, role, student_type, track")
+      .select("name, establishment_name, level, gender, role, student_type, track, is_admin")
       .eq("id", authUser.id)
       .single();
     
@@ -75,7 +76,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         gender,
         role,
         studentType,
-        track
+        track,
+        is_admin: profileData.is_admin
       });
     } else {
       // If no profile data exists, use fallback values
@@ -93,6 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       role: role,
       student_type: studentType,
       track: track,
+      is_admin: profileData?.is_admin || false,
     } as AppUser;
   };
 
@@ -142,8 +145,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const mapped = await mapUserWithProfile(data.user);
         setUser(mapped);
         localStorage.setItem("murshid_token", data.session.access_token);
+        
+        console.log("🔐 Login successful - User data:", {
+          id: mapped.id,
+          email: mapped.email,
+          is_admin: mapped.is_admin
+        });
+        
         toast.success("Successfully logged in!");
-        navigate("/");
+        
+        // Redirect admin users to admin dashboard
+        if (mapped.is_admin) {
+          console.log("✅ Admin detected - redirecting to /admin");
+          navigate("/admin");
+        } else {
+          console.log("👤 Regular user - redirecting to /");
+          navigate("/");
+        }
       }
     } catch (error) {
       const supabaseError = error as unknown as { message?: string };
