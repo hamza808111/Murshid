@@ -10,16 +10,20 @@ interface AppUser {
   name?: string;
   establishment_name?: string;
   level?: string;
+  gender?: string;
+  role?: string;
+  student_type?: string;
+  track?: string;
 }
 
 interface AuthContextType {
   user: AppUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name?: string) => Promise<void>;
+  signup: (email: string, password: string, name?: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => Promise<void>;
   loginAsGuest: () => Promise<void>;
   logout: () => void;
-  updateProfile: (name: string, email: string, establishment_name?: string, level?: string) => Promise<void>;
+  updateProfile: (name: string, email: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,23 +46,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let derivedName: string | undefined = (authUser.user_metadata?.["name"] as string | undefined) || undefined;
     let establishmentName: string | undefined;
     let level: string | undefined;
+    let gender: string | undefined;
+    let role: string | undefined;
+    let studentType: string | undefined;
+    let track: string | undefined;
     
-    if (!derivedName) {
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("name, establishment_name, level")
-        .eq("id", authUser.id)
-        .single();
-      derivedName = profileData?.name || (authUser.email ? authUser.email.split("@")[0] : undefined);
-      establishmentName = profileData?.establishment_name;
-      level = profileData?.level;
+    // Always load profile data to get all fields, regardless of whether name is in metadata
+    const { data: profileData, error } = await supabase
+      .from("profiles")
+      .select("name, establishment_name, level, gender, role, student_type, track")
+      .eq("id", authUser.id)
+      .single();
+    
+    // Use profile data if available, otherwise fall back to metadata or email
+    if (profileData && !error) {
+      derivedName = profileData.name || derivedName || (authUser.email ? authUser.email.split("@")[0] : undefined);
+      establishmentName = profileData.establishment_name;
+      level = profileData.level;
+      gender = profileData.gender;
+      role = profileData.role;
+      studentType = profileData.student_type;
+      track = profileData.track;
+      
+      // Debug logging
+      console.log("Profile data loaded:", {
+        establishmentName,
+        level,
+        gender,
+        role,
+        studentType,
+        track
+      });
+    } else {
+      // If no profile data exists, use fallback values
+      derivedName = derivedName || (authUser.email ? authUser.email.split("@")[0] : undefined);
+      console.log("No profile data found for user:", authUser.id, "Error:", error);
     }
+    
     return {
       id: authUser.id,
       email: authUser.email || "",
       name: derivedName,
       establishment_name: establishmentName,
       level: level,
+      gender: gender,
+      role: role,
+      student_type: studentType,
+      track: track,
     } as AppUser;
   };
 
@@ -125,7 +159,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signup = async (email: string, password: string, name?: string) => {
+  const signup = async (email: string, password: string, name?: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => {
     try {
       setLoading(true);
       const { data, error } = await supabase.auth.signUp({
@@ -143,9 +177,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
       if (data.user && data.session) {
-        // Ensure a profiles row exists with the provided name (if the table/policy is set up)
-        if (name) {
-          await supabase.from("profiles").upsert({ id: data.user.id, name }).select().single();
+        // Ensure a profiles row exists with the provided data (if the table/policy is set up)
+        if (name || establishment_name || level || gender || role || student_type || track) {
+          await supabase.from("profiles").upsert({ 
+            id: data.user.id, 
+            name, 
+            establishment_name, 
+            level, 
+            gender,
+            role,
+            student_type,
+            track
+          }).select().single();
         }
         const mapped = await mapUserWithProfile(data.user);
         setUser(mapped);
@@ -192,7 +235,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })();
   };
 
-  const updateProfile = async (name: string, email: string, establishment_name?: string, level?: string) => {
+  const updateProfile = async (name: string, email: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => {
     try {
       setLoading(true);
       // Update auth profile (name in metadata, and email if changed)
@@ -210,7 +253,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           id: user.id, 
           name, 
           establishment_name, 
-          level 
+          level,
+          gender,
+          role,
+          student_type,
+          track
         });
         if (profileErr) throw profileErr;
       }
@@ -222,6 +269,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email,
         establishment_name,
         level,
+        gender,
+        role,
+        student_type,
+        track,
       };
       setUser(updatedUser);
     } catch (error) {
