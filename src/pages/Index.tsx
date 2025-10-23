@@ -69,32 +69,32 @@ const Index = () => {
     },
   ];
 
-  const testimonials = [
-    {
-      name: 'Sarah Ahmed',
-      major: language === 'ar' ? 'طالبة هندسة' : 'Engineering Student',
-      text: language === 'ar' 
-        ? 'ساعدني مرشد في اكتشاف شغفي بالهندسة المعمارية. الآن أنا في السنة الثانية وسعيدة بقراري!'
-        : 'Murshid helped me discover my passion for architecture. Now I\'m in my second year and happy with my decision!',
-      rating: 5,
-    },
-    {
-      name: 'Mohammed Ali',
-      major: language === 'ar' ? 'طالب طب' : 'Medical Student',
-      text: language === 'ar'
-        ? 'كنت محتاراً بين عدة تخصصات. الاختبار في مرشد ساعدني كثيراً في فهم ميولي الحقيقية.'
-        : 'I was confused between several majors. The test in Murshid helped me a lot in understanding my true tendencies.',
-      rating: 5,
-    },
-    {
-      name: 'Nora Khalid',
-      major: language === 'ar' ? 'طالبة تقنية معلومات' : 'IT Student',
-      text: language === 'ar'
-        ? 'المنصة سهلة الاستخدام والمعلومات دقيقة ومفيدة. أنصح كل طالب ثانوي باستخدامها.'
-        : 'The platform is easy to use and the information is accurate and useful. I recommend every high school student to use it.',
-      rating: 5,
-    },
-  ];
+  // const testimonials = [
+  //   {
+  //     name: 'Sarah Ahmed',
+  //     major: language === 'ar' ? 'طالبة هندسة' : 'Engineering Student',
+  //     text: language === 'ar' 
+  //       ? 'ساعدني مرشد في اكتشاف شغفي بالهندسة المعمارية. الآن أنا في السنة الثانية وسعيدة بقراري!'
+  //       : 'Murshid helped me discover my passion for architecture. Now I\'m in my second year and happy with my decision!',
+  //     rating: 5,
+  //   },
+  //   {
+  //     name: 'Mohammed Ali',
+  //     major: language === 'ar' ? 'طالب طب' : 'Medical Student',
+  //     text: language === 'ar'
+  //       ? 'كنت محتاراً بين عدة تخصصات. الاختبار في مرشد ساعدني كثيراً في فهم ميولي الحقيقية.'
+  //       : 'I was confused between several majors. The test in Murshid helped me a lot in understanding my true tendencies.',
+  //     rating: 5,
+  //   },
+  //   {
+  //     name: 'Nora Khalid',
+  //     major: language === 'ar' ? 'طالبة تقنية معلومات' : 'IT Student',
+  //     text: language === 'ar'
+  //       ? 'المنصة سهلة الاستخدام والمعلومات دقيقة ومفيدة. أنصح كل طالب ثانوي باستخدامها.'
+  //       : 'The platform is easy to use and the information is accurate and useful. I recommend every high school student to use it.',
+  //     rating: 5,
+  //   },
+  // ];
 
   const onNavigate = (page: string) => {
     if (page === 'quiz' || page === 'assessment') {
@@ -164,7 +164,7 @@ const Index = () => {
                   {t('homepage.browseUniversities')}
                 </Button>
               </div>
-              <div className="mt-12 flex items-center justify-center lg:justify-start gap-8">
+              {/* <div className="mt-12 flex items-center justify-center lg:justify-start gap-8">
                 <div className="text-center">
                   <div className="text-gray-900 dark:text-gray-100 font-bold text-xl">5000+</div>
                   <div className="text-gray-600 dark:text-gray-400">{t('homepage.students')}</div>
@@ -179,7 +179,7 @@ const Index = () => {
                   <div className="text-gray-900 dark:text-gray-100 font-bold text-xl">98%</div>
                   <div className="text-gray-600 dark:text-gray-400">{t('homepage.satisfaction')}</div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Image */}
@@ -259,7 +259,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Testimonials Section
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -295,7 +295,7 @@ const Index = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 dark:from-blue-600 dark:via-purple-600 dark:to-pink-600">

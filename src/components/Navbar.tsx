@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn, LogOut, User } from "lucide-react";
+import { GraduationCap, Menu, X, LogIn, LogOut, User } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
@@ -81,7 +81,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             className="flex items-center gap-3 group"
           >
             <div className="w-12 h-12 bg-gradient-to-br from-blue-300 to-blue-400 rounded-2xl flex items-center justify-center shadow-md transition-transform group-hover:scale-105">
-              <span className="text-white text-xl font-bold">م</span>
+            <GraduationCap className="w-6 h-6 text-primary-foreground" />
             </div>
             <span className="text-gray-800 dark:text-gray-200 text-xl font-semibold">Murshid</span>
           </button>
