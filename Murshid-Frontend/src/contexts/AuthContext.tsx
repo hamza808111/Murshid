@@ -23,7 +23,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name?: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => Promise<void>;
   loginAsGuest: () => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateProfile: (name: string, email: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => Promise<void>;
 }
 
@@ -269,14 +269,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
-    (async () => {
+  const logout = async () => {
+    try {
+      console.log("🚪 Logging out...");
       await supabase.auth.signOut();
       setUser(null);
       localStorage.removeItem("murshid_token");
       toast.success("Logged out successfully");
       navigate("/login");
-    })();
+      console.log("✅ Logout successful");
+    } catch (error) {
+      console.error("❌ Logout error:", error);
+      toast.error("Logout failed. Please try again.");
+    }
   };
 
   const updateProfile = async (name: string, email: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => {
