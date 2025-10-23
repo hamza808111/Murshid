@@ -6,12 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { User, Mail, Edit2, Save, X } from "lucide-react";
+import { User, Mail, Edit2, Save, X, GraduationCap, BookOpen } from "lucide-react";
 import { z } from "zod";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100, "Name must be less than 100 characters"),
   email: z.string().email("Please enter a valid email address").max(255, "Email must be less than 255 characters"),
+  establishment_name: z.string().optional(),
+  level: z.string().optional(),
 });
 
 const ProfileSection = () => {
@@ -21,6 +23,8 @@ const ProfileSection = () => {
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
+    establishment_name: user?.establishment_name || "",
+    level: user?.level || "",
   });
 
   const handleSave = async () => {
@@ -39,7 +43,7 @@ const ProfileSection = () => {
       //   body: JSON.stringify(formData)
       // });
 
-      await updateProfile(formData.name, formData.email);
+      await updateProfile(formData.name, formData.email, formData.establishment_name, formData.level);
       setIsEditing(false);
       toast.success("Profile updated successfully!");
     } catch (error) {
@@ -57,6 +61,8 @@ const ProfileSection = () => {
     setFormData({
       name: user?.name || "",
       email: user?.email || "",
+      establishment_name: user?.establishment_name || "",
+      level: user?.level || "",
     });
     setIsEditing(false);
   };
@@ -136,6 +142,36 @@ const ProfileSection = () => {
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="establishment_name">Educational Institution</Label>
+                  <div className="relative">
+                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="establishment_name"
+                      type="text"
+                      value={formData.establishment_name}
+                      onChange={(e) => setFormData({ ...formData, establishment_name: e.target.value })}
+                      className="pl-10"
+                      placeholder="University of Example or High School Name"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="level">Academic Level</Label>
+                  <div className="relative">
+                    <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="level"
+                      type="text"
+                      value={formData.level}
+                      onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+                      className="pl-10"
+                      placeholder="1st Year, 2nd Year, Graduate, etc."
+                    />
+                  </div>
+                </div>
+
                 <div className="flex gap-2">
                   <Button onClick={handleSave} disabled={loading} className="flex-1">
                     <Save className="w-4 h-4 mr-2" />
@@ -157,6 +193,14 @@ const ProfileSection = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Email</p>
                     <p className="font-medium">{user.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Educational Institution</p>
+                    <p className="font-medium">{user.establishment_name || "Not set"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Academic Level</p>
+                    <p className="font-medium">{user.level || "Not set"}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">User ID</p>

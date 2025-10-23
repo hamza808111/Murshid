@@ -8,6 +8,8 @@ interface AppUser {
   id: string;
   email: string;
   name?: string;
+  establishment_name?: string;
+  level?: string;
 }
 
 interface AuthContextType {
@@ -17,7 +19,7 @@ interface AuthContextType {
   signup: (email: string, password: string, name?: string) => Promise<void>;
   loginAsGuest: () => Promise<void>;
   logout: () => void;
-  updateProfile: (name: string, email: string) => Promise<void>;
+  updateProfile: (name: string, email: string, establishment_name?: string, level?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,21 +37,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Map Supabase auth user to AppUser, augmenting with profile name if present
+  // Map Supabase auth user to AppUser, augmenting with profile data if present
   const mapUserWithProfile = async (authUser: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }) => {
     let derivedName: string | undefined = (authUser.user_metadata?.["name"] as string | undefined) || undefined;
+    let establishmentName: string | undefined;
+    let level: string | undefined;
+    
     if (!derivedName) {
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("name")
+        .select("name, establishment_name, level")
         .eq("id", authUser.id)
         .single();
       derivedName = profileData?.name || (authUser.email ? authUser.email.split("@")[0] : undefined);
+      establishmentName = profileData?.establishment_name;
+      level = profileData?.level;
     }
     return {
       id: authUser.id,
       email: authUser.email || "",
       name: derivedName,
+      establishment_name: establishmentName,
+      level: level,
     } as AppUser;
   };
 
@@ -183,7 +192,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })();
   };
 
-  const updateProfile = async (name: string, email: string) => {
+  const updateProfile = async (name: string, email: string, establishment_name?: string, level?: string) => {
     try {
       setLoading(true);
       // Update auth profile (name in metadata, and email if changed)
@@ -195,9 +204,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (authErr) throw authErr;
       }
 
-      // Upsert into profiles table for normalized name
+      // Upsert into profiles table for normalized data
       if (user?.id) {
-        const { error: profileErr } = await supabase.from("profiles").upsert({ id: user.id, name });
+        const { error: profileErr } = await supabase.from("profiles").upsert({ 
+          id: user.id, 
+          name, 
+          establishment_name, 
+          level 
+        });
         if (profileErr) throw profileErr;
       }
 
@@ -206,6 +220,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ...(user as AppUser),
         name,
         email,
+        establishment_name,
+        level,
       };
       setUser(updatedUser);
     } catch (error) {
