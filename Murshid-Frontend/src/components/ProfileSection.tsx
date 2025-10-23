@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { User, Mail, Edit2, Save, X, GraduationCap, BookOpen, Users, UserCheck } from "lucide-react";
+import { User, Mail, Edit2, Save, X, GraduationCap, BookOpen, Users, UserCheck, Sparkles, Building2, Award } from "lucide-react";
 import { z } from "zod";
 
 const profileSchema = z.object({
@@ -55,26 +56,23 @@ const ProfileSection = () => {
       profileSchema.parse(formData);
       setLoading(true);
 
-      // TODO: Replace with actual Spring Boot API call
-      // Example:
-      // const response = await fetch('http://your-backend.com/api/users/profile', {
-      //   method: 'PUT',
-      //   headers: { 
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify(formData)
-      // });
-
-      await updateProfile(formData.name, formData.email, formData.establishment_name, formData.level, formData.gender, formData.role, formData.student_type, formData.track);
+      await updateProfile(
+        formData.name, 
+        formData.email, 
+        formData.establishment_name, 
+        formData.level, 
+        formData.gender, 
+        formData.role, 
+        formData.student_type, 
+        formData.track
+      );
+      
       setIsEditing(false);
-      toast.success("Profile updated successfully!");
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
-      } else {
-        toast.error("Failed to update profile. Please try again.");
       }
+      // Error toast is already shown by updateProfile function
     } finally {
       setLoading(false);
     }
@@ -107,35 +105,69 @@ const ProfileSection = () => {
   if (!user) return null;
 
   return (
-    <section className="py-12 bg-background">
+    <section className="min-h-screen py-12 bg-gradient-to-br from-primary/5 via-background to-accent/5">
       <div className="container mx-auto px-4">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-2xl">Profile</CardTitle>
-                <CardDescription>Manage your account information</CardDescription>
+        <Card className="max-w-4xl mx-auto overflow-hidden border-border/50 shadow-2xl">
+          {/* Header with gradient background */}
+          <div className="relative h-32 bg-gradient-to-r from-primary via-primary/90 to-accent overflow-hidden">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bTAgMTBjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
+            <Sparkles className="absolute top-4 right-4 w-6 h-6 text-white/40" />
+          </div>
+
+          <CardHeader className="relative -mt-16 pb-2">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6">
+              {/* Avatar with fancy border */}
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-full blur-md opacity-75 group-hover:opacity-100 transition-opacity"></div>
+                <Avatar className="relative w-28 h-28 border-4 border-background shadow-xl">
+                  <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-accent text-primary-foreground">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
               </div>
+              
+              {/* User info */}
+              <div className="flex-1 text-center sm:text-left">
+                <div className="inline-block bg-gradient-to-br from-background via-background to-primary/5 backdrop-blur-md border-2 border-primary/30 rounded-2xl px-5 py-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.16)] transition-shadow">
+                  <div className="flex items-center gap-2.5 justify-center sm:justify-start flex-wrap mb-1.5">
+                    <CardTitle className="text-3xl font-extrabold tracking-tight text-foreground" style={{ fontFamily: '"Poppins", "Inter", system-ui, sans-serif' }}>
+                      {user.name || "User"}
+                    </CardTitle>
+                    {user.role && (
+                      <Badge variant="secondary" className="bg-gradient-to-r from-primary/10 to-accent/10 text-primary border-primary/20">
+                        <Award className="w-3 h-3 mr-1" />
+                        {user.role}
+                      </Badge>
+                    )}
+                  </div>
+                  <CardDescription className="flex items-center gap-2 justify-center sm:justify-start text-sm">
+                    <Mail className="w-3.5 h-3.5" />
+                    {user.email}
+                  </CardDescription>
+                  {user.establishment_name && (
+                    <p className="flex items-center gap-2 justify-center sm:justify-start text-xs text-muted-foreground mt-1">
+                      <Building2 className="w-3.5 h-3.5" />
+                      {user.establishment_name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Edit button */}
               {!isEditing && (
-                <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
+                <Button 
+                  onClick={() => setIsEditing(true)} 
+                  className="bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity shadow-lg"
+                  size="sm"
+                >
                   <Edit2 className="w-4 h-4 mr-2" />
-                  Edit
+                  Edit Profile
                 </Button>
               )}
             </div>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center gap-4">
-              <Avatar className="w-20 h-20">
-                <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                  {getInitials(user.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="text-xl font-semibold">{user.name || "User"}</h3>
-                <p className="text-sm text-muted-foreground">{user.email}</p>
-              </div>
-            </div>
+          
+          <CardContent className="space-y-6 pt-6">
 
             {isEditing ? (
               <div className="space-y-4">
@@ -320,59 +352,143 @@ const ProfileSection = () => {
                   </div>
                 )}
 
-                <div className="flex gap-2">
-                  <Button onClick={handleSave} disabled={loading} className="flex-1">
+                <div className="flex gap-3 pt-4">
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={loading} 
+                    className="flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity shadow-lg"
+                  >
                     <Save className="w-4 h-4 mr-2" />
                     {loading ? "Saving..." : "Save Changes"}
                   </Button>
-                  <Button onClick={handleCancel} variant="outline" disabled={loading}>
+                  <Button 
+                    onClick={handleCancel} 
+                    variant="outline" 
+                    disabled={loading}
+                    className="hover:bg-muted/50"
+                  >
                     <X className="w-4 h-4 mr-2" />
                     Cancel
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Name</p>
-                    <p className="font-medium">{user.name || "Not set"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{user.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Educational Institution</p>
-                    <p className="font-medium">{user.establishment_name || "Not set"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Academic Level</p>
-                    <p className="font-medium">{user.level || "Not set"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Gender</p>
-                    <p className="font-medium">{user.gender || "Not set"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Role</p>
-                    <p className="font-medium">{user.role || "Not set"}</p>
-                  </div>
-                  {user.role === "Student" && user.student_type && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Student Type</p>
-                      <p className="font-medium">{user.student_type}</p>
+              <div className="space-y-6">
+                {/* Personal Information Section */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <User className="w-5 h-5 text-primary" />
+                    Personal Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <User className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Full Name</p>
+                          <p className="font-semibold text-foreground">{user.name || "Not set"}</p>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  {user.role === "Student" && user.student_type === "University" && user.track && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Academic Track</p>
-                      <p className="font-medium">{user.track}</p>
+                    
+                    <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-accent/5 to-transparent hover:border-accent/30 transition-all duration-200">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Mail className="w-4 h-4 text-accent" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Email Address</p>
+                          <p className="font-semibold text-foreground break-all">{user.email}</p>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  <div>
-                    <p className="text-sm text-muted-foreground">Account Type</p>
-                    <p className="font-medium">{user.id === "guest" ? "Guest" : "Registered"}</p>
+                    
+                    <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <Users className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Gender</p>
+                          <p className="font-semibold text-foreground">{user.gender || "Not set"}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-accent/5 to-transparent hover:border-accent/30 transition-all duration-200">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <UserCheck className="w-4 h-4 text-accent" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Role</p>
+                          <p className="font-semibold text-foreground">{user.role || "Not set"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Academic Information Section */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5 text-primary" />
+                    Academic Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <Building2 className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Educational Institution</p>
+                          <p className="font-semibold text-foreground">{user.establishment_name || "Not set"}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-accent/5 to-transparent hover:border-accent/30 transition-all duration-200">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <BookOpen className="w-4 h-4 text-accent" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Academic Level</p>
+                          <p className="font-semibold text-foreground">{user.level || "Not set"}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {user.role === "Student" && user.student_type && (
+                      <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <BookOpen className="w-4 h-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Student Type</p>
+                            <p className="font-semibold text-foreground">{user.student_type}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {user.role === "Student" && user.student_type === "University" && user.track && (
+                      <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-accent/5 to-transparent hover:border-accent/30 transition-all duration-200">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-accent/10">
+                            <Award className="w-4 h-4 text-accent" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Academic Track</p>
+                            <p className="font-semibold text-foreground">{user.track}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -170,33 +170,59 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           emailRedirectTo: window.location.origin,
         },
       });
+      
       if (error) {
         if (error.message?.toLowerCase().includes("already registered") || error.message?.toLowerCase().includes("user already registered")) {
           throw new Error("An account with this email already exists. Please log in instead.");
         }
         throw error;
       }
-      if (data.user && data.session) {
-        // Ensure a profiles row exists with the provided data (if the table/policy is set up)
-        if (name || establishment_name || level || gender || role || student_type || track) {
-          await supabase.from("profiles").upsert({ 
+      
+      // Check if user was created
+      if (!data.user) {
+        throw new Error("Signup failed. Please try again.");
+      }
+      
+      console.log("User created:", data.user.id, "Session:", data.session ? "Active" : "Pending email confirmation");
+      
+      // If session exists (email confirmation disabled), create profile and login
+      if (data.session) {
+        // Ensure a profiles row exists with the provided data
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .upsert({ 
             id: data.user.id, 
-            name, 
-            establishment_name, 
-            level, 
-            gender,
-            role,
-            student_type,
-            track
-          }).select().single();
+            name: name || null, 
+            establishment_name: establishment_name || null, 
+            level: level || null, 
+            gender: gender || null,
+            role: role || null,
+            student_type: student_type || null,
+            track: track || null
+          })
+          .select()
+          .single();
+        
+        if (profileError) {
+          console.error("Profile creation error during signup:", profileError);
+          // Don't throw - allow signup to complete even if profile creation fails
+          toast.warning("Account created, but profile setup had an issue. You can update it later.");
+        } else {
+          console.log("Profile created successfully:", profileData);
         }
+        
         const mapped = await mapUserWithProfile(data.user);
         setUser(mapped);
         localStorage.setItem("murshid_token", data.session.access_token);
+        toast.success("Account created successfully!");
+        navigate("/");
+      } else {
+        // Email confirmation required
+        toast.success("Account created! Please check your email to confirm your account.");
+        navigate("/login");
       }
-      toast.success("Account created successfully!");
-      navigate("/");
     } catch (error) {
+      console.error("Signup error:", error);
       const message = (error as Error)?.message || "Signup failed. Please try again.";
       toast.error(message);
       throw error;
@@ -237,30 +263,58 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateProfile = async (name: string, email: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => {
     try {
-      setLoading(true);
-      // Update auth profile (name in metadata, and email if changed)
-      const updates: { data?: Record<string, unknown>; email?: string } = {};
-      if (name) updates.data = { name };
-      if (email && email !== user?.email) updates.email = email;
-      if (updates.data || updates.email) {
-        const { error: authErr } = await supabase.auth.updateUser(updates);
-        if (authErr) throw authErr;
-      }
+      console.log("🔄 Starting profile update...");
+      console.log("User ID:", user?.id);
+      console.log("Update data:", { name, email, establishment_name, level, gender, role, student_type, track });
+      
+      // Skip auth metadata update - it has issues with Supabase JS client
+      // We'll store everything in the profiles table instead
+      console.log("⏭️ Skipping auth metadata update (known Supabase JS issue)");
 
       // Upsert into profiles table for normalized data
-      if (user?.id) {
-        const { error: profileErr } = await supabase.from("profiles").upsert({ 
-          id: user.id, 
-          name, 
-          establishment_name, 
-          level,
-          gender,
-          role,
-          student_type,
-          track
-        });
-        if (profileErr) throw profileErr;
+      if (!user?.id) {
+        throw new Error("No user ID found. Please log in again.");
       }
+      
+      console.log("💾 Upserting to profiles table...");
+      const profilePayload = { 
+        id: user.id, 
+        name: name || null, 
+        establishment_name: establishment_name || null, 
+        level: level || null,
+        gender: gender || null,
+        role: role || null,
+        student_type: student_type || null,
+        track: track || null
+      };
+      console.log("Payload:", profilePayload);
+      
+      const { data: profileData, error: profileErr } = await supabase
+        .from("profiles")
+        .upsert(profilePayload)
+        .select()
+        .single();
+      
+      if (profileErr) {
+        console.error("❌ Profile update error:", profileErr);
+        console.error("Error code:", profileErr.code);
+        console.error("Error message:", profileErr.message);
+        console.error("Error details:", profileErr.details);
+        console.error("Error hint:", profileErr.hint);
+        
+        // Provide user-friendly error messages
+        if (profileErr.code === '42501') {
+          toast.error("Permission denied. Please contact support.");
+        } else if (profileErr.code === 'PGRST116') {
+          toast.error("Profile not found. Please log out and log in again.");
+        } else {
+          toast.error(`Database error: ${profileErr.message}`);
+        }
+        
+        throw profileErr;
+      }
+      
+      console.log("✅ Profile updated successfully:", profileData);
 
       // Update local user state
       const updatedUser: AppUser = {
@@ -275,11 +329,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         track,
       };
       setUser(updatedUser);
+      
+      console.log("🎉 Profile update complete!");
+      toast.success("Profile updated successfully!");
     } catch (error) {
-      toast.error("Failed to update profile");
+      console.error("💥 Update profile error:", error);
+      // Don't show another toast if we already showed a specific one
+      if (error instanceof Error && !error.message.includes("Permission denied") && !error.message.includes("Profile not found")) {
+        toast.error("Failed to update profile. Please try again.");
+      }
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
