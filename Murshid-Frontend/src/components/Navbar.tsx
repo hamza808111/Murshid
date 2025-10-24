@@ -1,13 +1,27 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, LogIn, LogOut, User } from "lucide-react";
+import { GraduationCap, LogIn, LogOut, User, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const Navbar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
   
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = async () => {
+    try {
+      setLoggingOut(true);
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Logout failed. Please try again.");
+      setLoggingOut(false);
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -39,12 +53,22 @@ const Navbar = () => {
                   </Button>
                 </Link>
                 <Button 
-                  onClick={logout}
+                  onClick={handleLogout}
                   variant="outline"
                   className="border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  disabled={loggingOut}
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
+                  {loggingOut ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Logging out...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </>
+                  )}
                 </Button>
               </div>
             ) : (
