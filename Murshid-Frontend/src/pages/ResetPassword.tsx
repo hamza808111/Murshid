@@ -80,10 +80,16 @@ export default function ResetPassword() {
       console.log("✅ Password update sent successfully");
       toast.success("Password updated successfully! Redirecting to login...");
       
-      // Sign out and redirect to login
+      // Sign out (don't wait - same promise issue)
       console.log("🚪 Signing out...");
-      await supabase.auth.signOut();
-      setTimeout(() => navigate("/login"), 1500);
+      supabase.auth.signOut().catch((error) => {
+        console.error("Sign out error (ignored):", error);
+      });
+      
+      // Wait a moment then redirect
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log("➡️ Redirecting to login...");
+      navigate("/login");
     } catch (error) {
       console.error("💥 Password reset error:", error);
       if (error instanceof z.ZodError) {
