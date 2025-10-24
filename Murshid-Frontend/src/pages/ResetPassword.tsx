@@ -52,6 +52,7 @@ export default function ResetPassword() {
 
     try {
       setLoading(true);
+      console.log("🔄 Starting password reset...");
 
       // Validate password
       passwordSchema.parse(password);
@@ -59,29 +60,43 @@ export default function ResetPassword() {
       // Check if passwords match
       if (password !== confirmPassword) {
         toast.error("Passwords do not match");
+        setLoading(false);
         return;
       }
 
-      // Update the user's password
-      const { error } = await supabase.auth.updateUser({
+      console.log("📝 Updating password...");
+      
+      // Update the user's password with timeout
+      const updatePromise = supabase.auth.updateUser({
         password: password,
       });
 
-      if (error) throw error;
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Password update timed out after 10 seconds")), 10000)
+      );
 
+      const result = await Promise.race([updatePromise, timeoutPromise]) as any;
+
+      if (result?.error) {
+        console.error("❌ Password update error:", result.error);
+        throw result.error;
+      }
+
+      console.log("✅ Password updated successfully");
       toast.success("Password updated successfully! Redirecting to login...");
       
       // Sign out and redirect to login
+      console.log("🚪 Signing out...");
       await supabase.auth.signOut();
       setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
+      console.error("💥 Password reset error:", error);
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
       } else {
         const message = (error as Error)?.message || "Failed to reset password. Please try again.";
         toast.error(message);
       }
-    } finally {
       setLoading(false);
     }
   };
