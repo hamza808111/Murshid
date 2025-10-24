@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Shield, Search, Users, LogOut, Loader2, Trash2 } from "lucide-react";
+import { Shield, Search, Users, LogOut, Loader2, Trash2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 
@@ -74,6 +74,11 @@ const AdminDashboard = () => {
 
       setUsers(data || []);
       setFilteredUsers(data || []);
+      
+      // Only show success message if manually refreshed (not on initial load)
+      if (users.length > 0) {
+        toast.success(`Refreshed! Found ${data?.length || 0} users`);
+      }
     } catch (error) {
       console.error("Error fetching users:", error);
       toast.error("Failed to load users");
@@ -174,10 +179,21 @@ const AdminDashboard = () => {
               </h1>
               <p className="text-muted-foreground mt-2">Manage users and monitor platform activity</p>
             </div>
-            <Button onClick={logout} variant="outline" className="gap-2">
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                onClick={fetchUsers} 
+                variant="outline" 
+                className="gap-2"
+                disabled={loading}
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Button onClick={logout} variant="outline" className="gap-2">
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
 
