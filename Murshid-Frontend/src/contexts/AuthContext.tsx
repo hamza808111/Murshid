@@ -272,9 +272,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       console.log("🚪 Logging out...");
-      await supabase.auth.signOut();
+      
+      // Sign out without waiting (fire and forget - same Supabase promise issue)
+      supabase.auth.signOut().catch((error) => {
+        console.error("Sign out error (ignored):", error);
+      });
+      
+      // Clear local state immediately
       setUser(null);
       localStorage.removeItem("murshid_token");
+      
+      // Small delay to ensure state updates
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       toast.success("Logged out successfully");
       navigate("/login");
       console.log("✅ Logout successful");
