@@ -216,7 +216,7 @@ export default function UniversitiesPage() {
           {/* Results Count */}
           <div className="text-center mb-8">
             <p className="text-gray-600 dark:text-gray-300" dir={language}>
-              {t('universities.resultsCount', { count: filteredUniversities.length })}
+              {language === 'ar' ? `عرض ${filteredUniversities.length} جامعة` : `Showing ${filteredUniversities.length} universities`}
             </p>
           </div>
 

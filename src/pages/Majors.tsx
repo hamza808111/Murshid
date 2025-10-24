@@ -209,7 +209,7 @@ export default function MajorsPage() {
           {/* Results Count */}
           <div className="text-center mb-8">
             <p className="text-gray-600 dark:text-gray-300" dir={language}>
-              {t('majors.resultsCount', { count: filteredMajors.length })}
+              {language === 'ar' ? `عرض ${filteredMajors.length} تخصص` : `Showing ${filteredMajors.length} majors`}
             </p>
           </div>
 

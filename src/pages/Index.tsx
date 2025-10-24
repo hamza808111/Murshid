@@ -1,7 +1,7 @@
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
+import { AnimatedHero } from "@/components/AnimatedHero";
 import { 
   Search, 
   Target, 
@@ -182,17 +182,9 @@ const Index = () => {
               </div> */}
             </div>
 
-            {/* Image */}
+            {/* Animated Elements */}
             <div className="order-1 lg:order-2">
-              <div className="relative">
-                <div className="absolute -top-8 -left-8 w-32 h-32 bg-yellow-200 dark:bg-yellow-400/30 rounded-full opacity-50 blur-2xl"></div>
-                <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-blue-200 dark:bg-blue-400/30 rounded-full opacity-50 blur-2xl"></div>
-                <ImageWithFallback
-                  src="https://images.unsplash.com/photo-1729824186959-ba83cbd1978d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXBweSUyMHN0dWRlbnQlMjBzdHVkeWluZ3xlbnwxfHx8fDE3NjA5MDQ3NDl8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="Happy student"
-                  className="relative rounded-3xl shadow-2xl w-full"
-                />
-              </div>
+              <AnimatedHero />
             </div>
           </div>
         </div>
