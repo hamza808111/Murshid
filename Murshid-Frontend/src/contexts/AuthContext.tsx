@@ -53,11 +53,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let track: string | undefined;
     
     // Always load profile data to get all fields, regardless of whether name is in metadata
-    const { data: profileData, error } = await supabase
+    // Add timeout to prevent hanging
+    const profilePromise = supabase
       .from("profiles")
       .select("name, establishment_name, level, gender, role, student_type, track, is_admin")
       .eq("id", authUser.id)
       .single();
+    
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Profile fetch timeout")), 5000)
+    );
+    
+    let profileData, error;
+    try {
+      const result = await Promise.race([profilePromise, timeoutPromise]) as any;
+      profileData = result.data;
+      error = result.error;
+    } catch (timeoutError) {
+      console.warn("Profile fetch timed out, using fallback data");
+      error = timeoutError;
+    }
     
     // Use profile data if available, otherwise fall back to metadata or email
     if (profileData && !error) {
@@ -103,27 +118,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
     const init = async () => {
-      const { data } = await supabase.auth.getSession();
-      const session = data.session;
-      if (!isMounted) return;
-      if (session?.user) {
-        const mapped = await mapUserWithProfile(session.user);
+      try {
+        // Add timeout to getSession call
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Session fetch timeout")), 8000)
+        );
+        
+        const { data } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        const session = data?.session;
+        
         if (!isMounted) return;
-        setUser(mapped);
-      } else {
+        if (session?.user) {
+          const mapped = await mapUserWithProfile(session.user);
+          if (!isMounted) return;
+          setUser(mapped);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Error initializing session:", error);
+        // If session restoration fails, just set user to null and stop loading
         setUser(null);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
     };
     init();
 
     const { data: authSub } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!isMounted) return;
-      if (session?.user) {
-        const mapped = await mapUserWithProfile(session.user);
-        if (!isMounted) return;
-        setUser(mapped);
-      } else {
+      try {
+        if (session?.user) {
+          const mapped = await mapUserWithProfile(session.user);
+          if (!isMounted) return;
+          setUser(mapped);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Error handling auth state change:", error);
         setUser(null);
       }
     });
