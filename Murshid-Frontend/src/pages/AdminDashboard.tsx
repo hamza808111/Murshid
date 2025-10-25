@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Shield, Search, Users, LogOut, Loader2, Trash2, RefreshCw } from "lucide-react";
+import { Shield, Search, Users, Loader2, Trash2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 
@@ -36,7 +36,7 @@ interface UserData {
 }
 
 const AdminDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserData[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
@@ -45,7 +45,6 @@ const AdminDashboard = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     // Check if user is admin
@@ -161,17 +160,6 @@ const AdminDashboard = () => {
     setUserToDelete(null);
   };
 
-  const handleLogout = async () => {
-    try {
-      setLoggingOut(true);
-      await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
-      toast.error("Logout failed. Please try again.");
-      setLoggingOut(false);
-    }
-  };
-
   if (!user?.is_admin) {
     return null;
   }
@@ -200,24 +188,6 @@ const AdminDashboard = () => {
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
-              </Button>
-              <Button 
-                onClick={handleLogout} 
-                variant="outline" 
-                className="gap-2"
-                disabled={loggingOut}
-              >
-                {loggingOut ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Logging out...
-                  </>
-                ) : (
-                  <>
-                    <LogOut className="w-4 h-4" />
-                    Logout
-                  </>
-                )}
               </Button>
             </div>
           </div>
