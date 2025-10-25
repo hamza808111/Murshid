@@ -15,19 +15,28 @@ import {
   Building2
 } from "lucide-react";
 import heroImage from "@/assets/hero-image.jpg";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { apiFetch } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: pingResponse, refetch: refetchPing, isLoading: pingLoading, isError: pingError, error: pingErrorObj } = useQuery({
     queryKey: ["ping"],
     queryFn: async () => await apiFetch<{ message: string; sub: string; email: string }>("/api/ping"),
     enabled: !!user && user.id !== "guest",
   });
+
+  // Redirect admins to dashboard
+  useEffect(() => {
+    if (user?.is_admin) {
+      navigate("/admin");
+    }
+  }, [user, navigate]);
 
   const renderAuthenticatedSection = () => {
     if (!user || user.id === "guest") {
