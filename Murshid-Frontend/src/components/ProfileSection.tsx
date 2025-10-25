@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { User, Mail, Edit2, Save, X, GraduationCap, BookOpen, Users, UserCheck, Sparkles, Building2, Award } from "lucide-react";
+import { User, Mail, Edit2, Save, X, BookOpen, Users, UserCheck, Sparkles, Building2, Award } from "lucide-react";
 import { z } from "zod";
 
 const profileSchema = z.object({
@@ -203,17 +203,13 @@ const ProfileSection = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="establishment_name">Educational Institution</Label>
-                  <div className="relative">
-                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="establishment_name"
-                      type="text"
-                      value={formData.establishment_name}
-                      onChange={(e) => setFormData({ ...formData, establishment_name: e.target.value })}
-                      className="pl-10"
-                      placeholder="University of Example or High School Name"
-                    />
-                  </div>
+                  <Input
+                    id="establishment_name"
+                    type="text"
+                    value={formData.establishment_name}
+                    onChange={(e) => setFormData({ ...formData, establishment_name: e.target.value })}
+                    placeholder="University of Example or High School Name"
+                  />
                 </div>
 
 
@@ -434,7 +430,7 @@ const ProfileSection = () => {
                 {/* Academic Information Section */}
                 <div>
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <GraduationCap className="w-5 h-5 text-primary" />
+                    <BookOpen className="w-5 h-5 text-primary" />
                     Academic Information
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

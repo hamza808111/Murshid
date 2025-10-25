@@ -10,7 +10,6 @@ import {
   Palette, 
   FlaskConical, 
   Scale,
-  GraduationCap,
   Sparkles,
   Search,
   Building2
@@ -228,7 +227,6 @@ const Index = () => {
                 size="lg" 
                 className="bg-white text-primary hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-lg px-8 py-6"
               >
-                <GraduationCap className="w-5 h-5 mr-2" />
                 Explore Majors
               </Button>
               <Button 
@@ -274,7 +272,6 @@ const Index = () => {
                 value="majors" 
                 className="text-base data-[state=active]:bg-blue-600 data-[state=active]:text-white"
               >
-                <GraduationCap className="w-4 h-4 mr-2" />
                 Majors
               </TabsTrigger>
               <TabsTrigger 
