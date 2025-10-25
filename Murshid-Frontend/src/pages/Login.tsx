@@ -61,7 +61,7 @@ const Login = () => {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
             <img 
-              src="/logo.png?v=2" 
+              src="/murshid-logo.png" 
               alt="Murshid Logo" 
               className="h-28 object-contain"
             />
