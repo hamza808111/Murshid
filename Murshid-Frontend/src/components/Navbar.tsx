@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { LogIn, LogOut, User, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import logo from "@/assets/logo.png";
 
 const Navbar = () => {
   const location = useLocation();
@@ -30,7 +29,7 @@ const Navbar = () => {
         <div className="flex h-24 items-center justify-between">
           <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
             <img 
-              src={logo} 
+              src="/logo.png" 
               alt="Murshid Logo" 
               className="h-20 object-contain"
             />

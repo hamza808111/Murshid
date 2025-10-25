@@ -12,7 +12,6 @@ import { z } from "zod";
 import { toast } from "sonner";
 import PasswordValidationPopup from "@/components/PasswordValidationPopup";
 import PasswordInput from "@/components/PasswordInput";
-import logo from "@/assets/logo.png";
 
 const signupSchema = z.object({
   email: z.string().trim().email({ message: "Invalid email address" }).max(255),
@@ -99,7 +98,7 @@ const Signup = () => {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
             <img 
-              src={logo} 
+              src="/logo.png" 
               alt="Murshid Logo" 
               className="h-28 object-contain"
             />
