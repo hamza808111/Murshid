@@ -7,11 +7,12 @@ describe('Password Reset - Forgot and Reset', () => {
   });
 
   it('shows validation for invalid email', () => {
+    //###
     cy.visit('/forgot-password');
     cy.get('#email').type('invalid-email');
     cy.contains('button', 'Send Reset Link').click();
     cy.url().should('include', '/forgot-password');
-  });
+  });//########################################################################################14 FROM B
 
   it('without valid session, visiting /reset-password redirects back to forgot', () => {
     cy.visit('/reset-password');

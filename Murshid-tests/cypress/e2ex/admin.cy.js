@@ -52,6 +52,7 @@ describe('Admin - Manage Users (best-effort)', () => {
   });
 
   it('opens delete dialog if delete button is available (conditional)', () => {
+    //###
     cy.get('body').then($body => {
       const btn = $body.find('button.text-destructive');
       if (btn.length) {
@@ -64,6 +65,6 @@ describe('Admin - Manage Users (best-effort)', () => {
         cy.log('No delete buttons found - skipping dialog test');
       }
     });
-  });
+  });//########################################################################################7 FROM B
 });
 

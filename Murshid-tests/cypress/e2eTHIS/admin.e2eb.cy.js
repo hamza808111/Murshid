@@ -1,5 +1,5 @@
 describe('E2E-B (Buttons) - Admin', () => {
-  it('guest is redirected to login when trying login button then going to admin (by redirect rules)', () => {//------------------------------------------------
+  it('guest is redirected to login when trying login button then going to admin (by redirect rules)', () => {
     cy.visit('/');
     cy.wait(600);
     cy.url().should('include', '/login');
@@ -12,6 +12,7 @@ describe('E2E-B (Buttons) - Admin', () => {
   });
 
   it('normal user login stays away from /admin (redirects to /)', () => {
+    //###
     cy.visit('/');
     cy.wait(600);
     cy.url().should('include', '/login');
@@ -26,7 +27,7 @@ describe('E2E-B (Buttons) - Admin', () => {
     cy.visit('/admin');
     cy.wait(800);
     cy.location('pathname', { timeout: 8000 }).should('not.eq', '/admin');
-  });
+  });//########################################################################################6 
 
   it('admin login redirects to /admin and shows dashboard elements (header/Refresh)', () => {
     cy.visit('/');
@@ -46,6 +47,6 @@ describe('E2E-B (Buttons) - Admin', () => {
       cy.contains('h1', 'Admin Dashboard', { timeout: 10000 }).should('be.visible');
       cy.contains('button', 'Refresh').should('exist');
     });
-  });
+  });//########################################################################################5 
 });
 

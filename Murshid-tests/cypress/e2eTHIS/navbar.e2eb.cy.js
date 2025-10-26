@@ -6,7 +6,8 @@ describe('E2E-B (Buttons) - Navbar', () => {
     cy.contains('button', 'Login').should('be.visible');
   });
 
-  it('shows Profile and Logout after login, and logout works', () => { //---------------------------
+  it('shows Profile and Logout after login, and logout works', () => {
+    //###
     cy.visit('/');
     cy.wait(600);
     cy.url().should('include', '/login');
@@ -22,6 +23,6 @@ describe('E2E-B (Buttons) - Navbar', () => {
     cy.contains('button', 'Logout').should('be.visible').click();
     cy.wait(800);
     cy.url().should('include', '/login');
-  });
+  });//########################################################################################12
 });
 

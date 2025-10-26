@@ -1,11 +1,13 @@
 describe('E2E-B (Buttons) - Profile', () => {
-  it('redirects unauthenticated user to /login from /profile', () => { //---------------------------------
+  it('redirects unauthenticated user to /login from /profile', () => { 
+    //###
     cy.visit('/profile');
     cy.wait(800);
     cy.url().should('include', '/login');
-  });
+  });//########################################################################################11
 
-  it('shows profile information after logging in and clicking Profile', () => { //--------------------------
+  it('shows profile information after logging in and clicking Profile', () => { 
+    //###
     // Login by UI
     cy.visit('/');
     cy.wait(600);
@@ -27,9 +29,10 @@ describe('E2E-B (Buttons) - Profile', () => {
       .scrollIntoView()
       .should('be.visible');
     cy.contains('Email Address', { timeout: 10000 }).should('be.visible');
-  });
+  });//########################################################################################10
 
-  it('edits name and saves via buttons', () => {   //----------------------------------------
+  it('edits name and saves via buttons', () => { 
+    //###
     cy.visit('/');
     cy.wait(600);
     cy.url().should('include', '/login');
@@ -48,9 +51,10 @@ describe('E2E-B (Buttons) - Profile', () => {
     cy.contains('button', 'Save Changes').click();
     cy.wait(900);
     cy.contains(newName).should('be.visible');
-  });
+  });//########################################################################################8
 
-  it('invalid email shows validation and remains in edit mode', () => { //--------------------------
+  it('invalid email shows validation and remains in edit mode', () => { 
+    //###
     cy.visit('/');
     cy.wait(600);
     cy.url().should('include', '/login');
@@ -69,7 +73,7 @@ describe('E2E-B (Buttons) - Profile', () => {
     cy.wait(600);
     cy.contains('button', 'Save Changes').should('be.visible');
     cy.contains('button', 'Cancel').should('be.visible');
-  });
+  });//########################################################################################9
 
   it('cancel reverts changes and exits edit mode', () => {
     cy.visit('/');

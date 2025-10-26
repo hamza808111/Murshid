@@ -23,12 +23,13 @@ describe('Authentication - Login and Guest', () => {
   });
 
   it('handles wrong credentials gracefully', () => {
+    //###
     cy.visit('/login');
     cy.get('#email').type('wrong@example.com');
     cy.get('#password').type('WrongPass123');
     cy.contains('button', 'Login').click();
     cy.url().should('include', '/login');
-  });
+  });//########################################################################################4 FROM B
 });
 
 describe('Authentication - Signup', () => {

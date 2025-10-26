@@ -3,7 +3,7 @@
 Note: File and test names below refer to specs under `cypress/e2e/*.cy.js` as implemented previously.
 
 ## 1) Signup as a student
-- File + it(): `cypress/e2e/auth.cy.js` → `it('signs up a new user and redirects to /')`
+- File + it(): `cypress/e2e/auth.cy.js` → `it('signs up a new user and redirects to /')` DONE D
 - TEST SCENARIO: Signup (happy)
 - TEST CASE: Create new student with valid data
 - PRE-CONDITION: Email not previously registered; signup auto-logs-in (no email confirmation)
@@ -14,7 +14,7 @@ Note: File and test names below refer to specs under `cypress/e2e/*.cy.js` as im
 - ACTUAL RESULT: Observed redirect to /
 
 Rainy (duplicate):
-- File + it(): `cypress/e2e/auth.cy.js` → `it('prevents duplicate email signup and stays on page')`
+- File + it(): `cypress/e2e/auth.cy.js` → `it('prevents duplicate email signup and stays on page')` DONE D
 - TEST SCENARIO: Signup (duplicate email)
 - TEST CASE: Use existing email
 - PRE-CONDITION: Email `m.ay.albilaly@gmail.com` already exists
@@ -25,7 +25,7 @@ Rainy (duplicate):
 - ACTUAL RESULT: Remained on /signup
 
 ## 2) Log in as a student
-- File + it(): `cypress/e2e/auth.cy.js` → `it('logs in as normal user and lands on /')`
+- File + it(): `cypress/e2e/auth.cy.js` → `it('logs in as normal user and lands on /')` DONE D
 - TEST SCENARIO: Login (happy)
 - TEST CASE: Valid student credentials
 - PRE-CONDITION: User exists: `ayman@ayman.com` / `Ayman123`
@@ -36,7 +36,7 @@ Rainy (duplicate):
 - ACTUAL RESULT: Redirected to /
 
 Rainy (invalid creds):
-- File + it(): `cypress/e2e/auth.cy.js` → `it('handles wrong credentials gracefully')`  // not
+- File + it(): `cypress/e2e/auth.cy.js` → `it('handles wrong credentials gracefully')`  DONE X D
 - TEST SCENARIO: Login (invalid credentials)
 - TEST CASE: Wrong email/password
 - PRE-CONDITION: None
@@ -47,7 +47,7 @@ Rainy (invalid creds):
 - ACTUAL RESULT: Stayed on /login
 
 ## 3) Log in as an admin (access dashboard)
-- File + it(): `cypress/e2e/auth.cy.js` → `it('logs in as admin and lands on /admin')`
+- File + it(): `cypress/e2e/auth.cy.js` → `it('logs in as admin and lands on /admin')` DONE D
 - TEST SCENARIO: Admin login (happy)
 - TEST CASE: Valid admin credentials
 - PRE-CONDITION: Admin has `is_admin=true` (`admin1@admin.admin` / `adminADMIN`)
@@ -58,7 +58,7 @@ Rainy (invalid creds):
 - ACTUAL RESULT: Redirected to /admin
 
 Rainy (non-admin trying /admin):
-- File + it(): `cypress/e2e/admin.cy.js` → `it('blocks normal user from /admin and redirects away')`
+- File + it(): `cypress/e2e/admin.cy.js` → `it('blocks normal user from /admin and redirects away')` DONE D
 - TEST SCENARIO: Admin access control
 - TEST CASE: Normal user tries to access /admin
 - PRE-CONDITION: Non-admin student exists
@@ -69,7 +69,7 @@ Rainy (non-admin trying /admin):
 - ACTUAL RESULT: Not on /admin
 
 ## 4) Manage user (only deleting)
-- File + it(): `cypress/e2e/admin.cy.js` → `it('opens delete dialog if delete button is available (conditional)')`                                                                                  //not
+- File + it(): `cypress/e2e/admin.cy.js` → `it('opens delete dialog if delete button is available (conditional)')`                           DONEX     D                                      
 - TEST SCENARIO: Manage users (delete path)
 - TEST CASE: Open delete confirm dialog and cancel (non-destructive)
 - PRE-CONDITION: Admin on /admin; at least one deletable row present
@@ -80,7 +80,7 @@ Rainy (non-admin trying /admin):
 - ACTUAL RESULT: Dialog observed/canceled (or test logs if no button present)
 
 ## 5) Edit profile as a student
-- File + it(): `cypress/e2e/profile.cy.js` → `it('edits name and saves successfully')`
+- File + it(): `cypress/e2e/profile.cy.js` → `it('edits name and saves successfully')` DONE D
 - TEST SCENARIO: Profile edit (happy)
 - TEST CASE: Change name and save
 - PRE-CONDITION: Student exists and can login
@@ -91,7 +91,7 @@ Rainy (non-admin trying /admin):
 - ACTUAL RESULT: New name visible
 
 Rainy (invalid email):
-- File + it(): `cypress/e2e/profile.cy.js` → `it('shows validation when email is invalid and stays in edit mode')`
+- File + it(): `cypress/e2e/profile.cy.js` → `it('shows validation when email is invalid and stays in edit mode')` DONE D
 - TEST SCENARIO: Profile edit (invalid data)
 - TEST CASE: Invalid email prevents save and remains in edit mode
 - PRE-CONDITION: Student exists and can login
@@ -102,7 +102,7 @@ Rainy (invalid email):
 - ACTUAL RESULT: Still in edit mode
 
 ## 6) View profile as a student
-- File + it(): `cypress/e2e/profile.cy.js` → `it('shows profile info for logged-in user')`
+- File + it(): `cypress/e2e/profile.cy.js` → `it('shows profile info for logged-in user')` DONE D 10
 - TEST SCENARIO: Profile view (happy)
 - TEST CASE: See personal info and email on /profile
 - PRE-CONDITION: Student exists and can login
@@ -113,7 +113,7 @@ Rainy (invalid email):
 - ACTUAL RESULT: Info visible
 
 Rainy (unauthenticated):
-- File + it(): `cypress/e2e/profile.cy.js` → `it('redirects unauthenticated user to /login')`
+- File + it(): `cypress/e2e/profile.cy.js` → `it('redirects unauthenticated user to /login')` DONE D11
 - TEST SCENARIO: Profile view (unauthenticated)
 - TEST CASE: Visit /profile without session
 - PRE-CONDITION: No active session
@@ -124,7 +124,7 @@ Rainy (unauthenticated):
 - ACTUAL RESULT: Redirected to /login
 
 ## 7) Logout as a student
-- File + it(): `cypress/e2e/navbar.cy.js` → `it('shows Profile and Logout when logged in, and logout works')`
+- File + it(): `cypress/e2e/navbar.cy.js` → `it('shows Profile and Logout when logged in, and logout works')` DONE D12
 - TEST SCENARIO: Logout (happy)
 - TEST CASE: Click Logout from navbar
 - PRE-CONDITION: Student exists and can login
@@ -135,7 +135,7 @@ Rainy (unauthenticated):
 - ACTUAL RESULT: Redirected to /login
 
 ## 8) Reset password as a student
-- File + it(): `cypress/e2e/reset_password.cy.js` → `it('sends reset link for valid email')`
+- File + it(): `cypress/e2e/reset_password.cy.js` → `it('sends reset link for valid email')` DONE D13
 - TEST SCENARIO: Forgot password (happy)
 - TEST CASE: Send reset link for valid email
 - PRE-CONDITION: User exists; Supabase can send email
@@ -146,7 +146,7 @@ Rainy (unauthenticated):
 - ACTUAL RESULT: Success message visible
 
 Rainy (invalid email):
-- File + it(): `cypress/e2e/reset_password.cy.js` → `it('shows validation for invalid email')`
+- File + it(): `cypress/e2e/reset_password.cy.js` → `it('shows validation for invalid email')` DONE X D14
 - TEST SCENARIO: Forgot password (invalid email)
 - TEST CASE: Invalid email format
 - PRE-CONDITION: App reachable
