@@ -93,7 +93,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
@@ -108,13 +108,13 @@ const Signup = () => {
 
         <Card className="border-border/50 shadow-[var(--shadow-soft)]">
           <CardHeader>
-            <CardTitle>Create Account</CardTitle>
-            <CardDescription>Start your journey to finding the perfect major</CardDescription>
+            <CardTitle className="text-gray-900 dark:text-gray-100">Create Account</CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-300">Start your journey to finding the perfect major</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name" className="text-gray-900 dark:text-gray-200">Name</Label>
                 <Input
                   id="name"
                   type="text"
@@ -126,7 +126,7 @@ const Signup = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-gray-900 dark:text-gray-200">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -138,7 +138,7 @@ const Signup = () => {
                 />
               </div>
               <div className="space-y-2 relative">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-gray-900 dark:text-gray-200">Password</Label>
                 <PasswordInput
                   id="password"
                   placeholder="••••••••"
@@ -155,7 +155,7 @@ const Signup = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Label htmlFor="confirm-password" className="text-gray-900 dark:text-gray-200">Confirm Password</Label>
                 <PasswordInput
                   id="confirm-password"
                   placeholder="••••••••"
@@ -167,7 +167,7 @@ const Signup = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="establishment_name">Educational Institution</Label>
+                <Label htmlFor="establishment_name" className="text-gray-900 dark:text-gray-200">Educational Institution</Label>
                 <Input
                   id="establishment_name"
                   type="text"
@@ -180,7 +180,7 @@ const Signup = () => {
 
 
               <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
+                <Label htmlFor="gender" className="text-gray-900 dark:text-gray-200">Gender</Label>
                 <Select value={gender} onValueChange={setGender} disabled={isLoading}>
                   <SelectTrigger>
                     <div className="flex items-center">
@@ -196,7 +196,7 @@ const Signup = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
+                <Label htmlFor="role" className="text-gray-900 dark:text-gray-200">Role</Label>
                 <Select value={role} onValueChange={setRole} disabled={isLoading}>
                   <SelectTrigger>
                     <div className="flex items-center">
@@ -215,7 +215,7 @@ const Signup = () => {
               {role === "Student" && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="student_type">Student Type</Label>
+                    <Label htmlFor="student_type" className="text-gray-900 dark:text-gray-200">Student Type</Label>
                     <Select value={student_type} onValueChange={setStudentType} disabled={isLoading}>
                       <SelectTrigger>
                         <div className="flex items-center">
@@ -232,7 +232,7 @@ const Signup = () => {
 
                   {student_type === "High School" && (
                     <div className="space-y-2">
-                      <Label htmlFor="level">Academic Level</Label>
+                      <Label htmlFor="level" className="text-gray-900 dark:text-gray-200">Academic Level</Label>
                       <Select value={level} onValueChange={setLevel} disabled={isLoading}>
                         <SelectTrigger>
                           <div className="flex items-center">
@@ -251,7 +251,7 @@ const Signup = () => {
 
                   {student_type === "University" && (
                     <div className="space-y-2">
-                      <Label htmlFor="track">Academic Track</Label>
+                      <Label htmlFor="track" className="text-gray-900 dark:text-gray-200">Academic Track</Label>
                       <Select value={track} onValueChange={setTrack} disabled={isLoading}>
                         <SelectTrigger>
                           <div className="flex items-center">
@@ -273,7 +273,7 @@ const Signup = () => {
 
               {role === "Specialist" && (
                 <div className="space-y-2">
-                  <Label htmlFor="level">Academic Level</Label>
+                  <Label htmlFor="level" className="text-gray-900 dark:text-gray-200">Academic Level</Label>
                   <Select value={level} onValueChange={setLevel} disabled={isLoading}>
                     <SelectTrigger>
                       <div className="flex items-center">

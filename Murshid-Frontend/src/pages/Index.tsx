@@ -1,345 +1,310 @@
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import MajorCard from "@/components/MajorCard";
-import { 
-  Cpu, 
-  Heart, 
-  TrendingUp, 
-  Palette, 
-  FlaskConical, 
-  Scale,
-  Sparkles,
+import { Card } from "@/components/ui/card";
+import { AnimatedHero } from "@/components/AnimatedHero";
+import {
   Search,
-  Building2
+  Target,
+  CheckCircle,
+  GraduationCap,
+  BookOpen,
+  Users,
+  TrendingUp,
 } from "lucide-react";
-import heroImage from "@/assets/hero-image.jpg";
-import { useMemo, useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useI18n } from "@/contexts/I18nContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 import { apiFetch } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
 const Index = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const { user } = useAuth();
   const navigate = useNavigate();
-  const { data: pingResponse, refetch: refetchPing, isLoading: pingLoading, isError: pingError, error: pingErrorObj } = useQuery({
+  const { t, language } = useI18n();
+  const { user } = useAuth();
+
+  // Keep backend ping logic intact (used in a hidden diagnostics block below)
+  const {
+    data: pingResponse,
+    refetch: refetchPing,
+    isLoading: pingLoading,
+    isError: pingError,
+    error: pingErrorObj,
+  } = useQuery({
     queryKey: ["ping"],
-    queryFn: async () => await apiFetch<{ message: string; sub: string; email: string }>("/api/ping"),
+    queryFn: async () =>
+      await apiFetch<{ message: string; sub: string; email: string }>("/api/ping"),
     enabled: !!user && user.id !== "guest",
   });
 
-  // Redirect admins to dashboard
+  // Preserve admin auto-redirect
   useEffect(() => {
     if (user?.is_admin) {
       navigate("/admin");
     }
   }, [user, navigate]);
 
-  const renderAuthenticatedSection = () => {
-    if (!user || user.id === "guest") {
-      return null;
-    }
-
-    return (
-      <div className="mt-6">
-        <h3 className="text-lg font-semibold text-primary-foreground">Authenticated API Check</h3>
-        <div className="mt-2 bg-white/10 rounded-lg p-4 text-left space-y-2">
-          <p className="text-sm text-primary-foreground/90">
-            {pingLoading
-              ? "Checking connectivity..."
-              : pingResponse
-                ? `Backend says: ${pingResponse.message}`
-                : pingError
-                  ? "Failed to reach backend"
-                  : ""}
-          </p>
-          {pingResponse && (
-            <p className="text-xs text-primary-foreground/80">
-              JWT Subject: {pingResponse.sub} | Email: {pingResponse.email}
-            </p>
-          )}
-          {pingError && (
-            <p className="text-xs text-red-200">Error: {pingErrorObj instanceof Error ? pingErrorObj.message : "Unknown error"}</p>
-          )}
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-white text-white"
-            onClick={() => refetchPing()}
-            disabled={pingLoading}
-          >
-            {pingLoading ? "Retrying..." : "Retry Ping"}
-          </Button>
-        </div>
-      </div>
-    );
-  };
-          {user && user.id !== "guest" && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold text-primary-foreground">Authenticated API Check</h3>
-              <div className="mt-2 bg-white/10 rounded-lg p-4 text-left space-y-2">
-                <p className="text-sm text-primary-foreground/90">
-                  {pingLoading ? "Checking connectivity..." : pingResponse ? `Backend says: ${pingResponse.message}` : pingError ? "Failed to reach backend" : ""}
-                </p>
-                {pingResponse && (
-                  <p className="text-xs text-primary-foreground/80">
-                    JWT Subject: {pingResponse.sub} | Email: {pingResponse.email}
-                  </p>
-                )}
-                {pingError && (
-                  <p className="text-xs text-red-200">Error: {(pingErrorObj as Error)?.message}</p>
-                )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-white text-white"
-                  onClick={() => refetchPing()}
-                >
-                  Retry Ping
-                </Button>
-              </div>
-            </div>
-          )}
-
-  const majors = useMemo(() => ([
+  const steps = [
     {
-      icon: Cpu,
-      title: "Engineering & Technology",
-      description: "Build the future with innovation and technical expertise",
-      examples: ["Computer Science", "Electrical Engineering", "Mechanical Engineering"]
+      icon: Search,
+      title: t("homepage.exploreInterests"),
+      description: t("homepage.exploreInterestsDesc"),
+      color: "from-blue-300 to-blue-400",
     },
     {
-      icon: Heart,
-      title: "Medical & Health Sciences",
-      description: "Make a difference in people's lives through healthcare",
-      examples: ["Medicine", "Nursing", "Pharmacy", "Physical Therapy"]
+      icon: Target,
+      title: t("homepage.getRecommendations"),
+      description: t("homepage.getRecommendationsDesc"),
+      color: "from-purple-300 to-purple-400",
+    },
+    {
+      icon: CheckCircle,
+      title: t("homepage.makeDecision"),
+      description: t("homepage.makeDecisionDesc"),
+      color: "from-green-300 to-green-400",
+    },
+  ];
+
+  const features = [
+    {
+      icon: GraduationCap,
+      title: t("homepage.diverseMajors"),
+      description: t("homepage.diverseMajorsDesc"),
+      color:
+        "bg-blue-50 text-blue-500 dark:bg-blue-950/50 dark:text-blue-300",
+    },
+    {
+      icon: BookOpen,
+      title: t("homepage.comprehensiveInfo"),
+      description: t("homepage.comprehensiveInfoDesc"),
+      color:
+        "bg-purple-50 text-purple-500 dark:bg-purple-950/50 dark:text-purple-300",
+    },
+    {
+      icon: Users,
+      title: t("homepage.supportiveCommunity"),
+      description: t("homepage.supportiveCommunityDesc"),
+      color: "bg-pink-50 text-pink-500 dark:bg-pink-950/50 dark:text-pink-300",
     },
     {
       icon: TrendingUp,
-      title: "Business & Economics",
-      description: "Lead organizations and drive economic growth",
-      examples: ["Business Administration", "Finance", "Marketing", "Accounting"]
+      title: t("homepage.futureVision"),
+      description: t("homepage.futureVisionDesc"),
+      color:
+        "bg-green-50 text-green-500 dark:bg-green-950/50 dark:text-green-300",
     },
-    {
-      icon: Palette,
-      title: "Arts & Design",
-      description: "Express creativity and shape cultural experiences",
-      examples: ["Graphic Design", "Fine Arts", "Architecture", "Media Production"]
-    },
-    {
-      icon: FlaskConical,
-      title: "Natural Sciences",
-      description: "Explore the fundamental laws of nature and discovery",
-      examples: ["Biology", "Chemistry", "Physics", "Environmental Science"]
-    },
-    {
-      icon: Scale,
-      title: "Law & Social Sciences",
-      description: "Understand society and advocate for justice",
-      examples: ["Law", "Psychology", "Sociology", "Political Science"]
+  ];
+
+  const onNavigate = (page: string) => {
+    if (page === "quiz" || page === "assessment") {
+      if (user) {
+        navigate("/assessment");
+      } else {
+        navigate("/login");
+      }
+    } else if (page === "majors") {
+      if (user) {
+        navigate("/majors");
+      } else {
+        navigate("/login");
+      }
+    } else if (page === "universities") {
+      if (user) {
+        navigate("/universities");
+      } else {
+        navigate("/login");
+      }
     }
-  ]), []);
-
-  const universities = useMemo(() => ([
-    {
-      icon: Building2,
-      title: "King Saud University",
-      description: "Leading research university in Riyadh",
-      examples: ["Engineering", "Medicine", "Sciences", "Humanities"]
-    },
-    {
-      icon: Building2,
-      title: "King Abdulaziz University",
-      description: "Premier institution in Jeddah",
-      examples: ["Engineering", "Medicine", "Business", "Marine Sciences"]
-    },
-    {
-      icon: Building2,
-      title: "King Fahd University of Petroleum & Minerals",
-      description: "Top-ranked engineering and technology university",
-      examples: ["Petroleum Engineering", "Chemical Engineering", "Computer Science"]
-    },
-    {
-      icon: Building2,
-      title: "Imam Abdulrahman Bin Faisal University",
-      description: "Comprehensive university in Dammam",
-      examples: ["Medicine", "Engineering", "Architecture", "Business"]
-    },
-    {
-      icon: Building2,
-      title: "King Khalid University",
-      description: "Growing university in Abha",
-      examples: ["Medicine", "Engineering", "Education", "Sciences"]
-    },
-    {
-      icon: Building2,
-      title: "Umm Al-Qura University",
-      description: "Historic university in Makkah",
-      examples: ["Islamic Studies", "Engineering", "Medicine", "Social Sciences"]
-    }
-  ]), []);
-
-  const filteredMajors = majors.filter(major =>
-    major.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    major.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    major.examples.some(ex => ex.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
-  const filteredUniversities = universities.filter(university =>
-    university.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    university.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    university.examples.some(ex => ex.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navbar />
-      
-      {/* Profile Section moved to dedicated /profile page */}
-      
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-visible">
-        <div 
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: `url(${heroImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/95 to-accent/95"></div>
+
+      {/* Hidden diagnostics to preserve backend ping behavior without UI noise */}
+      {user && user.id !== "guest" && (
+        <div className="hidden">
+          <span>
+            {pingLoading
+              ? "Checking connectivity..."
+              : pingResponse
+              ? `Backend: ${pingResponse.message}`
+              : pingError
+              ? `Error: ${String((pingErrorObj as Error)?.message || "")}`
+              : ""}
+          </span>
+          <button onClick={() => refetchPing()} aria-hidden>
+            retry
+          </button>
         </div>
-        
-        <div className="container mx-auto px-4 z-10 text-center">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-primary-foreground/90">
-              <Sparkles className="w-4 h-4" />
-              <span className="text-sm font-medium">Your Future Starts Here</span>
+      )}
+
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 pt-10 pb-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Text Content */}
+            <div
+              className={`text-center ${
+                language === "ar"
+                  ? "lg:text-right order-2 lg:order-1"
+                  : "lg:text-left order-2 lg:order-1"
+              }`}
+              dir={language}
+            >
+              <div className="inline-block mb-6">
+                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-full">
+                  {t("homepage.welcome")}
+                </span>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+                {t("homepage.title")}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto lg:mx-0">
+                {t("homepage.subtitle")}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Button
+                  onClick={() => onNavigate("quiz")}
+                  className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-8 py-6 shadow-lg"
+                >
+                  {t("homepage.startNow")}
+                </Button>
+                <Button
+                  onClick={() => onNavigate("majors")}
+                  variant="outline"
+                  className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
+                >
+                  {t("homepage.browseMajors")}
+                </Button>
+                <Button
+                  onClick={() => onNavigate("universities")}
+                  variant="outline"
+                  className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
+                >
+                  {t("homepage.browseUniversities")}
+                </Button>
+              </div>
             </div>
-            
-            <h1 className="text-5xl md:text-7xl font-bold text-primary-foreground leading-[1.25] md:leading-[1.12] pb-4 overflow-visible">
-              Find Your Perfect
-              <span className="block bg-gradient-to-r from-white to-primary-foreground/80 bg-clip-text text-transparent py-2 leading-[1.2] md:leading-[1.1] pb-[0.3em]">
-                College Major
-              </span>
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-primary-foreground/90 max-w-2xl mx-auto">
-              Murshid guides high school students through the journey of discovering their ideal academic path with expert insights and personalized recommendations.
+
+            {/* Animated Elements */}
+            <div className="order-1 lg:order-2">
+              <AnimatedHero />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-20 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2
+              className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4"
+              dir={language}
+            >
+              {t("homepage.howItWorks")}
+            </h2>
+            <p
+              className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
+              dir={language}
+            >
+              {t("homepage.threeSteps")}
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-              <Button 
-                size="lg" 
-                className="bg-white text-primary hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-lg px-8 py-6"
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {steps.map((step, index) => (
+              <Card
+                key={step.title}
+                className="relative p-8 text-center rounded-3xl shadow-lg hover:shadow-xl transition-shadow border-0 bg-white dark:bg-gray-800"
               >
-                Explore Majors
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-2 border-white bg-white/10 text-white hover:bg-white hover:text-primary backdrop-blur-sm text-lg px-8 py-6 transition-all duration-300"
-              >
-                Take Assessment
-              </Button>
-            </div>
+                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+                  <div
+                    className={`w-16 h-16 bg-gradient-to-br ${step.color} rounded-2xl flex items-center justify-center shadow-lg`}
+                  >
+                    <step.icon className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                <div className="mt-12">
+                  <h3
+                    className="text-gray-900 dark:text-gray-100 mb-3 font-semibold"
+                    dir={language}
+                  >
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300" dir={language}>
+                    {step.description}
+                  </p>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Discover Your Path
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2
+              className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4"
+              dir={language}
+            >
+              {t("homepage.whyChooseMurshid")}
             </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Explore diverse fields of study and find the major that aligns with your passions, strengths, and career goals.
+            <p
+              className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
+              dir={language}
+            >
+              {t("homepage.whyChooseDesc")}
             </p>
-            
-            {/* Search Bar */}
-            <div className="relative max-w-xl mx-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search majors or universities..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-6 text-lg border-border/50 focus:border-primary"
-              />
-            </div>
           </div>
 
-          {/* Tabs */}
-          <Tabs defaultValue="majors" className="max-w-7xl mx-auto">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8 bg-blue-100 dark:bg-blue-950 p-1">
-              <TabsTrigger 
-                value="majors" 
-                className="text-base data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature) => (
+              <Card
+                key={feature.title}
+                className="p-6 rounded-3xl shadow-md hover:shadow-lg transition-all border-0 bg-white dark:bg-gray-800"
               >
-                Majors
-              </TabsTrigger>
-              <TabsTrigger 
-                value="universities" 
-                className="text-base data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-              >
-                <Building2 className="w-4 h-4 mr-2" />
-                Universities
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="majors" className="animate-fade-in">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredMajors.length > 0 ? (
-                  filteredMajors.map((major, index) => (
-                    <MajorCard key={index} {...major} />
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-12">
-                    <p className="text-muted-foreground text-lg">No majors found matching "{searchQuery}"</p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="universities" className="animate-fade-in">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredUniversities.length > 0 ? (
-                  filteredUniversities.map((university, index) => (
-                    <MajorCard key={index} {...university} />
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-12">
-                    <p className="text-muted-foreground text-lg">No universities found matching "{searchQuery}"</p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
+                <div
+                  className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center mb-4`}
+                >
+                  <feature.icon className="w-7 h-7" />
+                </div>
+                <h3
+                  className="text-gray-900 dark:text-gray-100 mb-2 font-semibold"
+                  dir={language}
+                >
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300" dir={language}>
+                  {feature.description}
+                </p>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-primary to-accent">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <h2 className="text-4xl md:text-5xl font-bold text-primary-foreground">
-              Ready to Shape Your Future?
-            </h2>
-            <p className="text-xl text-primary-foreground/90">
-              Join thousands of students who have found their calling with Murshid's guidance.
-            </p>
-            <Button 
-              size="lg" 
-              className="bg-white text-primary hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-lg px-8 py-6"
-            >
-              Get Started Today
-            </Button>
-          </div>
+      <section className="py-20 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 dark:from-blue-600 dark:via-purple-600 dark:to-pink-600">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2
+            className="text-3xl md:text-4xl font-bold text-white mb-6"
+            dir={language}
+          >
+            {t("homepage.readyToDiscover")}
+          </h2>
+          <p className="text-white/90 mb-8 max-w-2xl mx-auto" dir={language}>
+            {t("homepage.readyToDiscoverDesc")}
+          </p>
+          <Button
+            onClick={() => onNavigate("quiz")}
+            className="bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-2xl px-8 py-6 shadow-lg"
+          >
+            {t("homepage.startFreeTest")}
+          </Button>
         </div>
       </section>
     </div>

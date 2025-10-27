@@ -56,10 +56,10 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center mb-4">
+          <div className="inline-flex items-center justify-center gap-3 mb-4">
             <img 
               src="/murshid-logo.png" 
               alt="Murshid Logo" 
@@ -73,8 +73,8 @@ const Login = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Welcome Back</CardTitle>
-                <CardDescription>Login to continue your journey</CardDescription>
+                <CardTitle className="text-gray-900 dark:text-gray-100">Welcome Back</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-300">Login to continue your journey</CardDescription>
               </div>
               <Shield className="w-8 h-8 text-muted-foreground/30" />
             </div>
@@ -82,7 +82,7 @@ const Login = () => {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-gray-900 dark:text-gray-200">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -94,7 +94,7 @@ const Login = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-gray-900 dark:text-gray-200">Password</Label>
                 <PasswordInput
                   id="password"
                   placeholder="••••••••"
@@ -124,7 +124,7 @@ const Login = () => {
                   <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or</span>
+                  <span className="bg-background dark:bg-gray-900 px-2 text-muted-foreground">Or</span>
                 </div>
               </div>
 
