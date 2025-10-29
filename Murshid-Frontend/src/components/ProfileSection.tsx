@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { User, Mail, Edit2, Save, X, BookOpen, Users, UserCheck, Sparkles, Building2, Award } from "lucide-react";
 import { z } from "zod";
+import ImageUpload from "@/components/ImageUpload";
+import { supabase } from "@/lib/supabase";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100, "Name must be less than 100 characters"),
@@ -26,6 +28,7 @@ const ProfileSection = () => {
   const { user, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || "");
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -49,7 +52,27 @@ const ProfileSection = () => {
       student_type: user?.student_type || "",
       track: user?.track || "",
     });
+    setAvatarUrl(user?.avatar_url || "");
   }, [user]);
+
+  const handleAvatarUpload = async (url: string) => {
+    try {
+      setAvatarUrl(url);
+      
+      // Update avatar_url in database
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: url })
+        .eq('id', user?.id);
+
+      if (error) throw error;
+
+      toast.success('Profile picture updated!');
+    } catch (error: any) {
+      console.error('Error updating avatar:', error);
+      toast.error('Failed to update profile picture');
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -120,6 +143,7 @@ const ProfileSection = () => {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-full blur-md opacity-75 group-hover:opacity-100 transition-opacity"></div>
                 <Avatar className="relative w-28 h-28 border-4 border-background shadow-xl">
+                  {avatarUrl && <AvatarImage src={avatarUrl} alt={user.name} />}
                   <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-accent text-primary-foreground">
                     {getInitials(user.name)}
                   </AvatarFallback>
@@ -171,6 +195,19 @@ const ProfileSection = () => {
 
             {isEditing ? (
               <div className="space-y-4">
+                {/* Profile Picture Upload */}
+                <div className="space-y-2">
+                  <Label>Profile Picture</Label>
+                  <ImageUpload
+                    currentImage={avatarUrl}
+                    onImageUpload={handleAvatarUpload}
+                    bucket="avatars"
+                    path={user?.id || 'default'}
+                    label="Change Profile Picture"
+                    maxSizeMB={2}
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
                   <div className="relative">

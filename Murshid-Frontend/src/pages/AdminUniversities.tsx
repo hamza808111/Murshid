@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
+import ImageUpload from '@/components/ImageUpload';
 import { 
   Plus, 
   Edit, 
@@ -304,6 +305,19 @@ export default function AdminUniversities() {
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Logo Upload */}
+            <div>
+              <Label>University Logo</Label>
+              <ImageUpload
+                currentImage={formData.logo_url}
+                onImageUpload={(url) => setFormData({ ...formData, logo_url: url })}
+                bucket="university-logos"
+                path={editingUniversity?.id || `temp-${Date.now()}`}
+                label="Upload Logo"
+                maxSizeMB={2}
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name">Name (English)*</Label>

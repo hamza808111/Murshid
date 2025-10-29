@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
+import ImageUpload from '@/components/ImageUpload';
 import { 
   Plus, 
   Edit, 
@@ -295,6 +296,22 @@ export default function AdminMajors() {
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Icon/Image Upload */}
+            <div>
+              <Label>Major Icon/Image (Optional)</Label>
+              <ImageUpload
+                currentImage={formData.icon_name?.startsWith('http') ? formData.icon_name : ''}
+                onImageUpload={(url) => setFormData({ ...formData, icon_name: url })}
+                bucket="major-icons"
+                path={editingMajor?.id || `temp-${Date.now()}`}
+                label="Upload Icon/Image"
+                maxSizeMB={1}
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Alternatively, you can use an emoji in the "Icon/Emoji" field below
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name">Name (English)*</Label>

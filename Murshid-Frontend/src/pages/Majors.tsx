@@ -221,8 +221,12 @@ export default function MajorsPage() {
                       )}
                     </button>
 
-                    <div className={`w-16 h-16 bg-gradient-to-br ${getCategoryColor(major.category)} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                      <span className="text-2xl text-white">{major.icon_name || '📚'}</span>
+                    <div className={`w-16 h-16 bg-gradient-to-br ${getCategoryColor(major.category)} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg overflow-hidden`}>
+                      {major.icon_name?.startsWith('http') ? (
+                        <img src={major.icon_name} alt={majorName} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-2xl text-white">{major.icon_name || '📚'}</span>
+                      )}
                     </div>
                     
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 pr-8" dir={language}>

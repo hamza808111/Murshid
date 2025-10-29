@@ -216,12 +216,24 @@ export default function UniversitiesPage() {
                     </button>
 
                     {/* University Logo or Icon */}
-                    <div className={`w-16 h-16 bg-gradient-to-br ${getTypeColor(university.university_type)} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
+                    <div className={`w-16 h-16 bg-gradient-to-br ${getTypeColor(university.university_type)} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg overflow-hidden`}>
                       {university.logo_url ? (
-                        <img src={university.logo_url} alt={universityName} className="w-12 h-12 object-contain" />
-                      ) : (
-                        <Building2 className="w-8 h-8 text-white" />
-                      )}
+                        <img 
+                          src={`${university.logo_url}?t=${new Date(university.updated_at || Date.now()).getTime()}`} 
+                          alt={universityName} 
+                          className="w-full h-full object-cover p-2" 
+                          onError={(e) => {
+                            // Fallback to icon if image fails to load
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'block';
+                          }}
+                        />
+                      ) : null}
+                      <Building2 
+                        className="w-8 h-8 text-white" 
+                        style={{ display: university.logo_url ? 'none' : 'block' }}
+                      />
                     </div>
                     
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 pr-8" dir={language}>

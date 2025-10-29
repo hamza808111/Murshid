@@ -130,8 +130,12 @@ export default function MajorDetail() {
             <Card className="p-8 mb-6">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center text-4xl">
-                    {major.icon_name || '📚'}
+                  <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center text-4xl overflow-hidden">
+                    {major.icon_name?.startsWith('http') ? (
+                      <img src={major.icon_name} alt={majorName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{major.icon_name || '📚'}</span>
+                    )}
                   </div>
                   <div>
                     <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2" dir={language}>

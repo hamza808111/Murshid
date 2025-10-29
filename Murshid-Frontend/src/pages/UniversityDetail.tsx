@@ -133,17 +133,24 @@ export default function UniversityDetail() {
             <Card className="p-8 mb-6">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-start gap-4">
-                  {university.logo_url ? (
-                    <img 
-                      src={university.logo_url} 
-                      alt={universityName} 
-                      className="w-20 h-20 object-contain rounded-lg"
+                  <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center overflow-hidden">
+                    {university.logo_url ? (
+                      <img 
+                        src={`${university.logo_url}?t=${new Date(university.updated_at || Date.now()).getTime()}`}
+                        alt={universityName} 
+                        className="w-full h-full object-cover p-2"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'block';
+                        }}
+                      />
+                    ) : null}
+                    <Building2 
+                      className="w-10 h-10 text-blue-600 dark:text-blue-400" 
+                      style={{ display: university.logo_url ? 'none' : 'block' }}
                     />
-                  ) : (
-                    <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                      <Building2 className="w-10 h-10 text-blue-600 dark:text-blue-400" />
-                    </div>
-                  )}
+                  </div>
                   <div>
                     <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2" dir={language}>
                       {universityName}

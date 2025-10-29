@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn, LogOut, User, BookmarkCheck } from "lucide-react";
+import { Menu, X, LogIn, LogOut, User, BookmarkCheck, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
@@ -40,6 +40,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
   const getCurrentPage = () => {
     if (currentPage) return currentPage;
     if (location.pathname === '/') return 'home';
+    if (location.pathname.startsWith('/admin')) return 'dashboard';
     if (location.pathname === '/majors') return 'majors';
     if (location.pathname === '/universities') return 'universities';
     if (location.pathname === '/assessment') return 'quiz';
@@ -54,6 +55,9 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
       switch (page) {
         case 'home':
           navigate('/');
+          break;
+        case 'dashboard':
+          navigate('/admin');
           break;
         case 'majors':
           navigate('/majors');
@@ -78,20 +82,27 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
 
   const isActive = (page: string) => getCurrentPage() === page;
 
-  const navItems = [
-    { id: 'home', label: t('navbar.home') },
-    { id: 'majors', label: t('navbar.majors') },
-    { id: 'universities', label: t('navbar.universities') },
-    { id: 'quiz', label: t('navbar.quiz') },
-    { id: 'contact', label: t('navbar.contact') },
-  ];
+  // Dynamic nav items based on user role
+  const navItems = user?.is_admin 
+    ? [
+        { id: 'dashboard', label: language === 'ar' ? 'لوحة التحكم' : 'Dashboard' },
+        { id: 'majors', label: t('navbar.majors') },
+        { id: 'universities', label: t('navbar.universities') },
+      ]
+    : [
+        { id: 'home', label: t('navbar.home') },
+        { id: 'majors', label: t('navbar.majors') },
+        { id: 'universities', label: t('navbar.universities') },
+        { id: 'quiz', label: t('navbar.quiz') },
+        { id: 'contact', label: t('navbar.contact') },
+      ];
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 shadow-sm" dir="ltr">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" dir="ltr">
         <div className="flex justify-between items-center h-20">
           <button
-            onClick={() => handleNavigate('home')}
+            onClick={() => handleNavigate(user?.is_admin ? 'dashboard' : 'home')}
             className="flex items-center gap-3 group"
           >
             <img 

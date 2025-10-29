@@ -21,7 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 const Index = () => {
   const navigate = useNavigate();
   const { t, language } = useI18n();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   // Keep backend ping logic intact (used in a hidden diagnostics block below)
   const {
@@ -37,12 +37,30 @@ const Index = () => {
     enabled: !!user && user.id !== "guest",
   });
 
-  // Preserve admin auto-redirect
+  // Preserve admin auto-redirect - redirect immediately, don't render
   useEffect(() => {
     if (user?.is_admin) {
-      navigate("/admin");
+      navigate("/admin", { replace: true });
     }
   }, [user, navigate]);
+
+  // Wait for auth to load before rendering anything
+  // This prevents flash of homepage while auth is loading
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render homepage for admins - redirect immediately
+  if (user?.is_admin) {
+    return null;
+  }
 
   const steps = [
     {

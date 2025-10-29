@@ -15,6 +15,7 @@ interface AppUser {
   student_type?: string;
   track?: string;
   is_admin?: boolean;
+  avatar_url?: string;
 }
 
 interface AuthContextType {
