@@ -18,7 +18,12 @@ import Profile from "./pages/Profile";
 import Assessment from "./pages/Assessment";
 import Majors from "./pages/Majors";
 import Universities from "./pages/Universities";
+import MajorDetail from "./pages/MajorDetail";
+import UniversityDetail from "./pages/UniversityDetail";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminUniversities from "./pages/AdminUniversities";
+import AdminMajors from "./pages/AdminMajors";
+import AdminUniversityMajors from "./pages/AdminUniversityMajors";
 
 const queryClient = new QueryClient();
 
@@ -36,8 +41,13 @@ const App = () => (
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/assessment" element={<Assessment />} />
               <Route path="/majors" element={<Majors />} />
+              <Route path="/majors/:id" element={<MajorDetail />} />
               <Route path="/universities" element={<Universities />} />
+              <Route path="/universities/:id" element={<UniversityDetail />} />
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/universities" element={<ProtectedRoute><AdminUniversities /></ProtectedRoute>} />
+              <Route path="/admin/majors" element={<ProtectedRoute><AdminMajors /></ProtectedRoute>} />
+              <Route path="/admin/university-majors" element={<ProtectedRoute><AdminUniversityMajors /></ProtectedRoute>} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />

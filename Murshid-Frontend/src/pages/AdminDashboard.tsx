@@ -17,9 +17,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Shield, Search, Users, Loader2, Trash2, RefreshCw } from "lucide-react";
+import { Shield, Search, Users, Loader2, Trash2, RefreshCw, Building2, BookOpen, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
+import { Link } from "react-router-dom";
 
 interface UserData {
   id: string;
@@ -225,6 +226,60 @@ const AdminDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-4">Management Tools</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link to="/admin/universities">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                      <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Manage Universities</h3>
+                      <p className="text-sm text-muted-foreground">Add, edit, delete universities</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/admin/majors">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                      <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Manage Majors</h3>
+                      <p className="text-sm text-muted-foreground">Add, edit, delete majors</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/admin/university-majors">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                      <LinkIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Assign Majors</h3>
+                      <p className="text-sm text-muted-foreground">Link majors to universities</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
         </div>
 
         {/* Users Table */}

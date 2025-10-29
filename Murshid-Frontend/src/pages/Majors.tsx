@@ -1,158 +1,108 @@
 import Navbar from "@/components/Navbar";
-import { useState } from 'react';
-import { Search, Code, Stethoscope, Building, Calculator, Palette, FlaskConical, Briefcase, Globe, Cpu, BookOpen, Wrench } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Bookmark, BookmarkCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/contexts/I18nContext';
 import { useNavigate } from 'react-router-dom';
+import { getMajors } from '@/lib/majorsApi';
+import { useBookmarks } from '@/hooks/useBookmarks';
+import type { MajorWithUniversities, MajorCategory, DegreeType } from '@/types/database';
+import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MajorsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState<MajorCategory | 'all'>('all');
+  const [selectedDegreeType, setSelectedDegreeType] = useState<DegreeType | 'all'>('all');
+  const [majors, setMajors] = useState<MajorWithUniversities[]>([]);
+  const [loading, setLoading] = useState(true);
   const { t, language } = useI18n();
   const navigate = useNavigate();
+  const { toggleBookmark, isBookmarked } = useBookmarks();
 
-  const categories = [
-    { id: 'all', label: t('categories.all'), icon: BookOpen },
-    { id: 'engineering', label: t('categories.engineering'), icon: Wrench },
-    { id: 'medical', label: t('categories.medical'), icon: Stethoscope },
-    { id: 'business', label: t('categories.business'), icon: Briefcase },
-    { id: 'tech', label: t('categories.tech'), icon: Cpu },
-    { id: 'science', label: t('categories.science'), icon: FlaskConical },
-    { id: 'arts', label: t('categories.arts'), icon: Palette },
+  // Fetch majors from database
+  useEffect(() => {
+    fetchMajors();
+  }, [selectedCategory, selectedDegreeType]);
+
+  const fetchMajors = async () => {
+    setLoading(true);
+    try {
+      const filters: any = {};
+      if (selectedCategory !== 'all') filters.category = selectedCategory;
+      if (selectedDegreeType !== 'all') filters.degree_type = selectedDegreeType;
+      if (searchQuery) filters.search = searchQuery;
+
+      const data = await getMajors(filters);
+      setMajors(data);
+    } catch (error) {
+      console.error('Error fetching majors:', error);
+      toast.error('Failed to load majors');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchMajors();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const categories: { id: MajorCategory | 'all', label: string }[] = [
+    { id: 'all', label: t('categories.all') || 'All' },
+    { id: 'Engineering', label: language === 'ar' ? 'الهندسة' : 'Engineering' },
+    { id: 'Medicine', label: language === 'ar' ? 'الطب' : 'Medicine' },
+    { id: 'Business', label: language === 'ar' ? 'الأعمال' : 'Business' },
+    { id: 'IT', label: language === 'ar' ? 'تقنية المعلومات' : 'IT' },
+    { id: 'Science', label: language === 'ar' ? 'العلوم' : 'Science' },
+    { id: 'Arts', label: language === 'ar' ? 'الفنون' : 'Arts' },
+    { id: 'Law', label: language === 'ar' ? 'القانون' : 'Law' },
+    { id: 'Education', label: language === 'ar' ? 'التربية' : 'Education' },
+    { id: 'Other', label: language === 'ar' ? 'أخرى' : 'Other' },
   ];
 
-  const majors = [
-    {
-      id: 1,
-      title: language === 'ar' ? 'علوم الحاسب' : 'Computer Science',
-      category: 'tech',
-      icon: Code,
-      description: language === 'ar' 
-        ? 'تطوير البرمجيات، الذكاء الاصطناعي، وأمن المعلومات'
-        : 'Software development, artificial intelligence, and information security',
-      demand: language === 'ar' ? 'عالي' : 'High',
-      duration: language === 'ar' ? '4 سنوات' : '4 years',
-      color: 'from-blue-400 to-blue-500',
-    },
-    {
-      id: 2,
-      title: language === 'ar' ? 'الطب البشري' : 'Human Medicine',
-      category: 'medical',
-      icon: Stethoscope,
-      description: language === 'ar' 
-        ? 'تشخيص وعلاج الأمراض والعناية بصحة المرضى'
-        : 'Diagnosing and treating diseases and caring for patient health',
-      demand: language === 'ar' ? 'عالي جداً' : 'Very High',
-      duration: language === 'ar' ? '7 سنوات' : '7 years',
-      color: 'from-red-400 to-red-500',
-    },
-    {
-      id: 3,
-      title: language === 'ar' ? 'الهندسة المعمارية' : 'Architecture Engineering',
-      category: 'engineering',
-      icon: Building,
-      description: language === 'ar' 
-        ? 'تصميم وتخطيط المباني والمنشآت'
-        : 'Designing and planning buildings and structures',
-      demand: language === 'ar' ? 'متوسط' : 'Medium',
-      duration: language === 'ar' ? '5 سنوات' : '5 years',
-      color: 'from-gray-400 to-gray-500',
-    },
-    {
-      id: 4,
-      title: language === 'ar' ? 'المحاسبة' : 'Accounting',
-      category: 'business',
-      icon: Calculator,
-      description: language === 'ar' 
-        ? 'إدارة السجلات المالية والتدقيق المحاسبي'
-        : 'Managing financial records and accounting audit',
-      demand: language === 'ar' ? 'متوسط' : 'Medium',
-      duration: language === 'ar' ? '4 سنوات' : '4 years',
-      color: 'from-green-400 to-green-500',
-    },
-    {
-      id: 5,
-      title: language === 'ar' ? 'التصميم الجرافيكي' : 'Graphic Design',
-      category: 'arts',
-      icon: Palette,
-      description: language === 'ar' 
-        ? 'الإبداع البصري والتواصل من خلال التصميم'
-        : 'Visual creativity and communication through design',
-      demand: language === 'ar' ? 'متوسط' : 'Medium',
-      duration: language === 'ar' ? '4 سنوات' : '4 years',
-      color: 'from-pink-400 to-pink-500',
-    },
-    {
-      id: 6,
-      title: language === 'ar' ? 'الكيمياء' : 'Chemistry',
-      category: 'science',
-      icon: FlaskConical,
-      description: language === 'ar' 
-        ? 'دراسة المواد وخصائصها وتفاعلاتها'
-        : 'Studying materials, their properties and interactions',
-      demand: language === 'ar' ? 'متوسط' : 'Medium',
-      duration: language === 'ar' ? '4 سنوات' : '4 years',
-      color: 'from-purple-400 to-purple-500',
-    },
-    {
-      id: 7,
-      title: language === 'ar' ? 'إدارة الأعمال' : 'Business Administration',
-      category: 'business',
-      icon: Briefcase,
-      description: language === 'ar' 
-        ? 'تخطيط وإدارة الموارد والعمليات التجارية'
-        : 'Planning and managing resources and business operations',
-      demand: language === 'ar' ? 'عالي' : 'High',
-      duration: language === 'ar' ? '4 سنوات' : '4 years',
-      color: 'from-indigo-400 to-indigo-500',
-    },
-    {
-      id: 8,
-      title: language === 'ar' ? 'العلاقات الدولية' : 'International Relations',
-      category: 'arts',
-      icon: Globe,
-      description: language === 'ar' 
-        ? 'دراسة السياسة والدبلوماسية العالمية'
-        : 'Studying global politics and diplomacy',
-      demand: language === 'ar' ? 'متوسط' : 'Medium',
-      duration: language === 'ar' ? '4 سنوات' : '4 years',
-      color: 'from-cyan-400 to-cyan-500',
-    },
-    {
-      id: 9,
-      title: language === 'ar' ? 'هندسة الحاسب' : 'Computer Engineering',
-      category: 'engineering',
-      icon: Cpu,
-      description: language === 'ar' 
-        ? 'تصميم وتطوير الأجهزة والأنظمة الحاسوبية'
-        : 'Designing and developing computer hardware and systems',
-      demand: language === 'ar' ? 'عالي' : 'High',
-      duration: language === 'ar' ? '5 سنوات' : '5 years',
-      color: 'from-yellow-400 to-yellow-500',
-    },
+  const degreeTypes: { id: DegreeType | 'all', label: string }[] = [
+    { id: 'all', label: language === 'ar' ? 'جميع الدرجات' : 'All Degrees' },
+    { id: 'Bachelor', label: language === 'ar' ? 'بكالوريوس' : 'Bachelor' },
+    { id: 'Master', label: language === 'ar' ? 'ماجستير' : 'Master' },
+    { id: 'PhD', label: language === 'ar' ? 'دكتوراه' : 'PhD' },
+    { id: 'Diploma', label: language === 'ar' ? 'دبلوم' : 'Diploma' },
   ];
 
-  const filteredMajors = majors.filter((major) => {
-    const matchesCategory = selectedCategory === 'all' || major.category === selectedCategory;
-    const matchesSearch = major.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         major.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
-  const getDemandColor = (demand: string) => {
-    const isHigh = language === 'ar' 
-      ? (demand === 'عالي' || demand === 'عالي جداً')
-      : (demand === 'High' || demand === 'Very High');
-    
-    return isHigh 
-      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' 
-      : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300';
+  const handleBookmark = async (majorId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await toggleBookmark('major', majorId);
   };
 
   const handleStartTest = () => {
     navigate('/assessment');
+  };
+
+  const getCategoryColor = (category: MajorCategory): string => {
+    const colors: Record<MajorCategory, string> = {
+      'Engineering': 'from-blue-400 to-blue-500',
+      'Medicine': 'from-red-400 to-red-500',
+      'Business': 'from-green-400 to-green-500',
+      'IT': 'from-purple-400 to-purple-500',
+      'Science': 'from-cyan-400 to-cyan-500',
+      'Arts': 'from-pink-400 to-pink-500',
+      'Law': 'from-yellow-400 to-yellow-500',
+      'Education': 'from-indigo-400 to-indigo-500',
+      'Other': 'from-gray-400 to-gray-500',
+    };
+    return colors[category] || 'from-gray-400 to-gray-500';
   };
 
   return (
@@ -164,122 +114,184 @@ export default function MajorsPage() {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
-              {t('majors.title')}
+              {language === 'ar' ? 'استكشف التخصصات' : 'Explore Majors'}
             </h1>
             <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto" dir={language}>
-              {t('majors.subtitle')}
+              {language === 'ar' 
+                ? 'اكتشف التخصصات المتاحة واختر المسار المناسب لمستقبلك الأكاديمي'
+                : 'Discover available majors and choose the right path for your academic future'}
             </p>
           </div>
 
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-12">
+          {/* Search and Filters */}
+          <div className="max-w-4xl mx-auto mb-12 space-y-4">
+            {/* Search Bar */}
             <div className="relative">
               <Search className={`absolute ${language === 'ar' ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5`} />
               <Input
                 type="text"
-                placeholder={t('majors.searchPlaceholder')}
+                placeholder={language === 'ar' ? 'ابحث عن تخصص...' : 'Search for a major...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={`${language === 'ar' ? 'pr-12' : 'pl-12'} py-6 rounded-2xl border-0 bg-white dark:bg-gray-800 shadow-md`}
                 dir={language}
               />
             </div>
-          </div>
 
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-3 justify-center mb-12">
-            {categories.map((category) => (
-              <Button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                variant={selectedCategory === category.id ? 'default' : 'outline'}
-                className={`rounded-2xl px-6 gap-2 ${
-                  selectedCategory === category.id
-                    ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-white shadow-md'
-                    : 'bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
-                }`}
-                dir={language}
-              >
-                <category.icon className="w-4 h-4" />
-                {category.label}
-              </Button>
-            ))}
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value as MajorCategory | 'all')}>
+                <SelectTrigger className="rounded-xl bg-white dark:bg-gray-800 border-0 shadow-md">
+                  <SelectValue placeholder={language === 'ar' ? 'الفئة' : 'Category'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedDegreeType} onValueChange={(value) => setSelectedDegreeType(value as DegreeType | 'all')}>
+                <SelectTrigger className="rounded-xl bg-white dark:bg-gray-800 border-0 shadow-md">
+                  <SelectValue placeholder={language === 'ar' ? 'الدرجة العلمية' : 'Degree Type'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {degreeTypes.map((degree) => (
+                    <SelectItem key={degree.id} value={degree.id}>
+                      {degree.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Results Count */}
-          <div className="text-center mb-8">
-            <p className="text-gray-600 dark:text-gray-300" dir={language}>
-              {language === 'ar' ? `عرض ${filteredMajors.length} تخصص` : `Showing ${filteredMajors.length} majors`}
-            </p>
-          </div>
+          {!loading && (
+            <div className="text-center mb-8">
+              <p className="text-gray-600 dark:text-gray-300" dir={language}>
+                {language === 'ar' ? `عرض ${majors.length} تخصص` : `Showing ${majors.length} majors`}
+              </p>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} className="p-6 rounded-3xl">
+                  <Skeleton className="w-16 h-16 rounded-2xl mb-4" />
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-2/3 mb-4" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-24" />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
 
           {/* Majors Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredMajors.map((major) => (
-              <Card
-                key={major.id}
-                className="p-6 rounded-3xl shadow-md hover:shadow-xl transition-all border-0 bg-white dark:bg-gray-800 cursor-pointer group"
-              >
-                <div className={`w-16 h-16 bg-gradient-to-br ${major.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                  <major.icon className="w-8 h-8 text-white" />
-                </div>
-                
-                <h3 className="text-gray-900 dark:text-gray-100 mb-2" dir={language}>
-                  {major.title}
-                </h3>
-                
-                <p className="text-gray-600 dark:text-gray-300 mb-4" dir={language}>
-                  {major.description}
-                </p>
-                
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <span className={`px-3 py-1 rounded-full ${getDemandColor(major.demand)}`} dir={language}>
-                    {t('majors.demand')}: {major.demand}
-                  </span>
-                  <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-                    {major.duration}
-                  </span>
-                </div>
-                
-                <Button
-                  variant="ghost"
-                  className="w-full rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400"
-                  dir={language}
-                >
-                  {t('majors.learnMore')} {language === 'ar' ? '←' : '→'}
-                </Button>
-              </Card>
-            ))}
-          </div>
+          {!loading && majors.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {majors.map((major) => {
+                const bookmarked = isBookmarked('major', major.id);
+                const majorName = language === 'ar' && major.name_ar ? major.name_ar : major.name;
+                const majorDescription = language === 'ar' && major.description_ar ? major.description_ar : major.description;
+
+                return (
+                  <Card
+                    key={major.id}
+                    className="p-6 rounded-3xl shadow-md hover:shadow-xl transition-all border-0 bg-white dark:bg-gray-800 cursor-pointer group relative"
+                    onClick={() => navigate(`/majors/${major.id}`)}
+                  >
+                    {/* Bookmark Button */}
+                    <button
+                      onClick={(e) => handleBookmark(major.id, e)}
+                      className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
+                    >
+                      {bookmarked ? (
+                        <BookmarkCheck className="w-5 h-5 text-blue-500 fill-blue-500" />
+                      ) : (
+                        <Bookmark className="w-5 h-5 text-gray-400" />
+                      )}
+                    </button>
+
+                    <div className={`w-16 h-16 bg-gradient-to-br ${getCategoryColor(major.category)} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
+                      <span className="text-2xl text-white">{major.icon_name || '📚'}</span>
+                    </div>
+                    
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 pr-8" dir={language}>
+                      {majorName}
+                    </h3>
+                    
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2" dir={language}>
+                      {majorDescription || (language === 'ar' ? 'لا يوجد وصف متاح' : 'No description available')}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm">
+                        {major.category}
+                      </span>
+                      {major.degree_type && (
+                        <span className="px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm">
+                          {major.degree_type}
+                        </span>
+                      )}
+                      {major.duration_years && (
+                        <span className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm">
+                          {major.duration_years} {language === 'ar' ? 'سنوات' : 'years'}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <Button
+                      variant="ghost"
+                      className="w-full rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400"
+                      dir={language}
+                    >
+                      {language === 'ar' ? 'المزيد' : 'Learn More'} {language === 'ar' ? '←' : '→'}
+                    </Button>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
 
           {/* No Results */}
-          {filteredMajors.length === 0 && (
+          {!loading && majors.length === 0 && (
             <div className="text-center py-20">
               <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-12 h-12 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 className="text-gray-900 dark:text-gray-100 mb-2" dir={language}>
-                {t('majors.noResults')}
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2" dir={language}>
+                {language === 'ar' ? 'لم يتم العثور على نتائج' : 'No results found'}
               </h3>
               <p className="text-gray-600 dark:text-gray-300" dir={language}>
-                {t('majors.noResultsDesc')}
+                {language === 'ar' ? 'جرب تغيير معايير البحث أو الفلاتر' : 'Try changing your search criteria or filters'}
               </p>
             </div>
           )}
 
           {/* CTA Section */}
           <div className="mt-20 bg-gradient-to-r from-blue-400 to-purple-400 dark:from-blue-600 dark:to-purple-600 rounded-3xl p-12 text-center shadow-xl">
-            <h2 className="text-white mb-4" dir={language}>
-              {t('majors.stillConfused')}
+            <h2 className="text-3xl font-bold text-white mb-4" dir={language}>
+              {language === 'ar' ? 'لا تزال محتاراً؟' : 'Still Confused?'}
             </h2>
             <p className="text-white/90 mb-6 max-w-2xl mx-auto" dir={language}>
-              {t('majors.stillConfusedDesc')}
+              {language === 'ar' 
+                ? 'خذ اختبارنا الشامل لاكتشاف التخصص المثالي بناءً على اهتماماتك ومهاراتك'
+                : 'Take our comprehensive test to discover your ideal major based on your interests and skills'}
             </p>
             <Button 
               onClick={handleStartTest}
               className="bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-2xl px-8 py-6 shadow-lg"
             >
-              {t('majors.startTestNow')}
+              {language === 'ar' ? 'ابدأ الاختبار الآن' : 'Start Test Now'}
             </Button>
           </div>
         </div>
