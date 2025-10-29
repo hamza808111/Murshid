@@ -323,7 +323,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await new Promise(resolve => setTimeout(resolve, 300));
       
       toast.success("Logged out successfully");
-      navigate("/login");
+      // Navigation is handled by the component calling logout()
       console.log("✅ Logout successful");
     } catch (error) {
       console.error("❌ Logout error:", error);

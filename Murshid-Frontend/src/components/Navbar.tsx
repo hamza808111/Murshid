@@ -32,7 +32,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate('/', { replace: true });
     setShowLogoutDialog(false);
     setMobileMenuOpen(false);
   };
