@@ -46,25 +46,37 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center gap-2 mb-2">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Login
-              </Button>
-            </Link>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center gap-3 mb-4">
+            <img 
+              src="/logo.png" 
+              alt="Murshid Logo" 
+              className="h-28 object-contain"
+            />
           </div>
-          <CardTitle className="text-2xl font-bold">Forgot Password?</CardTitle>
-          <CardDescription>
-            {sent 
-              ? "Check your email for the reset link"
-              : "Enter your email address and we'll send you a link to reset your password"
-            }
-          </CardDescription>
-        </CardHeader>
+          <p className="text-muted-foreground">Your guide to choosing the right major</p>
+        </div>
+        
+        <Card className="w-full border-border/50 shadow-[var(--shadow-soft)]">
+          <CardHeader className="space-y-1">
+            <div className="flex items-center gap-2 mb-2">
+              <Link to="/login">
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Login
+                </Button>
+              </Link>
+            </div>
+            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">Forgot Password?</CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-300">
+              {sent 
+                ? "Check your email for the reset link"
+                : "Enter your email address and we'll send you a link to reset your password"
+              }
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           {!sent ? (
             <form onSubmit={handleResetPassword} className="space-y-4">
@@ -106,6 +118,7 @@ const ForgotPassword = () => {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
