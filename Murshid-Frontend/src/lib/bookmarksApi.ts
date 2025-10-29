@@ -103,39 +103,67 @@ export async function toggleBookmark(
 
 // Get bookmarked universities for a user
 export async function getBookmarkedUniversities(userId: string) {
-  const { data, error } = await supabase
+  // First, get the bookmarks
+  const { data: bookmarks, error: bookmarksError } = await supabase
     .from('bookmarks')
-    .select(`
-      *,
-      university:universities(*)
-    `)
+    .select('item_id')
     .eq('user_id', userId)
     .eq('item_type', 'university');
 
-  if (error) {
-    console.error('Error fetching bookmarked universities:', error);
-    throw error;
+  if (bookmarksError) {
+    console.error('Error fetching bookmarked universities:', bookmarksError);
+    throw bookmarksError;
   }
 
-  return data?.map(item => item.university) || [];
+  if (!bookmarks || bookmarks.length === 0) {
+    return [];
+  }
+
+  // Then fetch the actual universities
+  const universityIds = bookmarks.map(b => b.item_id);
+  const { data: universities, error: universitiesError } = await supabase
+    .from('universities')
+    .select('*')
+    .in('id', universityIds);
+
+  if (universitiesError) {
+    console.error('Error fetching universities:', universitiesError);
+    throw universitiesError;
+  }
+
+  return universities || [];
 }
 
 // Get bookmarked majors for a user
 export async function getBookmarkedMajors(userId: string) {
-  const { data, error } = await supabase
+  // First, get the bookmarks
+  const { data: bookmarks, error: bookmarksError } = await supabase
     .from('bookmarks')
-    .select(`
-      *,
-      major:majors(*)
-    `)
+    .select('item_id')
     .eq('user_id', userId)
     .eq('item_type', 'major');
 
-  if (error) {
-    console.error('Error fetching bookmarked majors:', error);
-    throw error;
+  if (bookmarksError) {
+    console.error('Error fetching bookmarked majors:', bookmarksError);
+    throw bookmarksError;
   }
 
-  return data?.map(item => item.major) || [];
+  if (!bookmarks || bookmarks.length === 0) {
+    return [];
+  }
+
+  // Then fetch the actual majors
+  const majorIds = bookmarks.map(b => b.item_id);
+  const { data: majors, error: majorsError } = await supabase
+    .from('majors')
+    .select('*')
+    .in('id', majorIds);
+
+  if (majorsError) {
+    console.error('Error fetching majors:', majorsError);
+    throw majorsError;
+  }
+
+  return majors || [];
 }
 

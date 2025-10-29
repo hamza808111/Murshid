@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn, LogOut, User } from "lucide-react";
+import { Menu, X, LogIn, LogOut, User, BookmarkCheck } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
@@ -26,7 +26,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
@@ -126,6 +126,15 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             
             {user ? (
               <div className="flex items-center gap-3">
+                <Link to="/bookmarks">
+                  <Button 
+                    variant="ghost"
+                    className="rounded-xl"
+                  >
+                    <BookmarkCheck className="w-4 h-4 mr-2" />
+                    {language === 'ar' ? 'المحفوظات' : 'Bookmarks'}
+                  </Button>
+                </Link>
                 <Link to="/profile">
                   <Button 
                     variant="ghost"
@@ -202,6 +211,15 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             <div className="pt-4 space-y-2 border-t border-gray-100 dark:border-gray-800">
               {user ? (
                 <>
+                  <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)}>
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-xl"
+                    >
+                      <BookmarkCheck className="w-4 h-4 mr-2" />
+                      {language === 'ar' ? 'المحفوظات' : 'Bookmarks'}
+                    </Button>
+                  </Link>
                   <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
                     <Button
                       variant="outline"

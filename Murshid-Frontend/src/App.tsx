@@ -20,6 +20,7 @@ import Majors from "./pages/Majors";
 import Universities from "./pages/Universities";
 import MajorDetail from "./pages/MajorDetail";
 import UniversityDetail from "./pages/UniversityDetail";
+import Bookmarks from "./pages/Bookmarks";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUniversities from "./pages/AdminUniversities";
 import AdminMajors from "./pages/AdminMajors";
@@ -39,6 +40,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
               <Route path="/assessment" element={<Assessment />} />
               <Route path="/majors" element={<Majors />} />
               <Route path="/majors/:id" element={<MajorDetail />} />
