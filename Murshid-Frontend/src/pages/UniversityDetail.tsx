@@ -75,9 +75,9 @@ export default function UniversityDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+      <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
         <Navbar />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-20">
           <Skeleton className="h-12 w-64 mb-8" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
@@ -94,9 +94,9 @@ export default function UniversityDetail() {
 
   if (!university) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+      <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
         <Navbar />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-20">
           <div className="text-center">
             <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -112,10 +112,10 @@ export default function UniversityDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+    <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-20">
         {/* Back Button */}
         <Button
           onClick={() => navigate('/universities')}
@@ -133,12 +133,12 @@ export default function UniversityDetail() {
             <Card className="p-8 mb-6">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center overflow-hidden">
+                  <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg">
                     {university.logo_url ? (
                       <img 
                         src={`${university.logo_url}?t=${new Date(university.updated_at || Date.now()).getTime()}`}
                         alt={universityName} 
-                        className="w-full h-full object-cover p-2"
+                        className="w-full h-full object-contain p-3"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                           const fallback = e.currentTarget.nextElementSibling as HTMLElement;
@@ -147,7 +147,7 @@ export default function UniversityDetail() {
                       />
                     ) : null}
                     <Building2 
-                      className="w-10 h-10 text-blue-600 dark:text-blue-400" 
+                      className="w-12 h-12 text-blue-600 dark:text-blue-400" 
                       style={{ display: university.logo_url ? 'none' : 'block' }}
                     />
                   </div>
@@ -242,7 +242,7 @@ export default function UniversityDetail() {
                         onClick={() => navigate(`/majors/${major.id}`)}
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center text-2xl">
+                          <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center text-2xl shadow-md">
                             {major.icon_name || '📚'}
                           </div>
                           <div className="flex-1">

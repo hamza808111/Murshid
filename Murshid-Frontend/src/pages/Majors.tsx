@@ -106,11 +106,11 @@ export default function MajorsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+    <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
       <Navbar />
       
       <div className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
@@ -221,11 +221,15 @@ export default function MajorsPage() {
                       )}
                     </button>
 
-                    <div className={`w-16 h-16 bg-gradient-to-br ${getCategoryColor(major.category)} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg overflow-hidden`}>
+                    <div className={`w-20 h-20 bg-gradient-to-br ${getCategoryColor(major.category)} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg overflow-hidden`}>
                       {major.icon_name?.startsWith('http') ? (
-                        <img src={major.icon_name} alt={majorName} className="w-full h-full object-cover" />
+                        <img 
+                          src={major.icon_name} 
+                          alt={majorName} 
+                          className="w-full h-full object-contain p-3" 
+                        />
                       ) : (
-                        <span className="text-2xl text-white">{major.icon_name || '📚'}</span>
+                        <span className="text-3xl text-white">{major.icon_name || '📚'}</span>
                       )}
                     </div>
                     
@@ -254,8 +258,8 @@ export default function MajorsPage() {
                     </div>
                     
                     <Button
-                      variant="ghost"
-                      className="w-full rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400"
+                      variant="outline"
+                      className="w-full rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                       dir={language}
                     >
                       {language === 'ar' ? 'المزيد' : 'Learn More'} {language === 'ar' ? '←' : '→'}
@@ -282,18 +286,19 @@ export default function MajorsPage() {
           )}
 
           {/* CTA Section */}
-          <div className="mt-20 bg-gradient-to-r from-blue-400 to-purple-400 dark:from-blue-600 dark:to-purple-600 rounded-3xl p-12 text-center shadow-xl">
-            <h2 className="text-3xl font-bold text-white mb-4" dir={language}>
+          <div className="mt-20 bg-[#cdd6ff] dark:bg-[#2a3b6b] rounded-3xl p-12 text-center shadow-xl">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
               {language === 'ar' ? 'لا تزال محتاراً؟' : 'Still Confused?'}
             </h2>
-            <p className="text-white/90 mb-6 max-w-2xl mx-auto" dir={language}>
+            <p className="text-gray-700 dark:text-gray-200 mb-6 max-w-2xl mx-auto" dir={language}>
               {language === 'ar' 
                 ? 'خذ اختبارنا الشامل لاكتشاف التخصص المثالي بناءً على اهتماماتك ومهاراتك'
                 : 'Take our comprehensive test to discover your ideal major based on your interests and skills'}
             </p>
             <Button 
               onClick={handleStartTest}
-              className="bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-2xl px-8 py-6 shadow-lg"
+              variant="outline"
+              className="rounded-2xl px-8 py-6 border-2 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 border-gray-200 dark:border-gray-700"
             >
               {language === 'ar' ? 'ابدأ الاختبار الآن' : 'Start Test Now'}
             </Button>

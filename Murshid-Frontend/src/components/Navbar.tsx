@@ -40,10 +40,17 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
   
   const getCurrentPage = () => {
     if (currentPage) return currentPage;
+
+    if (user?.is_admin) {
+      if (location.pathname === '/admin') return 'dashboard';
+      if (location.pathname.startsWith('/admin/majors')) return 'admin-majors';
+      if (location.pathname.startsWith('/admin/universities')) return 'admin-universities';
+      if (location.pathname.startsWith('/admin/university-majors')) return 'admin-universities';
+    }
+
     if (location.pathname === '/') return 'home';
-    if (location.pathname.startsWith('/admin')) return 'dashboard';
-    if (location.pathname === '/majors') return 'majors';
-    if (location.pathname === '/universities') return 'universities';
+    if (location.pathname === '/majors' || location.pathname.startsWith('/majors/')) return 'majors';
+    if (location.pathname === '/universities' || location.pathname.startsWith('/universities/')) return 'universities';
     if (location.pathname === '/assessment') return 'quiz';
     if (location.pathname === '/profile') return 'profile';
     return 'home';
@@ -61,10 +68,24 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
           navigate('/admin');
           break;
         case 'majors':
-          navigate('/majors');
+          if (user?.is_admin) {
+            navigate('/admin/majors');
+          } else {
+            navigate('/majors');
+          }
           break;
         case 'universities':
-          navigate('/universities');
+          if (user?.is_admin) {
+            navigate('/admin/universities');
+          } else {
+            navigate('/universities');
+          }
+          break;
+        case 'admin-majors':
+          navigate('/admin/majors');
+          break;
+        case 'admin-universities':
+          navigate('/admin/universities');
           break;
         case 'quiz':
           if (user) {
@@ -84,11 +105,11 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
   const isActive = (page: string) => getCurrentPage() === page;
 
   // Dynamic nav items based on user role
-  const navItems = user?.is_admin 
+  const navItems = user?.is_admin
     ? [
-        { id: 'dashboard', label: language === 'ar' ? 'لوحة التحكم' : 'Dashboard' },
-        { id: 'majors', label: t('navbar.majors') },
-        { id: 'universities', label: t('navbar.universities') },
+        { id: "dashboard", label: language === "ar" ? "لوحة التحكم" : "Dashboard" },
+        { id: "admin-majors", label: t("navbar.majors") },
+        { id: "admin-universities", label: t("navbar.universities") },
       ]
     : [
         { id: 'home', label: t('navbar.home') },
@@ -100,16 +121,16 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 shadow-sm" dir="ltr">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" dir="ltr">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10" dir="ltr">
         <div className="flex justify-between items-center h-20">
           <button
             onClick={() => handleNavigate(user?.is_admin ? 'dashboard' : 'home')}
             className="flex items-center gap-3 group"
           >
             <img 
-              src="/logo.png" 
+              src="/File2.png" 
               alt="Murshid Logo" 
-              className="h-14 object-contain transition-transform group-hover:scale-105"
+              className="h-20 object-contain transition-transform group-hover:scale-105"
             />
             <span className="text-gray-800 dark:text-gray-200 text-xl font-semibold">Murshid</span>
           </button>

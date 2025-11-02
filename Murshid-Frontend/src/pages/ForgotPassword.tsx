@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,15 +8,21 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft, Mail } from "lucide-react";
 import { z } from "zod";
-
-const emailSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-});
+import { useI18n } from "@/contexts/I18nContext";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const { t, language } = useI18n();
+
+  const emailSchema = useMemo(
+    () =>
+      z.object({
+        email: z.string().email(t("auth.errors.validEmail")),
+      }),
+    [language, t],
+  );
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,12 +39,12 @@ const ForgotPassword = () => {
       }
 
       setSent(true);
-      toast.success("Password reset link sent to your email!");
+      toast.success(t("auth.forgot.success"));
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
       } else {
-        toast.error("Failed to send reset email. Please try again.");
+        toast.error(t("auth.forgot.error"));
       }
     } finally {
       setLoading(false);
@@ -46,17 +52,20 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4">
+    <div
+      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4"
+      dir={language}
+    >
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center gap-3 mb-4">
             <img 
-              src="/logo.png" 
+              src="/murshid-logo.png" 
               alt="Murshid Logo" 
-              className="h-28 object-contain"
+              className="h-36 object-contain dark:brightness-0 dark:invert dark:opacity-90"
             />
           </div>
-          <p className="text-muted-foreground">Your guide to choosing the right major</p>
+          <p className="text-muted-foreground">{t("auth.tagline")}</p>
         </div>
         
         <Card className="w-full border-border/50 shadow-[var(--shadow-soft)]">
@@ -64,16 +73,18 @@ const ForgotPassword = () => {
             <div className="flex items-center gap-2 mb-2">
               <Link to="/login">
                 <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Login
+                  <ArrowLeft className={`w-4 h-4 ${language === "ar" ? "ml-2 rotate-180" : "mr-2"}`} />
+                  {t("auth.actions.backToLogin")}
                 </Button>
               </Link>
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">Forgot Password?</CardTitle>
+            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {t("auth.forgot.title")}
+            </CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-300">
               {sent 
-                ? "Check your email for the reset link"
-                : "Enter your email address and we'll send you a link to reset your password"
+                ? t("auth.forgot.sentDescription")
+                : t("auth.forgot.description")
               }
             </CardDescription>
           </CardHeader>
@@ -81,38 +92,46 @@ const ForgotPassword = () => {
           {!sent ? (
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("auth.fields.email")}</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Mail
+                    className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground ${
+                      language === "ar" ? "right-3" : "left-3"
+                    }`}
+                  />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="your.email@example.com"
+                    placeholder={t("auth.placeholders.email")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
+                    className={language === "ar" ? "pr-10" : "pl-10"}
                     required
                   />
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Sending..." : "Send Reset Link"}
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-8 py-6 shadow-lg"
+                disabled={loading}
+              >
+                {loading ? t("auth.forgot.sending") : t("auth.forgot.send")}
               </Button>
             </form>
           ) : (
             <div className="space-y-4">
               <div className="p-4 bg-primary/10 rounded-lg text-center">
                 <p className="text-sm text-muted-foreground">
-                  We've sent a password reset link to <strong>{email}</strong>
+                  {t("auth.forgot.sentInfo", { email })}
                 </p>
               </div>
-              <Button 
-                variant="outline" 
-                className="w-full"
+              <Button
+                variant="outline"
+                className="w-full rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                 onClick={() => setSent(false)}
               >
-                Try Different Email
+                {t("auth.forgot.tryAnother")}
               </Button>
             </div>
           )}
