@@ -127,9 +127,9 @@ export default function ResetPassword() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center gap-3 mb-4">
             <img 
-              src="/logo.png" 
+              src="/murshid-logo.png" 
               alt="Murshid Logo" 
-              className="h-28 object-contain"
+              className="h-36 object-contain"
             />
           </div>
           <p className="text-muted-foreground">Your guide to choosing the right major</p>

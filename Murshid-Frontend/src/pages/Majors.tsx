@@ -282,11 +282,11 @@ export default function MajorsPage() {
           )}
 
           {/* CTA Section */}
-          <div className="mt-20 bg-gradient-to-r from-blue-400 to-purple-400 dark:from-blue-600 dark:to-purple-600 rounded-3xl p-12 text-center shadow-xl">
-            <h2 className="text-3xl font-bold text-white mb-4" dir={language}>
+          <div className="mt-20 bg-[#cdd6ff] dark:bg-[#cdd6ff] rounded-3xl p-12 text-center shadow-xl">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-900 mb-4" dir={language}>
               {language === 'ar' ? 'لا تزال محتاراً؟' : 'Still Confused?'}
             </h2>
-            <p className="text-white/90 mb-6 max-w-2xl mx-auto" dir={language}>
+            <p className="text-gray-700 dark:text-gray-800 mb-6 max-w-2xl mx-auto" dir={language}>
               {language === 'ar' 
                 ? 'خذ اختبارنا الشامل لاكتشاف التخصص المثالي بناءً على اهتماماتك ومهاراتك'
                 : 'Take our comprehensive test to discover your ideal major based on your interests and skills'}

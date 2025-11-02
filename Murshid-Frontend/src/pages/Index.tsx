@@ -48,7 +48,7 @@ const Index = () => {
   // This prevents flash of homepage while auth is loading
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+      <div className="min-h-screen flex items-center justify-center bg-[#e3e8ff] dark:bg-[#e3e8ff]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-300">Loading...</p>
@@ -158,7 +158,7 @@ const Index = () => {
       )}
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 pt-10 pb-32">
+      <section className="relative overflow-hidden bg-[#e3e8ff] dark:bg-[#e3e8ff] pt-10 pb-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Text Content */}
@@ -306,15 +306,15 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 dark:from-blue-600 dark:via-purple-600 dark:to-pink-600">
+      <section className="py-20 bg-[#cdd6ff] dark:bg-[#cdd6ff]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2
-            className="text-3xl md:text-4xl font-bold text-white mb-6"
+            className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-900 mb-6"
             dir={language}
           >
             {t("homepage.readyToDiscover")}
           </h2>
-          <p className="text-white/90 mb-8 max-w-2xl mx-auto" dir={language}>
+          <p className="text-gray-700 dark:text-gray-800 mb-8 max-w-2xl mx-auto" dir={language}>
             {t("homepage.readyToDiscoverDesc")}
           </p>
           <Button
