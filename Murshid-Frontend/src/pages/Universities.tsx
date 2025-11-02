@@ -206,7 +206,7 @@ export default function UniversitiesPage() {
                     {/* Bookmark Button */}
                     <button
                       onClick={(e) => handleBookmark(university.id, e)}
-                      className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
+                      className={`absolute top-4 ${language === 'ar' ? 'left-4' : 'right-4'} p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10`}
                     >
                       {bookmarked ? (
                         <BookmarkCheck className="w-5 h-5 text-blue-500 fill-blue-500" />
@@ -236,7 +236,7 @@ export default function UniversitiesPage() {
                       />
                     </div>
                     
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 pr-8" dir={language}>
+                    <h3 className={`text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 ${language === 'ar' ? 'pl-8' : 'pr-8'}`} dir={language}>
                       {universityName}
                     </h3>
                     

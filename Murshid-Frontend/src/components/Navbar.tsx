@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageToggle } from "./LanguageToggle";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -139,11 +140,11 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
               <div className="flex items-center gap-3">
                 <Link to="/bookmarks">
                   <Button 
-                    variant="ghost"
-                    className="rounded-xl"
+                    variant="outline"
+                    size="icon"
                   >
-                    <BookmarkCheck className="w-4 h-4 mr-2" />
-                    {language === 'ar' ? 'المحفوظات' : 'Bookmarks'}
+                    <BookmarkCheck className="h-[1.2rem] w-[1.2rem]" />
+                    <span className="sr-only">Bookmarks</span>
                   </Button>
                 </Link>
                 <Link to="/profile">
@@ -166,6 +167,17 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
               </div>
             ) : (
               <div className="flex items-center gap-3">
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toast.error(language === 'ar' ? 'يرجى تسجيل الدخول للوصول إلى الملف الشخصي' : 'Please login to access your profile');
+                  }}
+                  variant="ghost"
+                  className="rounded-xl"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  {t('navbar.profile')}
+                </Button>
                 <Link to="/login">
                   <Button
                     variant="ghost"
@@ -251,6 +263,18 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                 </>
               ) : (
                 <>
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toast.error(language === 'ar' ? 'يرجى تسجيل الدخول للوصول إلى الملف الشخصي' : 'Please login to access your profile');
+                      setMobileMenuOpen(false);
+                    }}
+                    variant="outline"
+                    className="w-full rounded-xl"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    {t('navbar.profile')}
+                  </Button>
                   <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                     <Button
                       variant="outline"

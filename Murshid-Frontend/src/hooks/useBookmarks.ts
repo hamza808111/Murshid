@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/contexts/I18nContext';
 import { 
   getUserBookmarks, 
   isBookmarked, 
@@ -12,6 +13,7 @@ import { toast } from 'sonner';
 
 export function useBookmarks() {
   const { user } = useAuth();
+  const { language } = useI18n();
   const [bookmarkedUniversities, setBookmarkedUniversities] = useState<University[]>([]);
   const [bookmarkedMajors, setBookmarkedMajors] = useState<Major[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +35,7 @@ export function useBookmarks() {
       setBookmarkedMajors(majors);
     } catch (error) {
       console.error('Error fetching bookmarks:', error);
-      toast.error('Failed to load bookmarks');
+      toast.error(language === 'ar' ? 'فشل تحميل المفضلة' : 'Failed to load bookmarks');
     } finally {
       setLoading(false);
     }
@@ -46,7 +48,7 @@ export function useBookmarks() {
   // Toggle bookmark
   const toggleBookmark = async (itemType: BookmarkType, itemId: string) => {
     if (!user || user.id === 'guest') {
-      toast.error('Please log in to bookmark items');
+      toast.error(language === 'ar' ? 'يرجى تسجيل الدخول لإضافة العناصر إلى المفضلة' : 'Please log in to bookmark items');
       return false;
     }
 
@@ -56,17 +58,17 @@ export function useBookmarks() {
       // Update local state
       if (itemType === 'university') {
         if (newState) {
-          toast.success('University bookmarked!');
+          toast.success(language === 'ar' ? 'تم إضافة الجامعة إلى المفضلة!' : 'University bookmarked!');
         } else {
           setBookmarkedUniversities(prev => prev.filter(u => u.id !== itemId));
-          toast.success('University removed from bookmarks');
+          toast.success(language === 'ar' ? 'تم إزالة الجامعة من المفضلة' : 'University removed from bookmarks');
         }
       } else {
         if (newState) {
-          toast.success('Major bookmarked!');
+          toast.success(language === 'ar' ? 'تم إضافة التخصص إلى المفضلة!' : 'Major bookmarked!');
         } else {
           setBookmarkedMajors(prev => prev.filter(m => m.id !== itemId));
-          toast.success('Major removed from bookmarks');
+          toast.success(language === 'ar' ? 'تم إزالة التخصص من المفضلة' : 'Major removed from bookmarks');
         }
       }
 
@@ -75,7 +77,7 @@ export function useBookmarks() {
       return newState;
     } catch (error) {
       console.error('Error toggling bookmark:', error);
-      toast.error('Failed to update bookmark');
+      toast.error(language === 'ar' ? 'فشل تحديث المفضلة' : 'Failed to update bookmark');
       return false;
     }
   };
