@@ -125,14 +125,16 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
         <div className="flex justify-between items-center h-20">
           <button
             onClick={() => handleNavigate(user?.is_admin ? 'dashboard' : 'home')}
-            className="flex items-center gap-3 group"
+            className="flex items-center group"
           >
             <img 
-              src="/File2.png" 
+              src="/logo4.png" 
               alt="Murshid Logo" 
-              className="h-20 object-contain transition-transform group-hover:scale-105"
+              className="h-14 object-contain transition-transform group-hover:scale-105"
             />
-            <span className="text-gray-800 dark:text-gray-200 text-xl font-semibold">Murshid</span>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
+              Murshid
+            </h1>          
           </button>
 
           <div className="hidden md:flex items-center gap-1">
