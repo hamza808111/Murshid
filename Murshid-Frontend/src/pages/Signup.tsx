@@ -1,37 +1,17 @@
-import { useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, BookOpen, Users, UserCheck } from "lucide-react";
+import { Loader2, BookOpen, Users, UserCheck, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { useEffect } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import PasswordValidationPopup from "@/components/PasswordValidationPopup";
 import PasswordInput from "@/components/PasswordInput";
-
-const signupSchema = z.object({
-  email: z.string().trim().email({ message: "Invalid email address" }).max(255),
-  password: z.string()
-    .min(8, { message: "Password must be at least 8 characters" })
-    .max(100)
-    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
-    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" }),
-  name: z.string().trim().min(2, { message: "Name must be at least 2 characters" }).max(100),
-  confirmPassword: z.string(),
-  establishment_name: z.string().optional(),
-  level: z.string().optional(),
-  gender: z.string().optional(),
-  role: z.string().optional(),
-  student_type: z.string().optional(),
-  track: z.string().optional(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+import { useI18n } from "@/contexts/I18nContext";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -49,6 +29,38 @@ const Signup = () => {
 
   const { user, signup, loginAsGuest } = useAuth();
   const navigate = useNavigate();
+  const { t, language } = useI18n();
+
+  const signupSchema = useMemo(
+    () =>
+      z
+        .object({
+          email: z.string().trim().email({ message: t("auth.errors.invalidEmail") }).max(255),
+          password: z
+            .string()
+            .min(8, { message: t("auth.errors.passwordMin", { count: 8 }) })
+            .max(100)
+            .regex(/[A-Z]/, { message: t("auth.errors.passwordUppercase") })
+            .regex(/[a-z]/, { message: t("auth.errors.passwordLowercase") }),
+          name: z
+            .string()
+            .trim()
+            .min(2, { message: t("auth.errors.nameMin", { count: 2 }) })
+            .max(100),
+          confirmPassword: z.string(),
+          establishment_name: z.string().optional(),
+          level: z.string().optional(),
+          gender: z.string().optional(),
+          role: z.string().optional(),
+          student_type: z.string().optional(),
+          track: z.string().optional(),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: t("auth.errors.passwordsMismatch"),
+          path: ["confirmPassword"],
+        }),
+    [language, t],
+  );
 
   useEffect(() => {
     if (user) {
@@ -93,32 +105,50 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4">
+    <div
+      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4"
+      dir={language}
+    >
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
             <img 
               src="/murshid-logo.png" 
               alt="Murshid Logo" 
-              className="h-36 object-contain"
+              className="h-36 object-contain dark:brightness-0 dark:invert dark:opacity-90"
             />
           </div>
-          <p className="text-muted-foreground">Your guide to choosing the right major</p>
+          <p className="text-muted-foreground">{t("auth.tagline")}</p>
         </div>
 
         <Card className="border-border/50 shadow-[var(--shadow-soft)]">
           <CardHeader>
-            <CardTitle className="text-gray-900 dark:text-gray-100">Create Account</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-300">Start your journey to finding the perfect major</CardDescription>
+            <div className="flex items-center gap-2 mb-2">
+              <Link to="/">
+                <Button 
+                  variant="outline"
+                  className="rounded-2xl px-3 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
+                >
+                  <ArrowLeft className={`w-4 h-4 ${language === "ar" ? "ml-2 rotate-180" : "mr-2"}`} />
+                  {t("auth.actions.backToHome")}
+                </Button>
+              </Link>
+            </div>
+            <CardTitle className="text-gray-900 dark:text-gray-100">{t("auth.signup.title")}</CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-300">
+              {t("auth.signup.subtitle")}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-gray-900 dark:text-gray-200">Name</Label>
+                <Label htmlFor="name" className="text-gray-900 dark:text-gray-200">
+                  {t("auth.fields.name")}
+                </Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder={t("auth.placeholders.name")}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -126,11 +156,13 @@ const Signup = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-900 dark:text-gray-200">Email</Label>
+                <Label htmlFor="email" className="text-gray-900 dark:text-gray-200">
+                  {t("auth.fields.email")}
+                </Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t("auth.placeholders.email")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -138,7 +170,9 @@ const Signup = () => {
                 />
               </div>
               <div className="space-y-2 relative">
-                <Label htmlFor="password" className="text-gray-900 dark:text-gray-200">Password</Label>
+                <Label htmlFor="password" className="text-gray-900 dark:text-gray-200">
+                  {t("auth.fields.password")}
+                </Label>
                 <PasswordInput
                   id="password"
                   placeholder="••••••••"
@@ -155,7 +189,9 @@ const Signup = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm-password" className="text-gray-900 dark:text-gray-200">Confirm Password</Label>
+                <Label htmlFor="confirm-password" className="text-gray-900 dark:text-gray-200">
+                  {t("auth.fields.confirmPassword")}
+                </Label>
                 <PasswordInput
                   id="confirm-password"
                   placeholder="••••••••"
@@ -167,11 +203,13 @@ const Signup = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="establishment_name" className="text-gray-900 dark:text-gray-200">Educational Institution</Label>
+                <Label htmlFor="establishment_name" className="text-gray-900 dark:text-gray-200">
+                  {t("auth.fields.institution")}
+                </Label>
                 <Input
                   id="establishment_name"
                   type="text"
-                  placeholder="University of Example or High School Name"
+                  placeholder={t("auth.placeholders.institution")}
                   value={establishment_name}
                   onChange={(e) => setEstablishmentName(e.target.value)}
                   disabled={isLoading}
@@ -180,33 +218,37 @@ const Signup = () => {
 
 
               <div className="space-y-2">
-                <Label htmlFor="gender" className="text-gray-900 dark:text-gray-200">Gender</Label>
+                <Label htmlFor="gender" className="text-gray-900 dark:text-gray-200">
+                  {t("auth.fields.gender")}
+                </Label>
                 <Select value={gender} onValueChange={setGender} disabled={isLoading}>
                   <SelectTrigger>
                     <div className="flex items-center">
                       <Users className="w-4 h-4 mr-2 text-muted-foreground" />
-                      <SelectValue placeholder="Select your gender" />
+                      <SelectValue placeholder={t("auth.placeholders.gender")} />
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
+                    <SelectItem value="Male">{t("auth.gender.male")}</SelectItem>
+                    <SelectItem value="Female">{t("auth.gender.female")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="role" className="text-gray-900 dark:text-gray-200">Role</Label>
+                <Label htmlFor="role" className="text-gray-900 dark:text-gray-200">
+                  {t("auth.fields.role")}
+                </Label>
                 <Select value={role} onValueChange={setRole} disabled={isLoading}>
                   <SelectTrigger>
                     <div className="flex items-center">
                       <UserCheck className="w-4 h-4 mr-2 text-muted-foreground" />
-                      <SelectValue placeholder="Select your role" />
+                      <SelectValue placeholder={t("auth.placeholders.role")} />
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Student">Student</SelectItem>
-                    <SelectItem value="Specialist">Specialist</SelectItem>
+                    <SelectItem value="Student">{t("auth.role.student")}</SelectItem>
+                    <SelectItem value="Specialist">{t("auth.role.specialist")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -215,35 +257,39 @@ const Signup = () => {
               {role === "Student" && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="student_type" className="text-gray-900 dark:text-gray-200">Student Type</Label>
+                    <Label htmlFor="student_type" className="text-gray-900 dark:text-gray-200">
+                      {t("auth.fields.studentType")}
+                    </Label>
                     <Select value={student_type} onValueChange={setStudentType} disabled={isLoading}>
                       <SelectTrigger>
                         <div className="flex items-center">
                           <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
-                          <SelectValue placeholder="Select your student type" />
+                          <SelectValue placeholder={t("auth.placeholders.studentType")} />
                         </div>
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="High School">High School</SelectItem>
-                        <SelectItem value="University">University</SelectItem>
+                        <SelectItem value="High School">{t("auth.studentType.highSchool")}</SelectItem>
+                        <SelectItem value="University">{t("auth.studentType.university")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   {student_type === "High School" && (
                     <div className="space-y-2">
-                      <Label htmlFor="level" className="text-gray-900 dark:text-gray-200">Academic Level</Label>
+                      <Label htmlFor="level" className="text-gray-900 dark:text-gray-200">
+                        {t("auth.fields.academicLevel")}
+                      </Label>
                       <Select value={level} onValueChange={setLevel} disabled={isLoading}>
                         <SelectTrigger>
                           <div className="flex items-center">
                             <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
-                            <SelectValue placeholder="Select your level" />
+                            <SelectValue placeholder={t("auth.placeholders.academicLevel")} />
                           </div>
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1st Year">1st Year</SelectItem>
-                          <SelectItem value="2nd Year">2nd Year</SelectItem>
-                          <SelectItem value="3rd Year">3rd Year</SelectItem>
+                          <SelectItem value="1st Year">{t("auth.academicLevel.year1")}</SelectItem>
+                          <SelectItem value="2nd Year">{t("auth.academicLevel.year2")}</SelectItem>
+                          <SelectItem value="3rd Year">{t("auth.academicLevel.year3")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -251,19 +297,21 @@ const Signup = () => {
 
                   {student_type === "University" && (
                     <div className="space-y-2">
-                      <Label htmlFor="track" className="text-gray-900 dark:text-gray-200">Academic Track</Label>
+                      <Label htmlFor="track" className="text-gray-900 dark:text-gray-200">
+                        {t("auth.fields.academicTrack")}
+                      </Label>
                       <Select value={track} onValueChange={setTrack} disabled={isLoading}>
                         <SelectTrigger>
                           <div className="flex items-center">
                             <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
-                            <SelectValue placeholder="Select your track" />
+                            <SelectValue placeholder={t("auth.placeholders.academicTrack")} />
                           </div>
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Science">Science</SelectItem>
-                          <SelectItem value="Medicine">Medicine</SelectItem>
-                          <SelectItem value="Literature">Literature</SelectItem>
-                          <SelectItem value="Business">Business</SelectItem>
+                          <SelectItem value="Science">{t("auth.track.science")}</SelectItem>
+                          <SelectItem value="Medicine">{t("auth.track.medicine")}</SelectItem>
+                          <SelectItem value="Literature">{t("auth.track.literature")}</SelectItem>
+                          <SelectItem value="Business">{t("auth.track.business")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -273,34 +321,38 @@ const Signup = () => {
 
               {role === "Specialist" && (
                 <div className="space-y-2">
-                  <Label htmlFor="level" className="text-gray-900 dark:text-gray-200">Academic Level</Label>
+                  <Label htmlFor="level" className="text-gray-900 dark:text-gray-200">
+                    {t("auth.fields.academicLevel")}
+                  </Label>
                   <Select value={level} onValueChange={setLevel} disabled={isLoading}>
                     <SelectTrigger>
                       <div className="flex items-center">
                         <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
-                        <SelectValue placeholder="Select your level" />
+                        <SelectValue placeholder={t("auth.placeholders.academicLevel")} />
                       </div>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="3rd Year">3rd Year</SelectItem>
-                      <SelectItem value="4th Year">4th Year</SelectItem>
-                      <SelectItem value="Graduate">Graduate</SelectItem>
+                      <SelectItem value="3rd Year">{t("auth.academicLevel.year3")}</SelectItem>
+                      <SelectItem value="4th Year">{t("auth.academicLevel.year4")}</SelectItem>
+                      <SelectItem value="Graduate">{t("auth.academicLevel.graduate")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               )}
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity"
+                className="w-full bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-8 py-6 shadow-lg"
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
+                    <Loader2
+                      className={`${language === "ar" ? "ml-2" : "mr-2"} h-4 w-4 animate-spin`}
+                    />
+                    {t("auth.signup.loading")}
                   </>
                 ) : (
-                  "Sign Up"
+                  t("auth.signup.submit")
                 )}
               </Button>
               
@@ -309,32 +361,32 @@ const Signup = () => {
                   <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or</span>
+                  <span className="bg-background px-2 text-muted-foreground">{t("auth.common.or")}</span>
                 </div>
               </div>
 
               <Button
                 type="button"
                 variant="outline"
-                className="w-full"
+                className="w-full rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                 onClick={handleGuestLogin}
                 disabled={isLoading}
               >
-                Continue as Guest
+                {t("auth.common.continueAsGuest")}
               </Button>
             </form>
 
             <p className="text-center text-sm text-muted-foreground mt-4">
-              Already have an account?{" "}
+              {t("auth.signup.haveAccount") + " "}
               <Link to="/login" className="text-primary hover:underline">
-                Login
+                {t("auth.signup.login")}
               </Link>
             </p>
           </CardContent>
         </Card>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          By continuing, you agree to our Terms of Service and Privacy Policy
+          {t("auth.common.agreement")}
         </p>
       </div>
     </div>

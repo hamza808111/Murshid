@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,12 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { z } from "zod";
-
-const passwordSchema = z.string()
-  .min(8, "Password must be at least 8 characters")
-  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-  .regex(/[0-9]/, "Password must contain at least one number");
+import { useI18n } from "@/contexts/I18nContext";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -21,6 +16,18 @@ export default function ResetPassword() {
   const [validToken, setValidToken] = useState(false);
   const [checkingToken, setCheckingToken] = useState(true);
   const navigate = useNavigate();
+  const { t, language } = useI18n();
+
+  const passwordSchema = useMemo(
+    () =>
+      z
+        .string()
+        .min(8, t("auth.errors.passwordMin", { count: 8 }))
+        .regex(/[A-Z]/, t("auth.errors.passwordUppercase"))
+        .regex(/[a-z]/, t("auth.errors.passwordLowercase"))
+        .regex(/[0-9]/, t("auth.errors.passwordNumber")),
+    [language, t],
+  );
 
   useEffect(() => {
     // Check if we have a valid session from the email link
@@ -32,12 +39,12 @@ export default function ResetPassword() {
         if (session) {
           setValidToken(true);
         } else {
-          toast.error("Invalid or expired reset link. Please request a new one.");
+          toast.error(t("auth.reset.invalidLink"));
           setTimeout(() => navigate("/forgot-password"), 2000);
         }
       } catch (error) {
         console.error("Session check error:", error);
-        toast.error("Invalid or expired reset link.");
+        toast.error(t("auth.reset.invalidLink"));
         setTimeout(() => navigate("/forgot-password"), 2000);
       } finally {
         setCheckingToken(false);
@@ -59,7 +66,7 @@ export default function ResetPassword() {
 
       // Check if passwords match
       if (password !== confirmPassword) {
-        toast.error("Passwords do not match");
+        toast.error(t("auth.errors.passwordsMismatch"));
         setLoading(false);
         return;
       }
@@ -78,7 +85,7 @@ export default function ResetPassword() {
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       console.log("✅ Password update sent successfully");
-      toast.success("Password updated successfully! Redirecting to login...");
+      toast.success(t("auth.reset.success"));
       
       // Sign out (don't wait - same promise issue)
       console.log("🚪 Signing out...");
@@ -95,7 +102,7 @@ export default function ResetPassword() {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
       } else {
-        const message = (error as Error)?.message || "Failed to reset password. Please try again.";
+        const message = (error as Error)?.message || t("auth.reset.error");
         toast.error(message);
       }
       setLoading(false);
@@ -104,12 +111,15 @@ export default function ResetPassword() {
 
   if (checkingToken) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4">
+      <div
+        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4"
+        dir={language}
+      >
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <span className="ml-3">Verifying reset link...</span>
+              <span className={language === "ar" ? "mr-3" : "ml-3"}>{t("auth.reset.verifying")}</span>
             </div>
           </CardContent>
         </Card>
@@ -122,30 +132,37 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4">
+    <div
+      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4"
+      dir={language}
+    >
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center gap-3 mb-4">
             <img 
               src="/murshid-logo.png" 
               alt="Murshid Logo" 
-              className="h-36 object-contain"
+              className="h-36 object-contain dark:brightness-0 dark:invert dark:opacity-90"
             />
           </div>
-          <p className="text-muted-foreground">Your guide to choosing the right major</p>
+          <p className="text-muted-foreground">{t("auth.tagline")}</p>
         </div>
         
         <Card className="w-full border-border/50 shadow-[var(--shadow-soft)] bg-white dark:bg-gray-900">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center text-gray-900 dark:text-gray-100">Reset Password</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center text-gray-900 dark:text-gray-100">
+              {t("auth.reset.title")}
+            </CardTitle>
             <CardDescription className="text-center text-gray-600 dark:text-gray-300">
-              Enter your new password below
+              {t("auth.reset.subtitle")}
             </CardDescription>
           </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-900 dark:text-gray-200">New Password</Label>
+              <Label htmlFor="password" className="text-gray-900 dark:text-gray-200">
+                {t("auth.fields.newPassword")}
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -156,11 +173,13 @@ export default function ResetPassword() {
                 disabled={loading}
               />
               <p className="text-xs text-muted-foreground">
-                Must be at least 8 characters with uppercase, lowercase, and numbers
+                {t("auth.reset.requirements")}
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-gray-900 dark:text-gray-200">Confirm New Password</Label>
+              <Label htmlFor="confirmPassword" className="text-gray-900 dark:text-gray-200">
+                {t("auth.fields.confirmNewPassword")}
+              </Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -173,10 +192,10 @@ export default function ResetPassword() {
             </div>
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-8 py-6 shadow-lg"
               disabled={loading}
             >
-              {loading ? "Updating..." : "Update Password"}
+              {loading ? t("auth.reset.loading") : t("auth.reset.submit")}
             </Button>
             <div className="text-center">
               <Button
@@ -185,7 +204,7 @@ export default function ResetPassword() {
                 onClick={() => navigate("/login")}
                 disabled={loading}
               >
-                Back to Login
+                {t("auth.actions.backToLogin")}
               </Button>
             </div>
           </form>
@@ -195,5 +214,3 @@ export default function ResetPassword() {
     </div>
   );
 }
-
-

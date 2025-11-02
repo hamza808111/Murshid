@@ -48,7 +48,7 @@ const Index = () => {
   // This prevents flash of homepage while auth is loading
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#e3e8ff] dark:bg-[#e3e8ff]">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-300">Loading...</p>
@@ -158,8 +158,8 @@ const Index = () => {
       )}
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[#e3e8ff] dark:bg-[#e3e8ff] pt-10 pb-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b] pt-10 pb-32">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Text Content */}
             <div
@@ -184,21 +184,21 @@ const Index = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button
                   onClick={() => onNavigate("quiz")}
-                  className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-8 py-6 shadow-lg"
+                  className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-8 py-6 shadow-lg transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
                   {t("homepage.startNow")}
                 </Button>
                 <Button
                   onClick={() => onNavigate("majors")}
                   variant="outline"
-                  className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
+                  className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
                   {t("homepage.browseMajors")}
                 </Button>
                 <Button
                   onClick={() => onNavigate("universities")}
                   variant="outline"
-                  className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
+                  className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
                   {t("homepage.browseUniversities")}
                 </Button>
@@ -215,7 +215,7 @@ const Index = () => {
 
       {/* How It Works Section */}
       <section className="py-20 bg-white dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           <div className="text-center mb-16">
             <h2
               className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4"
@@ -263,7 +263,7 @@ const Index = () => {
 
       {/* Features Section */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           <div className="text-center mb-16">
             <h2
               className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4"
@@ -306,20 +306,20 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-[#cdd6ff] dark:bg-[#cdd6ff]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="py-20 bg-[#cdd6ff] dark:bg-[#2a3b6b]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 text-center">
           <h2
-            className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-900 mb-6"
+            className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6"
             dir={language}
           >
             {t("homepage.readyToDiscover")}
           </h2>
-          <p className="text-gray-700 dark:text-gray-800 mb-8 max-w-2xl mx-auto" dir={language}>
+          <p className="text-gray-700 dark:text-gray-200 mb-8 max-w-2xl mx-auto" dir={language}>
             {t("homepage.readyToDiscoverDesc")}
           </p>
           <Button
             onClick={() => onNavigate("quiz")}
-            className="bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-2xl px-8 py-6 shadow-lg"
+            className="bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-2xl px-8 py-6 shadow-lg transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
           >
             {t("homepage.startFreeTest")}
           </Button>

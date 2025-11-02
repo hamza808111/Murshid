@@ -72,9 +72,9 @@ export default function MajorDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+      <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
         <Navbar />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-20">
           <Skeleton className="h-12 w-64 mb-8" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
@@ -91,9 +91,9 @@ export default function MajorDetail() {
 
   if (!major) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+      <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
         <Navbar />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-20">
           <div className="text-center">
             <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -109,10 +109,10 @@ export default function MajorDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+    <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-20">
         {/* Back Button */}
         <Button
           onClick={() => navigate('/majors')}
@@ -130,11 +130,11 @@ export default function MajorDetail() {
             <Card className="p-8 mb-6">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center text-4xl overflow-hidden">
+                  <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900 rounded-2xl flex items-center justify-center text-4xl overflow-hidden shadow-lg">
                     {major.icon_name?.startsWith('http') ? (
-                      <img src={major.icon_name} alt={majorName} className="w-full h-full object-cover" />
+                      <img src={major.icon_name} alt={majorName} className="w-full h-full object-contain p-3" />
                     ) : (
-                      <span>{major.icon_name || '📚'}</span>
+                      <span className="text-4xl">{major.icon_name || '📚'}</span>
                     )}
                   </div>
                   <div>
@@ -277,11 +277,11 @@ export default function MajorDetail() {
                             <img 
                               src={university.logo_url} 
                               alt={universityName} 
-                              className="w-16 h-16 object-contain rounded-lg"
+                              className="w-20 h-20 object-contain rounded-xl p-2 shadow-md"
                             />
                           ) : (
-                            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                              <Building2 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                            <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center shadow-md">
+                              <Building2 className="w-10 h-10 text-blue-600 dark:text-blue-400" />
                             </div>
                           )}
                           <div className="flex-1">

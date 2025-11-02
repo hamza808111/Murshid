@@ -173,10 +173,10 @@ export default function AdminMajors() {
   const degreeTypes: DegreeType[] = ['Bachelor', 'Master', 'PhD', 'Diploma'];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="admin-layout min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 pt-12 pb-20">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
