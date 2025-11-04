@@ -5,7 +5,7 @@ type Language = 'en' | 'ar';
 interface I18nContextType {
   language: Language;
   setLanguage: (language: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
@@ -17,6 +17,9 @@ const translations = {
     'navbar.profile': 'Profile',
     'navbar.login': 'Login',
     'navbar.logout': 'Logout',
+    'navbar.logout.confirmTitle': 'Confirm Logout',
+    'navbar.logout.confirmDescription': 'Are you sure you want to logout? You will need to login again to access your account.',
+    'navbar.logout.cancel': 'Cancel',
     'navbar.home': 'Home',
     'navbar.majors': 'Majors',
     'navbar.universities': 'Universities',
@@ -259,6 +262,9 @@ const translations = {
     'navbar.profile': 'الملف الشخصي',
     'navbar.login': 'تسجيل الدخول',
     'navbar.logout': 'تسجيل الخروج',
+    'navbar.logout.confirmTitle': 'تأكيد تسجيل الخروج',
+    'navbar.logout.confirmDescription': 'هل أنت متأكد من أنك تريد تسجيل الخروج؟ ستحتاج إلى تسجيل الدخول مرة أخرى للوصول إلى حسابك.',
+    'navbar.logout.cancel': 'إلغاء',
     'navbar.home': 'الرئيسية',
     'navbar.majors': 'التخصصات',
     'navbar.universities': 'الجامعات',

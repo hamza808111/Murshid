@@ -83,10 +83,11 @@ const Login = () => {
         <Card className="border-border/50 shadow-[var(--shadow-soft)]">
           <CardHeader>
             <div className="flex items-center gap-2 mb-2">
-              <Link to="/">
+              <Link to="/" id="login-back-to-home-link">
                 <Button 
                   variant="outline"
                   className="rounded-2xl px-3 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
+                  id="login-back-to-home-button"
                 >
                   <ArrowLeft className={`w-4 h-4 ${language === "ar" ? "ml-2 rotate-180" : "mr-2"}`} />
                   {t("auth.actions.backToHome")}
@@ -106,11 +107,11 @@ const Login = () => {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-900 dark:text-gray-200">
+                <Label htmlFor="login-email" className="text-gray-900 dark:text-gray-200">
                   {t("auth.fields.email")}
                 </Label>
                 <Input
-                  id="email"
+                  id="login-email"
                   type="email"
                   placeholder={t("auth.placeholders.email")}
                   value={email}
@@ -120,11 +121,11 @@ const Login = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-900 dark:text-gray-200">
+                <Label htmlFor="login-password" className="text-gray-900 dark:text-gray-200">
                   {t("auth.fields.password")}
                 </Label>
                 <PasswordInput
-                  id="password"
+                  id="login-password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -134,6 +135,7 @@ const Login = () => {
               </div>
               <Button
                 type="submit"
+                id="login-submit-button"
                 className="w-full bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-8 py-6 shadow-lg"
                 disabled={isLoading}
               >
@@ -162,6 +164,7 @@ const Login = () => {
 
               <Button
                 type="button"
+                id="login-guest-button"
                 variant="outline"
                 className="w-full rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                 onClick={handleGuestLogin}
@@ -174,12 +177,12 @@ const Login = () => {
             <div className="text-center mt-4 space-y-2">
               <p className="text-sm text-muted-foreground">
                 {t("auth.login.noAccount") + " "}
-                <Link to="/signup" className="text-primary hover:underline font-semibold">
+                <Link to="/signup" id="login-signup-link" className="text-primary hover:underline font-semibold">
                   {t("auth.login.signUp")}
                 </Link>
               </p>
               <p className="text-sm text-muted-foreground">
-                <Link to="/forgot-password" className="text-primary hover:underline font-semibold">
+                <Link to="/forgot-password" id="login-forgot-password-link" className="text-primary hover:underline font-semibold">
                   {t("auth.login.forgot")}
                 </Link>
               </p>

@@ -120,6 +120,7 @@ export default function UniversitiesPage() {
             <div className="relative">
               <Search className={`absolute ${language === 'ar' ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5`} />
               <Input
+                id="universities-search-input"
                 type="text"
                 placeholder={language === 'ar' ? 'ابحث عن جامعة...' : 'Search for a university...'}
                 value={searchQuery}
@@ -132,7 +133,7 @@ export default function UniversitiesPage() {
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Select value={selectedType} onValueChange={(value) => setSelectedType(value as UniversityType | 'all')}>
-                <SelectTrigger className="rounded-xl bg-white dark:bg-gray-800 border-0 shadow-md">
+                <SelectTrigger id="universities-type-select" className="rounded-xl bg-white dark:bg-gray-800 border-0 shadow-md">
                   <SelectValue placeholder={language === 'ar' ? 'نوع الجامعة' : 'University Type'} />
                 </SelectTrigger>
                 <SelectContent>
@@ -145,7 +146,7 @@ export default function UniversitiesPage() {
               </Select>
 
               <Select value={selectedCity} onValueChange={setSelectedCity}>
-                <SelectTrigger className="rounded-xl bg-white dark:bg-gray-800 border-0 shadow-md">
+                <SelectTrigger id="universities-city-select" className="rounded-xl bg-white dark:bg-gray-800 border-0 shadow-md">
                   <SelectValue placeholder={language === 'ar' ? 'المدينة' : 'City'} />
                 </SelectTrigger>
                 <SelectContent>
@@ -200,12 +201,14 @@ export default function UniversitiesPage() {
                 return (
                   <Card
                     key={university.id}
+                    id={`universities-card-${university.id}`}
                     className="p-6 rounded-3xl shadow-md hover:shadow-xl transition-all border-0 bg-white dark:bg-gray-800 cursor-pointer group relative"
                     onClick={() => navigate(`/universities/${university.id}`)}
                   >
                     {/* Bookmark Button */}
                     <button
                       onClick={(e) => handleBookmark(university.id, e)}
+                      id={`universities-bookmark-${university.id}`}
                       className={`absolute top-4 ${language === 'ar' ? 'left-4' : 'right-4'} p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10`}
                     >
                       {bookmarked ? (
@@ -292,6 +295,7 @@ export default function UniversitiesPage() {
                     
                     <Button
                       variant="outline"
+                      id={`universities-learn-more-${university.id}`}
                       className="w-full rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                       dir={language}
                     >
@@ -330,6 +334,7 @@ export default function UniversitiesPage() {
             </p>
             <Button 
               onClick={handleStartTest}
+              id="universities-start-test-button"
               variant="outline"
               className="rounded-2xl px-8 py-6 border-2 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 border-gray-200 dark:border-gray-700"
             >

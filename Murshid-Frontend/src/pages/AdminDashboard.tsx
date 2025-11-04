@@ -185,6 +185,7 @@ const AdminDashboard = () => {
             <div className="flex items-center gap-2">
               <Button 
                 onClick={fetchUsers} 
+                id="admin-dashboard-refresh-button"
                 variant="outline" 
                 className="gap-2"
                 disabled={loading}
@@ -234,8 +235,8 @@ const AdminDashboard = () => {
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-4">{t("admin.dashboard.tools.title")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link to="/admin/universities">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link to="/admin/universities" id="admin-dashboard-universities-link">
+              <Card id="admin-dashboard-universities-card" className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
@@ -250,8 +251,8 @@ const AdminDashboard = () => {
               </Card>
             </Link>
 
-            <Link to="/admin/majors">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link to="/admin/majors" id="admin-dashboard-majors-link">
+              <Card id="admin-dashboard-majors-card" className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
@@ -266,8 +267,8 @@ const AdminDashboard = () => {
               </Card>
             </Link>
 
-            <Link to="/admin/university-majors">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link to="/admin/university-majors" id="admin-dashboard-university-majors-link">
+              <Card id="admin-dashboard-university-majors-card" className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
@@ -295,6 +296,7 @@ const AdminDashboard = () => {
               <div className="relative w-64">
                 <Search className={`absolute ${language === "ar" ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
                 <Input
+                  id="admin-dashboard-search-input"
                   placeholder={t("admin.dashboard.table.searchPlaceholder")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -374,6 +376,7 @@ const AdminDashboard = () => {
                           <Button
                             variant="ghost"
                             size="sm"
+                            id={`admin-dashboard-delete-user-${userData.id}`}
                             onClick={() => handleDeleteClick(userData)}
                             disabled={userData.id === user?.id}
                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -403,11 +406,12 @@ const AdminDashboard = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleDeleteCancel} disabled={deleting}>
+            <AlertDialogCancel onClick={handleDeleteCancel} id="admin-dashboard-delete-cancel-button" disabled={deleting}>
               {t("admin.dashboard.dialog.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
+              id="admin-dashboard-delete-confirm-button"
               disabled={deleting}
               className="bg-destructive hover:bg-destructive/90"
             >

@@ -102,7 +102,7 @@ export default function UniversityDetail() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               University not found
             </h2>
-            <Button onClick={() => navigate('/universities')} className="mt-4">
+            <Button onClick={() => navigate('/universities')} id="university-detail-not-found-back-button" className="mt-4">
               Back to Universities
             </Button>
           </div>
@@ -119,6 +119,7 @@ export default function UniversityDetail() {
         {/* Back Button */}
         <Button
           onClick={() => navigate('/universities')}
+          id="university-detail-back-button"
           variant="ghost"
           className="mb-6"
         >
@@ -165,6 +166,7 @@ export default function UniversityDetail() {
                 
                 <Button
                   onClick={handleBookmark}
+                  id="university-detail-bookmark-button"
                   variant="outline"
                   size="lg"
                   className="rounded-full"
@@ -212,10 +214,11 @@ export default function UniversityDetail() {
 
               {/* Website */}
               {university.website_url && (
-                <Button
-                  onClick={() => window.open(university.website_url, '_blank')}
-                  className="w-full sm:w-auto"
-                >
+              <Button
+                onClick={() => window.open(university.website_url, '_blank')}
+                id="university-detail-website-button"
+                className="w-full sm:w-auto"
+              >
                   <Globe className="w-4 h-4 mr-2" />
                   {language === 'ar' ? 'زيارة الموقع' : 'Visit Website'}
                   <ExternalLink className="w-4 h-4 ml-2" />
@@ -238,6 +241,7 @@ export default function UniversityDetail() {
                     return (
                       <Card
                         key={major.id}
+                        id={`university-detail-major-card-${major.id}`}
                         className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
                         onClick={() => navigate(`/majors/${major.id}`)}
                       >

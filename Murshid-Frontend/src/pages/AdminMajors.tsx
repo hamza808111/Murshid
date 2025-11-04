@@ -192,6 +192,7 @@ export default function AdminMajors() {
               resetForm();
               setDialogOpen(true);
             }}
+            id="admin-majors-add-button"
             className="bg-blue-500 hover:bg-blue-600"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -204,6 +205,7 @@ export default function AdminMajors() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Input
+              id="admin-majors-search-input"
               type="text"
               placeholder="Search majors..."
               value={searchQuery}
@@ -254,6 +256,7 @@ export default function AdminMajors() {
               <div className="flex gap-2">
                 <Button
                   onClick={() => handleEdit(major)}
+                  id={`admin-majors-edit-${major.id}`}
                   variant="outline"
                   size="sm"
                   className="flex-1"
@@ -263,6 +266,7 @@ export default function AdminMajors() {
                 </Button>
                 <Button
                   onClick={() => handleDelete(major.id)}
+                  id={`admin-majors-delete-${major.id}`}
                   variant="destructive"
                   size="sm"
                   className="flex-1"
@@ -316,16 +320,16 @@ export default function AdminMajors() {
               <div>
                 <Label htmlFor="name">Name (English)*</Label>
                 <Input
-                  id="name"
+                  id="admin-majors-form-name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="name_ar">Name (Arabic)</Label>
+                <Label htmlFor="admin-majors-form-name-ar">Name (Arabic)</Label>
                 <Input
-                  id="name_ar"
+                  id="admin-majors-form-name-ar"
                   value={formData.name_ar}
                   onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
                   dir="rtl"
@@ -334,9 +338,9 @@ export default function AdminMajors() {
             </div>
 
             <div>
-              <Label htmlFor="description">Description (English)</Label>
+              <Label htmlFor="admin-majors-form-description">Description (English)</Label>
               <Textarea
-                id="description"
+                id="admin-majors-form-description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
@@ -344,9 +348,9 @@ export default function AdminMajors() {
             </div>
 
             <div>
-              <Label htmlFor="description_ar">Description (Arabic)</Label>
+              <Label htmlFor="admin-majors-form-description-ar">Description (Arabic)</Label>
               <Textarea
-                id="description_ar"
+                id="admin-majors-form-description-ar"
                 value={formData.description_ar}
                 onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
                 rows={3}
@@ -356,12 +360,12 @@ export default function AdminMajors() {
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="category">Category*</Label>
+                <Label htmlFor="admin-majors-form-category">Category*</Label>
                 <Select 
                   value={formData.category} 
                   onValueChange={(value: MajorCategory) => setFormData({ ...formData, category: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="admin-majors-form-category">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -372,12 +376,12 @@ export default function AdminMajors() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="degree_type">Degree Type</Label>
+                <Label htmlFor="admin-majors-form-degree-type">Degree Type</Label>
                 <Select 
                   value={formData.degree_type} 
                   onValueChange={(value: DegreeType) => setFormData({ ...formData, degree_type: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="admin-majors-form-degree-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -388,9 +392,9 @@ export default function AdminMajors() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="duration_years">Duration (years)</Label>
+                <Label htmlFor="admin-majors-form-duration">Duration (years)</Label>
                 <Input
-                  id="duration_years"
+                  id="admin-majors-form-duration"
                   type="number"
                   step="0.5"
                   value={formData.duration_years}
@@ -401,18 +405,18 @@ export default function AdminMajors() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="icon_name">Icon/Emoji</Label>
+                <Label htmlFor="admin-majors-form-icon">Icon/Emoji</Label>
                 <Input
-                  id="icon_name"
+                  id="admin-majors-form-icon"
                   value={formData.icon_name}
                   onChange={(e) => setFormData({ ...formData, icon_name: e.target.value })}
                   placeholder="📚"
                 />
               </div>
               <div>
-                <Label htmlFor="average_salary_range">Average Salary Range</Label>
+                <Label htmlFor="admin-majors-form-salary">Average Salary Range</Label>
                 <Input
-                  id="average_salary_range"
+                  id="admin-majors-form-salary"
                   value={formData.average_salary_range}
                   onChange={(e) => setFormData({ ...formData, average_salary_range: e.target.value })}
                   placeholder="e.g., 8,000 - 15,000 SAR"
@@ -421,9 +425,9 @@ export default function AdminMajors() {
             </div>
 
             <div>
-              <Label htmlFor="career_prospects">Career Prospects (English)</Label>
+              <Label htmlFor="admin-majors-form-career-prospects">Career Prospects (English)</Label>
               <Textarea
-                id="career_prospects"
+                id="admin-majors-form-career-prospects"
                 value={formData.career_prospects}
                 onChange={(e) => setFormData({ ...formData, career_prospects: e.target.value })}
                 rows={2}
@@ -431,9 +435,9 @@ export default function AdminMajors() {
             </div>
 
             <div>
-              <Label htmlFor="career_prospects_ar">Career Prospects (Arabic)</Label>
+              <Label htmlFor="admin-majors-form-career-prospects-ar">Career Prospects (Arabic)</Label>
               <Textarea
-                id="career_prospects_ar"
+                id="admin-majors-form-career-prospects-ar"
                 value={formData.career_prospects_ar}
                 onChange={(e) => setFormData({ ...formData, career_prospects_ar: e.target.value })}
                 rows={2}
@@ -444,6 +448,7 @@ export default function AdminMajors() {
             <DialogFooter>
               <Button
                 type="button"
+                id="admin-majors-form-cancel-button"
                 variant="outline"
                 onClick={() => {
                   setDialogOpen(false);
@@ -452,7 +457,7 @@ export default function AdminMajors() {
               >
                 Cancel
               </Button>
-              <Button type="submit" className="bg-blue-500 hover:bg-blue-600">
+              <Button type="submit" id="admin-majors-form-submit-button" className="bg-blue-500 hover:bg-blue-600">
                 {editingMajor ? 'Update' : 'Create'} Major
               </Button>
             </DialogFooter>

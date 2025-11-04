@@ -249,6 +249,7 @@ const ProfileSection = () => {
               {!isEditing && (
                 <Button 
                   onClick={() => setIsEditing(true)} 
+                  id="profile-edit-button"
                   className="bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity shadow-lg"
                   size="sm"
                 >
@@ -277,11 +278,11 @@ const ProfileSection = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="name">{t("auth.fields.name")}</Label>
+                  <Label htmlFor="profile-name">{t("auth.fields.name")}</Label>
                   <div className="relative">
                     <User className={`absolute ${iconDirectionClass} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
                     <Input
-                      id="name"
+                      id="profile-name"
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -292,11 +293,11 @@ const ProfileSection = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t("auth.fields.email")}</Label>
+                  <Label htmlFor="profile-email">{t("auth.fields.email")}</Label>
                   <div className="relative">
                     <Mail className={`absolute ${iconDirectionClass} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
                     <Input
-                      id="email"
+                      id="profile-email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -307,9 +308,9 @@ const ProfileSection = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="establishment_name">{t("auth.fields.institution")}</Label>
+                  <Label htmlFor="profile-establishment-name">{t("auth.fields.institution")}</Label>
                   <Input
-                    id="establishment_name"
+                    id="profile-establishment-name"
                     type="text"
                     value={formData.establishment_name}
                     onChange={(e) => setFormData({ ...formData, establishment_name: e.target.value })}
@@ -319,13 +320,13 @@ const ProfileSection = () => {
 
 
                 <div className="space-y-2">
-                  <Label htmlFor="gender">{t("auth.fields.gender")}</Label>
+                  <Label htmlFor="profile-gender">{t("auth.fields.gender")}</Label>
                   <Select 
                     value={formData.gender} 
                     onValueChange={(value) => setFormData({ ...formData, gender: value })}
                     disabled={loading}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="profile-gender">
                       <div className="flex items-center">
                         <Users className="w-4 h-4 mr-2 text-muted-foreground" />
                         <SelectValue placeholder={t("auth.placeholders.gender")} />
@@ -339,13 +340,13 @@ const ProfileSection = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="role">{t("auth.fields.role")}</Label>
+                  <Label htmlFor="profile-role">{t("auth.fields.role")}</Label>
                   <Select 
                     value={formData.role} 
                     onValueChange={(value) => setFormData({ ...formData, role: value })}
                     disabled={loading}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="profile-role">
                       <div className="flex items-center">
                         <UserCheck className="w-4 h-4 mr-2 text-muted-foreground" />
                         <SelectValue placeholder={t("auth.placeholders.role")} />
@@ -362,13 +363,13 @@ const ProfileSection = () => {
                 {formData.role === "Student" && (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="student_type">{t("auth.fields.studentType")}</Label>
+                      <Label htmlFor="profile-student-type">{t("auth.fields.studentType")}</Label>
                       <Select 
                         value={formData.student_type} 
                         onValueChange={(value) => setFormData({ ...formData, student_type: value })}
                         disabled={loading}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger id="profile-student-type">
                           <div className="flex items-center">
                             <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
                             <SelectValue placeholder={t("auth.placeholders.studentType")} />
@@ -383,13 +384,13 @@ const ProfileSection = () => {
 
                     {formData.student_type === "High School" && (
                       <div className="space-y-2">
-                        <Label htmlFor="level">{t("auth.fields.academicLevel")}</Label>
+                        <Label htmlFor="profile-level-high-school">{t("auth.fields.academicLevel")}</Label>
                         <Select 
                           value={formData.level} 
                           onValueChange={(value) => setFormData({ ...formData, level: value })}
                           disabled={loading}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger id="profile-level-high-school">
                             <div className="flex items-center">
                               <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
                               <SelectValue placeholder={t("auth.placeholders.academicLevel")} />
@@ -406,13 +407,13 @@ const ProfileSection = () => {
 
                     {formData.student_type === "University" && (
                       <div className="space-y-2">
-                        <Label htmlFor="track">{t("auth.fields.academicTrack")}</Label>
+                        <Label htmlFor="profile-track">{t("auth.fields.academicTrack")}</Label>
                         <Select 
                           value={formData.track} 
                           onValueChange={(value) => setFormData({ ...formData, track: value })}
                           disabled={loading}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger id="profile-track">
                             <div className="flex items-center">
                               <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
                               <SelectValue placeholder={t("auth.placeholders.academicTrack")} />
@@ -432,13 +433,13 @@ const ProfileSection = () => {
 
                 {formData.role === "Specialist" && (
                   <div className="space-y-2">
-                    <Label htmlFor="level">{t("auth.fields.academicLevel")}</Label>
+                    <Label htmlFor="profile-level-specialist">{t("auth.fields.academicLevel")}</Label>
                     <Select 
                       value={formData.level} 
                       onValueChange={(value) => setFormData({ ...formData, level: value })}
                       disabled={loading}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="profile-level-specialist">
                         <div className="flex items-center">
                           <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
                           <SelectValue placeholder={t("auth.placeholders.academicLevel")} />
@@ -456,6 +457,7 @@ const ProfileSection = () => {
                 <div className="flex gap-3 pt-4">
                   <Button 
                     onClick={handleSave} 
+                    id="profile-save-button"
                     disabled={loading} 
                     className="flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity shadow-lg"
                   >
@@ -464,6 +466,7 @@ const ProfileSection = () => {
                   </Button>
                   <Button 
                     onClick={handleCancel} 
+                    id="profile-cancel-button"
                     variant="outline" 
                     disabled={loading}
                     className="hover:bg-muted/50"

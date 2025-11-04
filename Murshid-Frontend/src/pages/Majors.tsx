@@ -129,6 +129,7 @@ export default function MajorsPage() {
             <div className="relative">
               <Search className={`absolute ${language === 'ar' ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5`} />
               <Input
+                id="majors-search-input"
                 type="text"
                 placeholder={language === 'ar' ? 'ابحث عن تخصص...' : 'Search for a major...'}
                 value={searchQuery}
@@ -141,7 +142,7 @@ export default function MajorsPage() {
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value as MajorCategory | 'all')}>
-                <SelectTrigger className="rounded-xl bg-white dark:bg-gray-800 border-0 shadow-md">
+                <SelectTrigger id="majors-category-select" className="rounded-xl bg-white dark:bg-gray-800 border-0 shadow-md">
                   <SelectValue placeholder={language === 'ar' ? 'الفئة' : 'Category'} />
                 </SelectTrigger>
                 <SelectContent>
@@ -154,7 +155,7 @@ export default function MajorsPage() {
               </Select>
 
               <Select value={selectedDegreeType} onValueChange={(value) => setSelectedDegreeType(value as DegreeType | 'all')}>
-                <SelectTrigger className="rounded-xl bg-white dark:bg-gray-800 border-0 shadow-md">
+                <SelectTrigger id="majors-degree-type-select" className="rounded-xl bg-white dark:bg-gray-800 border-0 shadow-md">
                   <SelectValue placeholder={language === 'ar' ? 'الدرجة العلمية' : 'Degree Type'} />
                 </SelectTrigger>
                 <SelectContent>
@@ -206,12 +207,14 @@ export default function MajorsPage() {
                 return (
                   <Card
                     key={major.id}
+                    id={`majors-card-${major.id}`}
                     className="p-6 rounded-3xl shadow-md hover:shadow-xl transition-all border-0 bg-white dark:bg-gray-800 cursor-pointer group relative"
                     onClick={() => navigate(`/majors/${major.id}`)}
                   >
                     {/* Bookmark Button */}
                     <button
                       onClick={(e) => handleBookmark(major.id, e)}
+                      id={`majors-bookmark-${major.id}`}
                       className={`absolute top-4 ${language === 'ar' ? 'left-4' : 'right-4'} p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10`}
                     >
                       {bookmarked ? (
@@ -259,6 +262,7 @@ export default function MajorsPage() {
                     
                     <Button
                       variant="outline"
+                      id={`majors-learn-more-${major.id}`}
                       className="w-full rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                       dir={language}
                     >
@@ -297,6 +301,7 @@ export default function MajorsPage() {
             </p>
             <Button 
               onClick={handleStartTest}
+              id="majors-start-test-button"
               variant="outline"
               className="rounded-2xl px-8 py-6 border-2 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 border-gray-200 dark:border-gray-700"
             >

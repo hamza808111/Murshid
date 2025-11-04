@@ -99,7 +99,7 @@ export default function MajorDetail() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               Major not found
             </h2>
-            <Button onClick={() => navigate('/majors')} className="mt-4">
+            <Button onClick={() => navigate('/majors')} id="major-detail-not-found-back-button" className="mt-4">
               Back to Majors
             </Button>
           </div>
@@ -116,6 +116,7 @@ export default function MajorDetail() {
         {/* Back Button */}
         <Button
           onClick={() => navigate('/majors')}
+          id="major-detail-back-button"
           variant="ghost"
           className="mb-6"
         >
@@ -151,6 +152,7 @@ export default function MajorDetail() {
                 
                 <Button
                   onClick={handleBookmark}
+                  id="major-detail-bookmark-button"
                   variant="outline"
                   size="lg"
                   className="rounded-full"
@@ -269,6 +271,7 @@ export default function MajorDetail() {
                     return (
                       <Card
                         key={university.id}
+                        id={`major-detail-university-card-${university.id}`}
                         className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
                         onClick={() => navigate(`/universities/${university.id}`)}
                       >
@@ -366,6 +369,7 @@ export default function MajorDetail() {
 
               <Button 
                 onClick={() => navigate('/assessment')}
+                id="major-detail-assessment-button"
                 className="w-full mt-6"
               >
                 {language === 'ar' ? 'هل هذا التخصص مناسب لي؟' : 'Is This Right for Me?'}

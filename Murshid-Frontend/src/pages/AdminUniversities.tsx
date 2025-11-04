@@ -199,6 +199,7 @@ export default function AdminUniversities() {
               resetForm();
               setDialogOpen(true);
             }}
+            id="admin-universities-add-button"
             className="bg-blue-500 hover:bg-blue-600"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -211,6 +212,7 @@ export default function AdminUniversities() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Input
+              id="admin-universities-search-input"
               type="text"
               placeholder="Search universities..."
               value={searchQuery}
@@ -263,6 +265,7 @@ export default function AdminUniversities() {
               <div className="flex gap-2">
                 <Button
                   onClick={() => handleEdit(university)}
+                  id={`admin-universities-edit-${university.id}`}
                   variant="outline"
                   size="sm"
                   className="flex-1"
@@ -272,6 +275,7 @@ export default function AdminUniversities() {
                 </Button>
                 <Button
                   onClick={() => handleDelete(university.id)}
+                  id={`admin-universities-delete-${university.id}`}
                   variant="destructive"
                   size="sm"
                   className="flex-1"
@@ -322,16 +326,16 @@ export default function AdminUniversities() {
               <div>
                 <Label htmlFor="name">Name (English)*</Label>
                 <Input
-                  id="name"
+                  id="admin-universities-form-name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="name_ar">Name (Arabic)</Label>
+                <Label htmlFor="admin-universities-form-name-ar">Name (Arabic)</Label>
                 <Input
-                  id="name_ar"
+                  id="admin-universities-form-name-ar"
                   value={formData.name_ar}
                   onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
                   dir="rtl"
@@ -340,9 +344,9 @@ export default function AdminUniversities() {
             </div>
 
             <div>
-              <Label htmlFor="description">Description (English)</Label>
+              <Label htmlFor="admin-universities-form-description">Description (English)</Label>
               <Textarea
-                id="description"
+                id="admin-universities-form-description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
@@ -350,9 +354,9 @@ export default function AdminUniversities() {
             </div>
 
             <div>
-              <Label htmlFor="description_ar">Description (Arabic)</Label>
+              <Label htmlFor="admin-universities-form-description-ar">Description (Arabic)</Label>
               <Textarea
-                id="description_ar"
+                id="admin-universities-form-description-ar"
                 value={formData.description_ar}
                 onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
                 rows={3}
@@ -362,21 +366,21 @@ export default function AdminUniversities() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="city">City*</Label>
+                <Label htmlFor="admin-universities-form-city">City*</Label>
                 <Input
-                  id="city"
+                  id="admin-universities-form-city"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="university_type">Type*</Label>
+                <Label htmlFor="admin-universities-form-type">Type*</Label>
                 <Select 
                   value={formData.university_type} 
                   onValueChange={(value: UniversityType) => setFormData({ ...formData, university_type: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="admin-universities-form-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -390,18 +394,18 @@ export default function AdminUniversities() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="establishment_year">Establishment Year</Label>
+                <Label htmlFor="admin-universities-form-establishment-year">Establishment Year</Label>
                 <Input
-                  id="establishment_year"
+                  id="admin-universities-form-establishment-year"
                   type="number"
                   value={formData.establishment_year}
                   onChange={(e) => setFormData({ ...formData, establishment_year: parseInt(e.target.value) })}
                 />
               </div>
               <div>
-                <Label htmlFor="student_count">Student Count</Label>
+                <Label htmlFor="admin-universities-form-student-count">Student Count</Label>
                 <Input
-                  id="student_count"
+                  id="admin-universities-form-student-count"
                   type="number"
                   value={formData.student_count}
                   onChange={(e) => setFormData({ ...formData, student_count: parseInt(e.target.value) })}
@@ -410,9 +414,9 @@ export default function AdminUniversities() {
             </div>
 
             <div>
-              <Label htmlFor="website_url">Website URL</Label>
+              <Label htmlFor="admin-universities-form-website">Website URL</Label>
               <Input
-                id="website_url"
+                id="admin-universities-form-website"
                 type="url"
                 value={formData.website_url}
                 onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
@@ -421,18 +425,18 @@ export default function AdminUniversities() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="contact_email">Contact Email</Label>
+                <Label htmlFor="admin-universities-form-contact-email">Contact Email</Label>
                 <Input
-                  id="contact_email"
+                  id="admin-universities-form-contact-email"
                   type="email"
                   value={formData.contact_email}
                   onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
                 />
               </div>
               <div>
-                <Label htmlFor="contact_phone">Contact Phone</Label>
+                <Label htmlFor="admin-universities-form-contact-phone">Contact Phone</Label>
                 <Input
-                  id="contact_phone"
+                  id="admin-universities-form-contact-phone"
                   value={formData.contact_phone}
                   onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
                 />
@@ -442,6 +446,7 @@ export default function AdminUniversities() {
             <DialogFooter>
               <Button
                 type="button"
+                id="admin-universities-form-cancel-button"
                 variant="outline"
                 onClick={() => {
                   setDialogOpen(false);
@@ -450,7 +455,7 @@ export default function AdminUniversities() {
               >
                 Cancel
               </Button>
-              <Button type="submit" className="bg-blue-500 hover:bg-blue-600">
+              <Button type="submit" id="admin-universities-form-submit-button" className="bg-blue-500 hover:bg-blue-600">
                 {editingUniversity ? 'Update' : 'Create'} University
               </Button>
             </DialogFooter>

@@ -71,8 +71,8 @@ const ForgotPassword = () => {
         <Card className="w-full border-border/50 shadow-[var(--shadow-soft)]">
           <CardHeader className="space-y-1">
             <div className="flex items-center gap-2 mb-2">
-              <Link to="/login">
-                <Button variant="ghost" size="sm">
+              <Link to="/login" id="forgot-password-back-to-login-link">
+                <Button variant="ghost" size="sm" id="forgot-password-back-to-login-button">
                   <ArrowLeft className={`w-4 h-4 ${language === "ar" ? "ml-2 rotate-180" : "mr-2"}`} />
                   {t("auth.actions.backToLogin")}
                 </Button>
@@ -92,7 +92,7 @@ const ForgotPassword = () => {
           {!sent ? (
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">{t("auth.fields.email")}</Label>
+                <Label htmlFor="forgot-password-email">{t("auth.fields.email")}</Label>
                 <div className="relative">
                   <Mail
                     className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground ${
@@ -100,7 +100,7 @@ const ForgotPassword = () => {
                     }`}
                   />
                   <Input
-                    id="email"
+                    id="forgot-password-email"
                     type="email"
                     placeholder={t("auth.placeholders.email")}
                     value={email}
@@ -113,6 +113,7 @@ const ForgotPassword = () => {
 
               <Button
                 type="submit"
+                id="forgot-password-submit-button"
                 className="w-full bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-8 py-6 shadow-lg"
                 disabled={loading}
               >
@@ -128,6 +129,7 @@ const ForgotPassword = () => {
               </div>
               <Button
                 variant="outline"
+                id="forgot-password-try-another-button"
                 className="w-full rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                 onClick={() => setSent(false)}
               >

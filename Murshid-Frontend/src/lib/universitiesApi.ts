@@ -141,6 +141,7 @@ export async function assignMajorToUniversity(
   details?: {
     tuition_fee_annual?: number;
     admission_requirements?: string;
+    admission_requirements_ar?: string;
     capacity?: number;
     program_url?: string;
   }

@@ -99,9 +99,10 @@ const Assessment = () => {
 
             {/* Back to Home Button */}
             <div className="pt-8">
-              <Link to="/">
+              <Link to="/" id="assessment-back-to-home-link">
                 <Button 
                   size="lg" 
+                  id="assessment-back-to-home-button"
                   variant="outline"
                   className="text-lg px-8 py-6"
                 >

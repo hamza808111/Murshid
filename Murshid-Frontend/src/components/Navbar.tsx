@@ -125,6 +125,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
         <div className="flex justify-between items-center h-20">
           <button
             onClick={() => handleNavigate(user?.is_admin ? 'dashboard' : 'home')}
+            id="navbar-logo-button"
             className="flex items-center group"
           >
             <img 
@@ -142,6 +143,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
               <button
                 key={item.id}
                 onClick={() => handleNavigate(item.id)}
+                id={`navbar-nav-${item.id}`}
                 className={`px-4 py-2 rounded-xl transition-all ${
                   isActive(item.id)
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
@@ -161,19 +163,21 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             
             {user ? (
               <div className="flex items-center gap-3">
-                <Link to="/bookmarks">
+                <Link to="/bookmarks" id="navbar-bookmarks-link">
                   <Button 
                     variant="outline"
                     size="icon"
+                    id="navbar-bookmarks-button"
                   >
                     <BookmarkCheck className="h-[1.2rem] w-[1.2rem]" />
                     <span className="sr-only">Bookmarks</span>
                   </Button>
                 </Link>
-                <Link to="/profile">
+                <Link to="/profile" id="navbar-profile-link">
                   <Button 
                     variant="ghost"
                     className="rounded-xl"
+                    id="navbar-profile-button"
                   >
                     <User className="w-4 h-4 mr-2" />
                     {t('navbar.profile')}
@@ -181,6 +185,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                 </Link>
                 <Button 
                   onClick={() => setShowLogoutDialog(true)}
+                  id="navbar-logout-button"
                   variant="outline"
                   className="rounded-xl border-red-300 dark:border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300"
                 >
@@ -195,22 +200,24 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                     e.preventDefault();
                     toast.error(language === 'ar' ? 'يرجى تسجيل الدخول للوصول إلى الملف الشخصي' : 'Please login to access your profile');
                   }}
+                  id="navbar-profile-guest-button"
                   variant="ghost"
                   className="rounded-xl"
                 >
                   <User className="w-4 h-4 mr-2" />
                   {t('navbar.profile')}
                 </Button>
-                <Link to="/login">
+                <Link to="/login" id="navbar-login-link">
                   <Button
                     variant="ghost"
                     className="rounded-xl"
+                    id="navbar-login-button"
                   >
                     {t('navbar.login')}
                   </Button>
                 </Link>
-                <Link to="/signup">
-                  <Button className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl px-6 shadow-md">
+                <Link to="/signup" id="navbar-signup-link">
+                  <Button className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl px-6 shadow-md" id="navbar-signup-button">
                     {t('navbar.signUp')}
                   </Button>
                 </Link>
@@ -223,6 +230,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             <ThemeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              id="navbar-mobile-menu-toggle"
               className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {mobileMenuOpen ? (
@@ -245,6 +253,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                   handleNavigate(item.id);
                   setMobileMenuOpen(false);
                 }}
+                id={`navbar-mobile-nav-${item.id}`}
                 className={`w-full text-right px-4 py-3 rounded-xl transition-all ${
                   isActive(item.id)
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
@@ -257,19 +266,21 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             <div className="pt-4 space-y-2 border-t border-gray-100 dark:border-gray-800">
               {user ? (
                 <>
-                  <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)}>
+                  <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-bookmarks-link">
                     <Button
                       variant="outline"
                       className="w-full rounded-xl"
+                      id="navbar-mobile-bookmarks-button"
                     >
                       <BookmarkCheck className="w-4 h-4 mr-2" />
                       {language === 'ar' ? 'المحفوظات' : 'Bookmarks'}
                     </Button>
                   </Link>
-                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
+                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-profile-link">
                     <Button
                       variant="outline"
                       className="w-full rounded-xl"
+                      id="navbar-mobile-profile-button"
                     >
                       <User className="w-4 h-4 mr-2" />
                       {t('navbar.profile')}
@@ -277,6 +288,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                   </Link>
                   <Button
                     onClick={() => setShowLogoutDialog(true)}
+                    id="navbar-mobile-logout-button"
                     variant="outline"
                     className="w-full rounded-xl border-red-300 dark:border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300"
                   >
@@ -292,23 +304,25 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                       toast.error(language === 'ar' ? 'يرجى تسجيل الدخول للوصول إلى الملف الشخصي' : 'Please login to access your profile');
                       setMobileMenuOpen(false);
                     }}
+                    id="navbar-mobile-profile-guest-button"
                     variant="outline"
                     className="w-full rounded-xl"
                   >
                     <User className="w-4 h-4 mr-2" />
                     {t('navbar.profile')}
                   </Button>
-                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-login-link">
                     <Button
                       variant="outline"
                       className="w-full rounded-xl"
+                      id="navbar-mobile-login-button"
                     >
                       <LogIn className="w-4 h-4 mr-2" />
                       {t('navbar.login')}
                     </Button>
                   </Link>
-                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl">
+                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-signup-link">
+                    <Button className="w-full bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl" id="navbar-mobile-signup-button">
                       {t('navbar.signUp')}
                     </Button>
                   </Link>
@@ -321,22 +335,25 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
 
       {/* Logout Confirmation Dialog */}
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent className="bg-white dark:bg-gray-900">
+        <AlertDialogContent className="bg-white dark:bg-gray-900" dir={language}>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-gray-900 dark:text-gray-100">
-              Confirm Logout
+              {t('navbar.logout.confirmTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
-              Are you sure you want to logout? You will need to login again to access your account.
+              {t('navbar.logout.confirmDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogCancel id="navbar-logout-cancel-button" className="rounded-xl">
+              {t('navbar.logout.cancel')}
+            </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleLogout}
+              id="navbar-logout-confirm-button"
               className="rounded-xl bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
             >
-              Logout
+              {t('navbar.logout')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

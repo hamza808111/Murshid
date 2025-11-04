@@ -184,12 +184,14 @@ const Index = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button
                   onClick={() => onNavigate("quiz")}
+                  id="home-start-now-button"
                   className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-8 py-6 shadow-lg transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
                   {t("homepage.startNow")}
                 </Button>
                 <Button
                   onClick={() => onNavigate("majors")}
+                  id="home-browse-majors-button"
                   variant="outline"
                   className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
@@ -197,6 +199,7 @@ const Index = () => {
                 </Button>
                 <Button
                   onClick={() => onNavigate("universities")}
+                  id="home-browse-universities-button"
                   variant="outline"
                   className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
@@ -319,6 +322,7 @@ const Index = () => {
           </p>
           <Button
             onClick={() => onNavigate("quiz")}
+            id="home-start-free-test-button"
             className="bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-2xl px-8 py-6 shadow-lg transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
           >
             {t("homepage.startFreeTest")}

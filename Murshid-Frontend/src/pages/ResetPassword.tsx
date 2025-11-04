@@ -160,13 +160,13 @@ export default function ResetPassword() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-900 dark:text-gray-200">
+              <Label htmlFor="reset-password-new" className="text-gray-900 dark:text-gray-200">
                 {t("auth.fields.newPassword")}
               </Label>
               <Input
-                id="password"
+                id="reset-password-new"
                 type="password"
-                placeholder="••••••••"
+                placeholder={`${t("auth.passwordRules.length")}, ${t("auth.passwordRules.uppercase")}, ${t("auth.passwordRules.lowercase")}, ${t("auth.errors.passwordNumber")}`}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -177,11 +177,11 @@ export default function ResetPassword() {
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-gray-900 dark:text-gray-200">
+              <Label htmlFor="reset-password-confirm" className="text-gray-900 dark:text-gray-200">
                 {t("auth.fields.confirmNewPassword")}
               </Label>
               <Input
-                id="confirmPassword"
+                id="reset-password-confirm"
                 type="password"
                 placeholder="••••••••"
                 value={confirmPassword}
@@ -192,6 +192,7 @@ export default function ResetPassword() {
             </div>
             <Button
               type="submit"
+              id="reset-password-submit-button"
               className="w-full bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-8 py-6 shadow-lg"
               disabled={loading}
             >
@@ -200,6 +201,7 @@ export default function ResetPassword() {
             <div className="text-center">
               <Button
                 type="button"
+                id="reset-password-back-to-login-button"
                 variant="link"
                 onClick={() => navigate("/login")}
                 disabled={loading}

@@ -101,7 +101,7 @@ export default function AdminUniversityMajors() {
         admission_requirements_ar: formData.admission_requirements_ar,
         capacity: formData.capacity,
         program_url: formData.program_url,
-      });
+      } as any);
 
       toast.success('Major assigned to university successfully');
       setDialogOpen(false);
@@ -164,7 +164,7 @@ export default function AdminUniversityMajors() {
             Select University
           </Label>
           <Select value={selectedUniversity} onValueChange={setSelectedUniversity}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="admin-university-majors-university-select" className="w-full">
               <SelectValue placeholder="Choose a university..." />
             </SelectTrigger>
             <SelectContent>
@@ -191,6 +191,7 @@ export default function AdminUniversityMajors() {
               </div>
               <Button
                 onClick={() => setDialogOpen(true)}
+                id="admin-university-majors-assign-button"
                 className="bg-blue-500 hover:bg-blue-600"
                 disabled={availableMajors.length === 0}
               >
@@ -233,6 +234,7 @@ export default function AdminUniversityMajors() {
 
                   <Button
                     onClick={() => handleRemove(major.id)}
+                    id={`admin-university-majors-remove-${major.id}`}
                     variant="destructive"
                     size="sm"
                     className="w-full"
@@ -277,12 +279,12 @@ export default function AdminUniversityMajors() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="major_id">Major*</Label>
+              <Label htmlFor="admin-university-majors-form-major">Major*</Label>
               <Select 
                 value={formData.major_id} 
                 onValueChange={(value) => setFormData({ ...formData, major_id: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="admin-university-majors-form-major">
                   <SelectValue placeholder="Select a major..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -297,9 +299,9 @@ export default function AdminUniversityMajors() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="tuition_fee_annual">Annual Tuition Fee (SAR)</Label>
+                <Label htmlFor="admin-university-majors-form-tuition">Annual Tuition Fee (SAR)</Label>
                 <Input
-                  id="tuition_fee_annual"
+                  id="admin-university-majors-form-tuition"
                   type="number"
                   value={formData.tuition_fee_annual}
                   onChange={(e) => setFormData({ ...formData, tuition_fee_annual: parseFloat(e.target.value) })}
@@ -307,9 +309,9 @@ export default function AdminUniversityMajors() {
                 />
               </div>
               <div>
-                <Label htmlFor="capacity">Student Capacity</Label>
+                <Label htmlFor="admin-university-majors-form-capacity">Student Capacity</Label>
                 <Input
-                  id="capacity"
+                  id="admin-university-majors-form-capacity"
                   type="number"
                   value={formData.capacity}
                   onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) })}
@@ -319,9 +321,9 @@ export default function AdminUniversityMajors() {
             </div>
 
             <div>
-              <Label htmlFor="program_url">Program URL</Label>
+              <Label htmlFor="admin-university-majors-form-program-url">Program URL</Label>
               <Input
-                id="program_url"
+                id="admin-university-majors-form-program-url"
                 type="url"
                 value={formData.program_url}
                 onChange={(e) => setFormData({ ...formData, program_url: e.target.value })}
@@ -330,9 +332,9 @@ export default function AdminUniversityMajors() {
             </div>
 
             <div>
-              <Label htmlFor="admission_requirements">Admission Requirements (English)</Label>
+              <Label htmlFor="admin-university-majors-form-admission-requirements">Admission Requirements (English)</Label>
               <Textarea
-                id="admission_requirements"
+                id="admin-university-majors-form-admission-requirements"
                 value={formData.admission_requirements}
                 onChange={(e) => setFormData({ ...formData, admission_requirements: e.target.value })}
                 rows={3}
@@ -341,9 +343,9 @@ export default function AdminUniversityMajors() {
             </div>
 
             <div>
-              <Label htmlFor="admission_requirements_ar">Admission Requirements (Arabic)</Label>
+              <Label htmlFor="admin-university-majors-form-admission-requirements-ar">Admission Requirements (Arabic)</Label>
               <Textarea
-                id="admission_requirements_ar"
+                id="admin-university-majors-form-admission-requirements-ar"
                 value={formData.admission_requirements_ar}
                 onChange={(e) => setFormData({ ...formData, admission_requirements_ar: e.target.value })}
                 rows={3}
@@ -355,6 +357,7 @@ export default function AdminUniversityMajors() {
             <DialogFooter>
               <Button
                 type="button"
+                id="admin-university-majors-form-cancel-button"
                 variant="outline"
                 onClick={() => {
                   setDialogOpen(false);
@@ -363,7 +366,7 @@ export default function AdminUniversityMajors() {
               >
                 Cancel
               </Button>
-              <Button type="submit" className="bg-blue-500 hover:bg-blue-600">
+              <Button type="submit" id="admin-university-majors-form-submit-button" className="bg-blue-500 hover:bg-blue-600">
                 Assign Major
               </Button>
             </DialogFooter>

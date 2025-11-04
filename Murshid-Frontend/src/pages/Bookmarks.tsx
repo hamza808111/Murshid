@@ -45,7 +45,7 @@ export default function Bookmarks() {
                 ? 'يجب عليك تسجيل الدخول لحفظ الجامعات والتخصصات المفضلة لديك'
                 : 'You need to be logged in to save your favorite universities and majors'}
             </p>
-            <Button onClick={() => navigate('/login')}>
+            <Button onClick={() => navigate('/login')} id="bookmarks-login-button">
               {language === 'ar' ? 'تسجيل الدخول' : 'Login'}
             </Button>
           </div>
@@ -82,13 +82,13 @@ export default function Bookmarks() {
         {/* Tabs */}
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
-            <TabsTrigger value="all">
+            <TabsTrigger value="all" id="bookmarks-tab-all">
               {language === 'ar' ? 'الكل' : 'All'} ({bookmarkedUniversities.length + bookmarkedMajors.length})
             </TabsTrigger>
-            <TabsTrigger value="universities">
+            <TabsTrigger value="universities" id="bookmarks-tab-universities">
               {language === 'ar' ? 'الجامعات' : 'Universities'} ({bookmarkedUniversities.length})
             </TabsTrigger>
-            <TabsTrigger value="majors">
+            <TabsTrigger value="majors" id="bookmarks-tab-majors">
               {language === 'ar' ? 'التخصصات' : 'Majors'} ({bookmarkedMajors.length})
             </TabsTrigger>
           </TabsList>
@@ -111,12 +111,14 @@ export default function Bookmarks() {
                     return (
                       <Card
                         key={university.id}
+                        id={`bookmarks-university-card-${university.id}`}
                         className="p-6 hover:shadow-xl transition-shadow cursor-pointer relative group"
                         onClick={() => navigate(`/universities/${university.id}`)}
                       >
                         {/* Remove Button */}
                         <button
                           onClick={(e) => handleRemoveBookmark('university', university.id, e)}
+                          id={`bookmarks-remove-university-${university.id}`}
                           className="absolute top-4 right-4 p-2 rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors opacity-0 group-hover:opacity-100 z-10"
                           title={language === 'ar' ? 'إزالة' : 'Remove'}
                         >
@@ -189,12 +191,14 @@ export default function Bookmarks() {
                     return (
                       <Card
                         key={major.id}
+                        id={`bookmarks-major-card-${major.id}`}
                         className="p-6 hover:shadow-xl transition-shadow cursor-pointer relative group"
                         onClick={() => navigate(`/majors/${major.id}`)}
                       >
                         {/* Remove Button */}
                         <button
                           onClick={(e) => handleRemoveBookmark('major', major.id, e)}
+                          id={`bookmarks-remove-major-${major.id}`}
                           className="absolute top-4 right-4 p-2 rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors opacity-0 group-hover:opacity-100 z-10"
                           title={language === 'ar' ? 'إزالة' : 'Remove'}
                         >
@@ -250,11 +254,11 @@ export default function Bookmarks() {
                     : 'Start bookmarking your favorite universities and majors'}
                 </p>
                 <div className="flex gap-4 justify-center">
-                  <Button onClick={() => navigate('/universities')}>
+                  <Button onClick={() => navigate('/universities')} id="bookmarks-browse-universities-button">
                     {language === 'ar' ? 'تصفح الجامعات' : 'Browse Universities'}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
-                  <Button onClick={() => navigate('/majors')} variant="outline">
+                  <Button onClick={() => navigate('/majors')} id="bookmarks-browse-majors-button" variant="outline">
                     {language === 'ar' ? 'تصفح التخصصات' : 'Browse Majors'}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -295,11 +299,13 @@ export default function Bookmarks() {
                   return (
                     <Card
                       key={university.id}
+                      id={`bookmarks-tab-universities-card-${university.id}`}
                       className="p-6 hover:shadow-xl transition-shadow cursor-pointer relative group"
                       onClick={() => navigate(`/universities/${university.id}`)}
                     >
                       <button
                         onClick={(e) => handleRemoveBookmark('university', university.id, e)}
+                        id={`bookmarks-tab-universities-remove-${university.id}`}
                         className="absolute top-4 right-4 p-2 rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors opacity-0 group-hover:opacity-100 z-10"
                         title={language === 'ar' ? 'إزالة' : 'Remove'}
                       >
@@ -365,7 +371,7 @@ export default function Bookmarks() {
                     ? 'ابدأ بحفظ الجامعات المفضلة لديك'
                     : 'Start bookmarking your favorite universities'}
                 </p>
-                <Button onClick={() => navigate('/universities')}>
+                <Button onClick={() => navigate('/universities')} id="bookmarks-tab-universities-browse-button">
                   {language === 'ar' ? 'تصفح الجامعات' : 'Browse Universities'}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
@@ -383,11 +389,13 @@ export default function Bookmarks() {
                   return (
                     <Card
                       key={major.id}
+                      id={`bookmarks-tab-majors-card-${major.id}`}
                       className="p-6 hover:shadow-xl transition-shadow cursor-pointer relative group"
                       onClick={() => navigate(`/majors/${major.id}`)}
                     >
                       <button
                         onClick={(e) => handleRemoveBookmark('major', major.id, e)}
+                        id={`bookmarks-tab-majors-remove-${major.id}`}
                         className="absolute top-4 right-4 p-2 rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors opacity-0 group-hover:opacity-100 z-10"
                         title={language === 'ar' ? 'إزالة' : 'Remove'}
                       >
@@ -438,7 +446,7 @@ export default function Bookmarks() {
                     ? 'ابدأ بحفظ التخصصات المفضلة لديك'
                     : 'Start bookmarking your favorite majors'}
                 </p>
-                <Button onClick={() => navigate('/majors')}>
+                <Button onClick={() => navigate('/majors')} id="bookmarks-tab-majors-browse-button">
                   {language === 'ar' ? 'تصفح التخصصات' : 'Browse Majors'}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
