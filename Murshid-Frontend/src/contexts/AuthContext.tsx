@@ -189,7 +189,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           is_admin: mapped.is_admin
         });
         
-        toast.success("Successfully logged in!");
+        const language = localStorage.getItem('language') || 'en';
+        toast.success(language === 'ar' ? 'تم تسجيل الدخول بنجاح!' : 'Successfully logged in!');
         
         // Redirect admin users to admin dashboard
         if (mapped.is_admin) {
@@ -201,11 +202,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     } catch (error) {
+      const language = localStorage.getItem('language') || 'en';
       const supabaseError = error as unknown as { message?: string };
       if (supabaseError?.message?.toLowerCase().includes("invalid login credentials")) {
-        toast.error("Incorrect email or password. Please try again or sign up.");
+        toast.error(language === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى أو التسجيل.' : 'Incorrect email or password. Please try again or sign up.');
       } else {
-        const message = (error as Error)?.message || "Login failed. Please check your credentials.";
+        const message = (error as Error)?.message || (language === 'ar' ? 'فشل تسجيل الدخول. يرجى التحقق من بيانات الاعتماد الخاصة بك.' : 'Login failed. Please check your credentials.');
         toast.error(message);
       }
       throw error;
@@ -296,10 +298,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         name: "Guest User"
       };
       setUser(guestUser);
-      toast.success("Logged in as guest!");
+      const language = localStorage.getItem('language') || 'en';
+      toast.success(language === 'ar' ? 'تم تسجيل الدخول كضيف!' : 'Logged in as guest!');
       navigate("/");
     } catch (error) {
-      toast.error("Guest login failed. Please try again.");
+      const language = localStorage.getItem('language') || 'en';
+      toast.error(language === 'ar' ? 'فشل تسجيل الدخول كضيف. يرجى المحاولة مرة أخرى.' : 'Guest login failed. Please try again.');
       throw error;
     } finally {
       setLoading(false);
@@ -322,12 +326,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Small delay to ensure state updates
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      toast.success("Logged out successfully");
+      const language = localStorage.getItem('language') || 'en';
+      toast.success(language === 'ar' ? 'تم تسجيل الخروج بنجاح' : 'Logged out successfully');
       // Navigation is handled by the component calling logout()
       console.log("✅ Logout successful");
     } catch (error) {
       console.error("❌ Logout error:", error);
-      toast.error("Logout failed. Please try again.");
+      const language = localStorage.getItem('language') || 'en';
+      toast.error(language === 'ar' ? 'فشل تسجيل الخروج. يرجى المحاولة مرة أخرى.' : 'Logout failed. Please try again.');
     }
   };
 

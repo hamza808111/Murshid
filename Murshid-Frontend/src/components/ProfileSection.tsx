@@ -8,17 +8,30 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { User, Mail, Edit2, Save, X, BookOpen, Users, UserCheck, Sparkles, Building2, Award } from "lucide-react";
+import { User, Mail, Edit2, Save, X, BookOpen, Users, UserCheck, Sparkles, Building2, Award, LogOut } from "lucide-react";
 import { z } from "zod";
 import ImageUpload from "@/components/ImageUpload";
 import { supabase } from "@/lib/supabase";
 import { useI18n } from "@/contexts/I18nContext";
+import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const ProfileSection = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
   const { t, language } = useI18n();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || "");
   const [formData, setFormData] = useState({
     name: user?.name || "",
@@ -139,6 +152,8 @@ const ProfileSection = () => {
 
   if (!user) return null;
 
+  const isGuest = user.id === "guest";
+
   const iconDirectionClass = language === "ar" ? "right-3" : "left-3";
   const inputPaddingClass = language === "ar" ? "pr-10" : "pl-10";
   const translateRole = (role?: string | null) => {
@@ -202,11 +217,11 @@ const ProfileSection = () => {
           {/* Header with gradient background */}
           <div className="relative h-32 bg-gradient-to-r from-primary via-primary/90 to-accent overflow-hidden">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bTAgMTBjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
-            <Sparkles className="absolute top-4 right-4 w-6 h-6 text-white/40" />
+            <Sparkles className={`absolute top-4 w-6 h-6 text-white/40 ${language === "ar" ? "left-4" : "right-4"}`} />
           </div>
 
           <CardHeader className="relative -mt-16 pb-2">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6">
+            <div className={`flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6 ${language === "ar" ? "sm:flex-row-reverse" : ""}`}>
               {/* Avatar with fancy border */}
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-full blur-md opacity-75 group-hover:opacity-100 transition-opacity"></div>
@@ -219,9 +234,9 @@ const ProfileSection = () => {
               </div>
               
               {/* User info */}
-              <div className="flex-1 text-center sm:text-left">
+              <div className={`flex-1 text-center ${language === "ar" ? "sm:text-right" : "sm:text-left"}`}>
                 <div className="inline-block bg-gradient-to-br from-background via-background to-primary/5 backdrop-blur-md border-2 border-primary/30 rounded-2xl px-5 py-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.16)] transition-shadow">
-                  <div className="flex items-center gap-2.5 justify-center sm:justify-start flex-wrap mb-1.5">
+                  <div className={`flex items-center gap-2.5 flex-wrap mb-1.5 ${language === "ar" ? "justify-center sm:justify-end" : "justify-center sm:justify-start"}`}>
                     <CardTitle className="text-3xl font-extrabold tracking-tight text-foreground" style={{ fontFamily: '"Poppins", "Inter", system-ui, sans-serif' }}>
                       {user.name || t("profile.display.userFallback")}
                     </CardTitle>
@@ -232,12 +247,12 @@ const ProfileSection = () => {
                       </Badge>
                     )}
                   </div>
-                  <CardDescription className="flex items-center gap-2 justify-center sm:justify-start text-sm">
+                  <CardDescription className={`flex items-center gap-2 text-sm ${language === "ar" ? "justify-center sm:justify-end" : "justify-center sm:justify-start"}`}>
                     <Mail className="w-3.5 h-3.5" />
                     {user.email}
                   </CardDescription>
                   {user.establishment_name && (
-                    <p className="flex items-center gap-2 justify-center sm:justify-start text-xs text-muted-foreground mt-1">
+                    <p className={`flex items-center gap-2 text-xs text-muted-foreground mt-1 ${language === "ar" ? "justify-center sm:justify-end" : "justify-center sm:justify-start"}`}>
                       <Building2 className="w-3.5 h-3.5" />
                       {user.establishment_name}
                     </p>
@@ -245,17 +260,35 @@ const ProfileSection = () => {
                 </div>
               </div>
 
-              {/* Edit button */}
+              {/* Edit and Logout buttons */}
               {!isEditing && (
-                <Button 
-                  onClick={() => setIsEditing(true)} 
-                  id="profile-edit-button"
-                  className="bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity shadow-lg"
-                  size="sm"
-                >
-                  <Edit2 className={`w-4 h-4 ${language === "ar" ? "ml-2" : "mr-2"}`} />
-                  {t("profile.buttons.edit")}
-                </Button>
+                <div className={`flex items-center gap-2 ${language === "ar" ? "flex-row-reverse" : ""}`}>
+                  <Button 
+                    onClick={() => {
+                      if (isGuest) {
+                        toast.error(language === 'ar' ? 'لا يمكنك تعديل المعلومات. يرجى تسجيل الدخول للتحرير.' : 'You cannot edit information. Please login to edit.');
+                      } else {
+                        setIsEditing(true);
+                      }
+                    }} 
+                    id="profile-edit-button"
+                    className="bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity shadow-lg"
+                    size="sm"
+                  >
+                    <Edit2 className={`w-4 h-4 ${language === "ar" ? "ml-2" : "mr-2"}`} />
+                    {t("profile.buttons.edit")}
+                  </Button>
+                  <Button 
+                    onClick={() => setShowLogoutDialog(true)}
+                    id="profile-logout-button"
+                    variant="outline"
+                    size="sm"
+                    className="border-red-300 dark:border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300"
+                  >
+                    <LogOut className={`w-4 h-4 ${language === "ar" ? "ml-2" : "mr-2"}`} />
+                    {t('navbar.logout')}
+                  </Button>
+                </div>
               )}
             </div>
           </CardHeader>
@@ -600,6 +633,36 @@ const ProfileSection = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent className="bg-white dark:bg-gray-900" dir={language}>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-gray-900 dark:text-gray-100">
+              {t('navbar.logout.confirmTitle')}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
+              {t('navbar.logout.confirmDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel id="profile-logout-cancel-button" className="rounded-xl">
+              {t('navbar.logout.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                logout();
+                navigate('/', { replace: true });
+                setShowLogoutDialog(false);
+              }}
+              id="profile-logout-confirm-button"
+              className="rounded-xl bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
+            >
+              {t('navbar.logout')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 };

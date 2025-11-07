@@ -1,22 +1,12 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn, LogOut, User, BookmarkCheck, LayoutDashboard } from "lucide-react";
+import { Menu, X, LogIn, User, BookmarkCheck, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageToggle } from "./LanguageToggle";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 interface NavbarProps {
   currentPage?: string;
@@ -26,17 +16,9 @@ interface NavbarProps {
 const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { t, language } = useI18n();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/', { replace: true });
-    setShowLogoutDialog(false);
-    setMobileMenuOpen(false);
-  };
   
   const getCurrentPage = () => {
     if (currentPage) return currentPage;
@@ -133,8 +115,8 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
               alt="Murshid Logo" 
               className="h-14 object-contain transition-transform group-hover:scale-105"
             />
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
-              Murshid
+            <h1 className={`text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 ${language === "ar" ? "leading-normal pb-1.5" : ""}`}>
+              {language === "ar" ? "مرشــــد" : "Murshid"}
             </h1>          
           </button>
 
@@ -183,30 +165,19 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                     {t('navbar.profile')}
                   </Button>
                 </Link>
-                <Button 
-                  onClick={() => setShowLogoutDialog(true)}
-                  id="navbar-logout-button"
-                  variant="outline"
-                  className="rounded-xl border-red-300 dark:border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  {t('navbar.logout')}
-                </Button>
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toast.error(language === 'ar' ? 'يرجى تسجيل الدخول للوصول إلى الملف الشخصي' : 'Please login to access your profile');
-                  }}
-                  id="navbar-profile-guest-button"
-                  variant="ghost"
-                  className="rounded-xl"
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  {t('navbar.profile')}
-                </Button>
+                <Link to="/profile" id="navbar-profile-guest-link">
+                  <Button
+                    id="navbar-profile-guest-button"
+                    variant="ghost"
+                    className="rounded-xl"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    {t('navbar.profile')}
+                  </Button>
+                </Link>
                 <Link to="/login" id="navbar-login-link">
                   <Button
                     variant="ghost"
@@ -286,31 +257,19 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                       {t('navbar.profile')}
                     </Button>
                   </Link>
-                  <Button
-                    onClick={() => setShowLogoutDialog(true)}
-                    id="navbar-mobile-logout-button"
-                    variant="outline"
-                    className="w-full rounded-xl border-red-300 dark:border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    {t('navbar.logout')}
-                  </Button>
                 </>
               ) : (
                 <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toast.error(language === 'ar' ? 'يرجى تسجيل الدخول للوصول إلى الملف الشخصي' : 'Please login to access your profile');
-                      setMobileMenuOpen(false);
-                    }}
-                    id="navbar-mobile-profile-guest-button"
-                    variant="outline"
-                    className="w-full rounded-xl"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    {t('navbar.profile')}
-                  </Button>
+                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-profile-guest-link">
+                    <Button
+                      id="navbar-mobile-profile-guest-button"
+                      variant="outline"
+                      className="w-full rounded-xl"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      {t('navbar.profile')}
+                    </Button>
+                  </Link>
                   <Link to="/login" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-login-link">
                     <Button
                       variant="outline"
@@ -333,31 +292,6 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
         </div>
       )}
 
-      {/* Logout Confirmation Dialog */}
-      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent className="bg-white dark:bg-gray-900" dir={language}>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-900 dark:text-gray-100">
-              {t('navbar.logout.confirmTitle')}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
-              {t('navbar.logout.confirmDescription')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel id="navbar-logout-cancel-button" className="rounded-xl">
-              {t('navbar.logout.cancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleLogout}
-              id="navbar-logout-confirm-button"
-              className="rounded-xl bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
-            >
-              {t('navbar.logout')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </nav>
   );
 };
