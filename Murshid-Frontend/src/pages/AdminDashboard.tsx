@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Shield, Search, Users, Loader2, Trash2, RefreshCw, Building2, BookOpen, Link as LinkIcon } from "lucide-react";
+import { Shield, Search, Users, Loader2, Trash2, RefreshCw, Building2, BookOpen, Link as LinkIcon, Ban, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { Link } from "react-router-dom";
@@ -34,6 +34,9 @@ interface UserData {
   student_type: string | null;
   track: string | null;
   is_admin: boolean | null;
+  is_suspended?: boolean | null;
+  suspended_reason?: string | null;
+  suspended_until?: string | null;
   created_at: string;
 }
 
@@ -48,6 +51,11 @@ const AdminDashboard = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
+  const [userToSuspend, setUserToSuspend] = useState<UserData | null>(null);
+  const [suspendReason, setSuspendReason] = useState("");
+  const [suspendUntil, setSuspendUntil] = useState("");
+  const [suspending, setSuspending] = useState(false);
 
   useEffect(() => {
     // Check if user is admin
@@ -161,6 +169,103 @@ const AdminDashboard = () => {
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
     setUserToDelete(null);
+  };
+
+  const handleSuspendClick = (userData: UserData) => {
+    // Prevent admin from suspending themselves or other admins
+    if (userData.id === user?.id) {
+      toast.error("You cannot suspend your own account");
+      return;
+    }
+    if (userData.is_admin) {
+      toast.error("You cannot suspend another admin");
+      return;
+    }
+    setUserToSuspend(userData);
+    setSuspendReason(userData.suspended_reason || "");
+    // Format suspended_until for datetime-local input if it exists
+    if (userData.suspended_until) {
+      const date = new Date(userData.suspended_until);
+      setSuspendUntil(date.toISOString().slice(0, 16));
+    } else {
+      setSuspendUntil("");
+    }
+    setSuspendDialogOpen(true);
+  };
+
+  const handleSuspendConfirm = async () => {
+    if (!userToSuspend) return;
+
+    try {
+      setSuspending(true);
+      const payload: any = {
+        is_suspended: true,
+        suspended_reason: suspendReason || null,
+        suspended_until: suspendUntil ? new Date(suspendUntil).toISOString() : null,
+      };
+
+      const { error } = await supabase
+        .from("profiles")
+        .update(payload)
+        .eq("id", userToSuspend.id);
+
+      if (error) throw error;
+
+      // Update local state
+      const updated = users.map((u) =>
+        u.id === userToSuspend.id ? { ...u, ...payload } : u
+      );
+      setUsers(updated);
+      setFilteredUsers(updated);
+
+      toast.success(`User ${userToSuspend.name || userToSuspend.email} has been suspended`);
+      setSuspendDialogOpen(false);
+      setUserToSuspend(null);
+      setSuspendReason("");
+      setSuspendUntil("");
+    } catch (error) {
+      console.error("Error suspending user:", error);
+      toast.error("Failed to suspend user. Please try again.");
+    } finally {
+      setSuspending(false);
+    }
+  };
+
+  const handleUnsuspend = async (userData: UserData) => {
+    try {
+      setSuspending(true);
+      const payload = {
+        is_suspended: false,
+        suspended_reason: null,
+        suspended_until: null,
+      };
+
+      const { error } = await supabase
+        .from("profiles")
+        .update(payload)
+        .eq("id", userData.id);
+
+      if (error) throw error;
+
+      // Update local state
+      const updated = users.map((u) => (u.id === userData.id ? { ...u, ...payload } : u));
+      setUsers(updated);
+      setFilteredUsers(updated);
+
+      toast.success(`User ${userData.name || userData.email} has been unsuspended`);
+    } catch (error) {
+      console.error("Error unsuspending user:", error);
+      toast.error("Failed to unsuspend user. Please try again.");
+    } finally {
+      setSuspending(false);
+    }
+  };
+
+  const handleSuspendCancel = () => {
+    setSuspendDialogOpen(false);
+    setUserToSuspend(null);
+    setSuspendReason("");
+    setSuspendUntil("");
   };
 
   if (!user?.is_admin) {
@@ -363,26 +468,59 @@ const AdminDashboard = () => {
                           {formatDate(userData.created_at)}
                         </TableCell>
                         <TableCell>
-                          {userData.is_admin ? (
-                            <Badge className="bg-gradient-to-r from-primary to-accent">
-                              <Shield className={`w-3 h-3 ${language === "ar" ? "ml-1" : "mr-1"}`} />
-                              {t("admin.dashboard.table.status.admin")}
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary">{t("admin.dashboard.table.status.user")}</Badge>
-                          )}
+                          <div className="flex flex-col gap-1">
+                            {userData.is_admin ? (
+                              <Badge className="bg-gradient-to-r from-primary to-accent">
+                                <Shield className={`w-3 h-3 ${language === "ar" ? "ml-1" : "mr-1"}`} />
+                                {t("admin.dashboard.table.status.admin")}
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary">{t("admin.dashboard.table.status.user")}</Badge>
+                            )}
+                            {userData.is_suspended && (
+                              <Badge variant="destructive" className="w-fit">
+                                <Ban className={`w-3 h-3 ${language === "ar" ? "ml-1" : "mr-1"}`} />
+                                Suspended
+                              </Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            id={`admin-dashboard-delete-user-${userData.id}`}
-                            onClick={() => handleDeleteClick(userData)}
-                            disabled={userData.id === user?.id}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            {userData.is_suspended ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                id={`admin-dashboard-unsuspend-user-${userData.id}`}
+                                onClick={() => handleUnsuspend(userData)}
+                                disabled={suspending}
+                                className="gap-1"
+                              >
+                                <Undo2 className="w-4 h-4" />
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                id={`admin-dashboard-suspend-user-${userData.id}`}
+                                onClick={() => handleSuspendClick(userData)}
+                                disabled={suspending || userData.id === user?.id || !!userData.is_admin}
+                                className="gap-1 text-amber-600 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-950/20"
+                              >
+                                <Ban className="w-4 h-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              id={`admin-dashboard-delete-user-${userData.id}`}
+                              onClick={() => handleDeleteClick(userData)}
+                              disabled={userData.id === user?.id}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -422,6 +560,68 @@ const AdminDashboard = () => {
                 </>
               ) : (
                 t("admin.dashboard.dialog.delete")
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Suspend Dialog */}
+      <AlertDialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Suspend User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Suspend user{" "}
+              <span className="font-semibold text-foreground">
+                {userToSuspend?.name || userToSuspend?.email}
+              </span>
+              . You can provide an optional reason and expiration date. The user will be blocked from logging in.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Reason (optional)
+              </label>
+              <Input
+                placeholder="e.g., Policy violation, Terms of service breach"
+                value={suspendReason}
+                onChange={(e) => setSuspendReason(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Suspend Until (optional)
+              </label>
+              <Input
+                type="datetime-local"
+                value={suspendUntil}
+                onChange={(e) => setSuspendUntil(e.target.value)}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Leave empty for indefinite suspension
+              </p>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleSuspendCancel} disabled={suspending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSuspendConfirm}
+              disabled={suspending}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              {suspending ? (
+                <>
+                  <Loader2 className={`w-4 h-4 ${language === "ar" ? "ml-2" : "mr-2"} animate-spin`} />
+                  Suspending...
+                </>
+              ) : (
+                "Suspend"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
