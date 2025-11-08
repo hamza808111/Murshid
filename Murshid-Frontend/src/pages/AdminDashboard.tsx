@@ -424,69 +424,66 @@ const AdminDashboard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{t("admin.dashboard.table.headers.name")}</TableHead>
-                      <TableHead>{t("admin.dashboard.table.headers.email")}</TableHead>
-                      <TableHead>{t("admin.dashboard.table.headers.role")}</TableHead>
-                      <TableHead>{t("admin.dashboard.table.headers.institution")}</TableHead>
-                      <TableHead>{t("admin.dashboard.table.headers.level")}</TableHead>
-                      <TableHead>{t("admin.dashboard.table.headers.gender")}</TableHead>
-                      <TableHead>{t("admin.dashboard.table.headers.joined")}</TableHead>
-                      <TableHead>{t("admin.dashboard.table.headers.status")}</TableHead>
-                      <TableHead className="text-right">{t("admin.dashboard.table.headers.actions")}</TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.name")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.email")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.role")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.institution")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.level")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.gender")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.joined")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-left" : "text-right"}>
+                        {t("admin.dashboard.table.headers.actions")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredUsers.map((userData) => (
                       <TableRow key={userData.id}>
-                        <TableCell className="font-medium">
+                        <TableCell className={`font-medium ${language === "ar" ? "text-right" : "text-left"}`}>
                           {userData.name || t("profile.display.notSet")}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className={`text-sm text-muted-foreground ${language === "ar" ? "text-right" : "text-left"}`}>
                           {userData.email}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={language === "ar" ? "text-right" : "text-left"}>
                           {userData.role ? (
                             <Badge variant="outline">{userData.role === "Student" ? t("auth.role.student") : userData.role === "Specialist" ? t("auth.role.specialist") : userData.role}</Badge>
                           ) : (
                             <span className="text-muted-foreground text-sm">{t("profile.display.notSet")}</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
                           {userData.establishment_name || t("profile.display.notSet")}
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
                           {userData.level || t("profile.display.notSet")}
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
                           {userData.gender === "Male"
                             ? t("auth.gender.male")
                             : userData.gender === "Female"
                             ? t("auth.gender.female")
                             : userData.gender || t("profile.display.notSet")}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className={`text-sm text-muted-foreground ${language === "ar" ? "text-right" : "text-left"}`}>
                           {formatDate(userData.created_at)}
                         </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-1">
-                            {userData.is_admin ? (
-                              <Badge className="bg-gradient-to-r from-primary to-accent">
-                                <Shield className={`w-3 h-3 ${language === "ar" ? "ml-1" : "mr-1"}`} />
-                                {t("admin.dashboard.table.status.admin")}
-                              </Badge>
-                            ) : (
-                              <Badge variant="secondary">{t("admin.dashboard.table.status.user")}</Badge>
-                            )}
-                            {userData.is_suspended && (
-                              <Badge variant="destructive" className="w-fit">
-                                <Ban className={`w-3 h-3 ${language === "ar" ? "ml-1" : "mr-1"}`} />
-                                Suspended
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
+                        <TableCell className={language === "ar" ? "text-left" : "text-right"}>
+                          <div className={`flex items-center gap-1 ${language === "ar" ? "justify-start" : "justify-end"}`}>
                             {userData.is_suspended ? (
                               <Button
                                 variant="outline"
