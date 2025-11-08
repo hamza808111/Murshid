@@ -168,16 +168,6 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <Link to="/profile" id="navbar-profile-guest-link">
-                  <Button
-                    id="navbar-profile-guest-button"
-                    variant="ghost"
-                    className="rounded-xl"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    {t('navbar.profile')}
-                  </Button>
-                </Link>
                 <Link to="/login" id="navbar-login-link">
                   <Button
                     variant="ghost"
