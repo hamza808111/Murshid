@@ -139,7 +139,7 @@ export default function UniversityDetail() {
                       <img 
                         src={`${university.logo_url}?t=${new Date(university.updated_at || Date.now()).getTime()}`}
                         alt={universityName} 
-                        className="w-full h-full object-contain p-3"
+                        className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                           const fallback = e.currentTarget.nextElementSibling as HTMLElement;

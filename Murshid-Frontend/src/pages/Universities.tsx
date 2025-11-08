@@ -224,7 +224,7 @@ export default function UniversitiesPage() {
                         <img 
                           src={`${university.logo_url}?t=${new Date(university.updated_at || Date.now()).getTime()}`} 
                           alt={universityName} 
-                          className="w-full h-full object-contain p-3" 
+                          className="w-full h-full object-cover" 
                           onError={(e) => {
                             // Fallback to icon if image fails to load
                             e.currentTarget.style.display = 'none';
