@@ -45,7 +45,7 @@ export async function getUniversityById(id: string): Promise<UniversityWithMajor
     .from('universities')
     .select(`
       *,
-      university_majors!inner(
+      university_majors(
         *,
         major:majors(*)
       )

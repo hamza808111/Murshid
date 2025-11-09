@@ -76,17 +76,31 @@ const AdminDashboard = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      // Preferred approach: use RPC that joins auth.users to expose email to admins
+      const { data: rpcData, error: rpcError } = await supabase.rpc("admin_user_list");
+
+      if (!rpcError && rpcData) {
+        const sorted = [...(rpcData as any[])].sort((a, b) => (a.created_at > b.created_at ? -1 : 1));
+        setUsers(sorted as any);
+        setFilteredUsers(sorted as any);
+        if (users.length > 0) {
+          toast.success(t("admin.dashboard.toast.refreshSuccess", { count: (rpcData as any[])?.length || 0 }));
+        }
+        return;
+      }
+
+      // Fallback: profiles only (email may be empty)
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, name, establishment_name, level, gender, role, student_type, track, is_admin, created_at, suspended_reason, suspended_until, is_suspended")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      setUsers(data || []);
-      setFilteredUsers(data || []);
-      
-      // Only show success message if manually refreshed (not on initial load)
+      const withEmail = (data || []).map((u: any) => ({ email: "", ...u }));
+      setUsers(withEmail);
+      setFilteredUsers(withEmail);
+
       if (users.length > 0) {
         toast.success(t("admin.dashboard.toast.refreshSuccess", { count: data?.length || 0 }));
       }
@@ -457,7 +471,7 @@ const AdminDashboard = () => {
                           {userData.name || t("profile.display.notSet")}
                         </TableCell>
                         <TableCell className={`text-sm text-muted-foreground ${language === "ar" ? "text-right" : "text-left"}`}>
-                          {userData.email}
+                          {userData.email || t("profile.display.notSet")}
                         </TableCell>
                         <TableCell className={language === "ar" ? "text-right" : "text-left"}>
                           {userData.role ? (
@@ -629,4 +643,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-

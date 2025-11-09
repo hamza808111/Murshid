@@ -280,7 +280,7 @@ export default function MajorDetail() {
                             <img 
                               src={university.logo_url} 
                               alt={universityName} 
-                              className="w-20 h-20 object-contain rounded-xl p-2 shadow-md"
+                              className="w-20 h-20 object-cover rounded-xl shadow-md"
                             />
                           ) : (
                             <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center shadow-md">

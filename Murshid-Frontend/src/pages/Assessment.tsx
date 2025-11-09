@@ -2,8 +2,10 @@ import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, GraduationCap, Clock, Users } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useI18n } from "@/contexts/I18nContext";
 
 const Assessment = () => {
+  const { t, language } = useI18n();
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
       <Navbar />
@@ -17,12 +19,12 @@ const Assessment = () => {
             </div>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white">
-            Career Assessment
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white" dir={language}>
+            {t('assessment.title')}
           </h1>
           
-          <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-200 max-w-3xl mx-auto">
-            Discover your ideal career path through our comprehensive assessment designed to match your interests, skills, and goals with the perfect major.
+          <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-200 max-w-3xl mx-auto" dir={language}>
+            {t('assessment.heroDesc')}
           </p>
         </div>
       </section>
@@ -38,18 +40,18 @@ const Assessment = () => {
                 <Clock className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               </div>
               
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-                Assessment Coming Soon
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white" dir={language}>
+                {t('assessment.comingSoonTitle')}
               </h2>
               
-              <p className="text-lg text-gray-700 dark:text-gray-200 max-w-2xl mx-auto">
-                We're currently developing a comprehensive assessment tool that will help you discover your ideal career path. Our assessment will analyze your interests, strengths, and goals to provide personalized major recommendations.
+              <p className="text-lg text-gray-700 dark:text-gray-200 max-w-2xl mx-auto" dir={language}>
+                {t('assessment.comingSoonDesc')}
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-300">
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-300" dir={language}>
                   <Users className="w-5 h-5" />
-                  <span className="text-sm">Personalized for your unique profile</span>
+                  <span className="text-sm">{t('assessment.feature.personalized')}</span>
                 </div>
               </div>
             </div>
@@ -57,8 +59,8 @@ const Assessment = () => {
 
           {/* What to Expect */}
           <div className="text-center space-y-8">
-            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-              What You Can Expect
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white" dir={language}>
+              {t('assessment.expectTitle')}
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
@@ -66,9 +68,9 @@ const Assessment = () => {
                 <div className="w-12 h-12 mx-auto rounded-lg bg-gradient-to-br from-blue-400 to-blue-500 text-white flex items-center justify-center">
                   <span className="font-bold text-lg">1</span>
                 </div>
-                <h4 className="text-xl font-semibold text-gray-900 dark:text-white">Interest Analysis</h4>
-                <p className="text-gray-700 dark:text-gray-300">
-                  Answer questions about your interests and activities to understand what motivates you.
+                <h4 className="text-xl font-semibold text-gray-900 dark:text-white" dir={language}>{t('assessment.step1.title')}</h4>
+                <p className="text-gray-700 dark:text-gray-300" dir={language}>
+                  {t('assessment.step1.desc')}
                 </p>
               </div>
               
@@ -76,9 +78,9 @@ const Assessment = () => {
                 <div className="w-12 h-12 mx-auto rounded-lg bg-gradient-to-br from-purple-400 to-purple-500 text-white flex items-center justify-center">
                   <span className="font-bold text-lg">2</span>
                 </div>
-                <h4 className="text-xl font-semibold text-gray-900 dark:text-white">Skills Assessment</h4>
-                <p className="text-gray-700 dark:text-gray-300">
-                  Identify your natural strengths and abilities across different domains.
+                <h4 className="text-xl font-semibold text-gray-900 dark:text-white" dir={language}>{t('assessment.step2.title')}</h4>
+                <p className="text-gray-700 dark:text-gray-300" dir={language}>
+                  {t('assessment.step2.desc')}
                 </p>
               </div>
               
@@ -86,9 +88,9 @@ const Assessment = () => {
                 <div className="w-12 h-12 mx-auto rounded-lg bg-gradient-to-br from-green-400 to-green-500 text-white flex items-center justify-center">
                   <span className="font-bold text-lg">3</span>
                 </div>
-                <h4 className="text-xl font-semibold text-gray-900 dark:text-white">Career Matching</h4>
-                <p className="text-gray-700 dark:text-gray-300">
-                  Receive personalized major and career recommendations based on your profile.
+                <h4 className="text-xl font-semibold text-gray-900 dark:text-white" dir={language}>{t('assessment.step3.title')}</h4>
+                <p className="text-gray-700 dark:text-gray-300" dir={language}>
+                  {t('assessment.step3.desc')}
                 </p>
               </div>
             </div>
@@ -103,7 +105,7 @@ const Assessment = () => {
                 className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl text-lg"
               >
                 <ArrowLeft className="w-5 h-5 mr-2" />
-                Back to Home
+                {t('auth.actions.backToHome')}
               </Button>
             </Link>
           </div>

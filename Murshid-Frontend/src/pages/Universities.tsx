@@ -96,6 +96,19 @@ export default function UniversitiesPage() {
     return type ? colors[type] : 'from-gray-400 to-gray-500';
   };
 
+  const getLocalizedType = (type?: UniversityType): string | undefined => {
+    if (!type) return undefined;
+    if (language === 'ar') {
+      const map: Record<UniversityType, string> = {
+        Public: 'حكومية',
+        Private: 'أهلية',
+        International: 'دولية',
+      };
+      return map[type] ?? type;
+    }
+    return type;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
       <Navbar />
@@ -202,7 +215,7 @@ export default function UniversitiesPage() {
                   <Card
                     key={university.id}
                     id={`universities-card-${university.id}`}
-                    className="p-6 rounded-3xl shadow-md hover:shadow-xl transition-all border-0 bg-white dark:bg-gray-800 cursor-pointer group relative flex flex-col h-full"
+                    className="p-6 rounded-3xl shadow-md hover:shadow-xl transition-all border-0 bg-white dark:bg-gray-800 cursor-pointer group relative"
                     onClick={() => navigate(`/universities/${university.id}`)}
                   >
                     {/* Bookmark Button */}
@@ -218,71 +231,85 @@ export default function UniversitiesPage() {
                       )}
                     </button>
 
-                    {/* Main card content (flex-1) */}
-                    <div className="flex-1 flex flex-col">
-                      {/* University Logo or Icon */}
-                      <div className={`w-20 h-20 bg-gradient-to-br ${getTypeColor(university.university_type)} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg overflow-hidden`}>
-                        {university.logo_url ? (
-                          <img
-                            src={`${university.logo_url}?t=${new Date(university.updated_at || Date.now()).getTime()}`}
-                            alt={universityName}
-                            className="w-full h-full object-contain p-3"
-                            onError={(e) => {
-                              // Fallback to icon if image fails to load
-                              e.currentTarget.style.display = 'none';
-                              const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                              if (fallback) fallback.style.display = 'block';
-                            }}
-                          />
-                        ) : null}
-                        <Building2
-                          className="w-10 h-10 text-white"
-                          style={{ display: university.logo_url ? 'none' : 'block' }}
+                    {/* University Logo or Icon */}
+                    <div className={`w-20 h-20 bg-gradient-to-br ${getTypeColor(university.university_type)} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg overflow-hidden`}>
+                      {university.logo_url ? (
+                        <img 
+                          src={`${university.logo_url}?t=${new Date(university.updated_at || Date.now()).getTime()}`} 
+                          alt={universityName} 
+                          className="w-full h-full object-cover" 
+                          onError={(e) => {
+                            // Fallback to icon if image fails to load
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'block';
+                          }}
                         />
-                      </div>
-                      <h3 className={`text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 ${language === 'ar' ? 'pl-8' : 'pr-8'}`} dir={language}>
-                        {universityName}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2" dir={language}>
-                        {universityDescription || (language === 'ar' ? 'لا يوجد وصف متاح' : 'No description available')}
-                      </p>
-                      <div className="space-y-3 mb-4">
-                        {university.city && (
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{universityLocation || university.city}</span>
-                          </div>
-                        )}
-                        {university.ranking_national && (
-                          <div className="flex items-center gap-2">
-                            <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{language === 'ar' ? 'الترتيب المحلي: ' : 'National Rank: '}#{university.ranking_national}</span>
-                          </div>
-                        )}
-                        {university.student_count && (
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{university.student_count.toLocaleString()}+ {language === 'ar' ? 'طالب' : 'Students'}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {university.university_type && (
-                          <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm">{university.university_type}</span>
-                        )}
-                        {university.establishment_year && (
-                          <span className="px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm">{university.establishment_year}</span>
-                        )}
-                        {university.major_count && university.major_count > 0 && (
-                          <span className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm">{university.major_count} {language === 'ar' ? 'تخصص' : 'Majors'}</span>
-                        )}
-                      </div>
+                      ) : null}
+                      <Building2 
+                        className="w-10 h-10 text-white" 
+                        style={{ display: university.logo_url ? 'none' : 'block' }}
+                      />
                     </div>
-                    {/* Fixed at bottom */}
+                    
+                    <h3 className={`text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 ${language === 'ar' ? 'pl-8' : 'pr-8'}`} dir={language}>
+                      {universityName}
+                    </h3>
+                    
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2" dir={language}>
+                      {universityDescription || (language === 'ar' ? 'لا يوجد وصف متاح' : 'No description available')}
+                    </p>
+                    
+                    <div className="space-y-3 mb-4">
+                      {university.city && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm text-gray-600 dark:text-gray-400">{universityLocation || university.city}</span>
+                        </div>
+                      )}
+                      
+                      {Number(university.ranking_national ?? 0) > 0 && (
+                        <div className="flex items-center gap-2">
+                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {language === 'ar' ? 'الترتيب المحلي: ' : 'National Rank: '}
+                            #{university.ranking_national}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {Number(university.student_count ?? 0) > 0 && (
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {university.student_count.toLocaleString()}+ {language === 'ar' ? 'طالب' : 'Students'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {university.university_type && (
+                        <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm">
+                          {getLocalizedType(university.university_type)}
+                        </span>
+                      )}
+                      {Number(university.establishment_year ?? 0) > 0 && (
+                        <span className="px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm">
+                          {university.establishment_year}
+                        </span>
+                      )}
+                      {university.major_count && university.major_count > 0 && (
+                        <span className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm">
+                          {university.major_count} {language === 'ar' ? 'تخصص' : 'Majors'}
+                        </span>
+                      )}
+                    </div>
+                    
                     <Button
                       variant="outline"
                       id={`universities-learn-more-${university.id}`}
-                      className="w-full rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 mt-auto"
+                      className="w-full rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                       dir={language}
                     >
                       {language === 'ar' ? 'المزيد' : 'Learn More'} {language === 'ar' ? '←' : '→'}

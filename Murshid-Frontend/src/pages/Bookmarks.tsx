@@ -131,7 +131,7 @@ export default function Bookmarks() {
                               <img 
                                 src={`${university.logo_url}?t=${new Date(university.updated_at || Date.now()).getTime()}`}
                                 alt={universityName} 
-                                className="w-full h-full object-cover p-1"
+                                className="w-full h-full object-cover"
                                 onError={(e) => {
                                   e.currentTarget.style.display = 'none';
                                   const fallback = e.currentTarget.nextElementSibling as HTMLElement;
@@ -318,7 +318,7 @@ export default function Bookmarks() {
                             <img 
                               src={`${university.logo_url}?t=${new Date(university.updated_at || Date.now()).getTime()}`}
                               alt={universityName} 
-                              className="w-full h-full object-cover p-1"
+                              className="w-full h-full object-cover"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
                                 const fallback = e.currentTarget.nextElementSibling as HTMLElement;

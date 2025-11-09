@@ -62,6 +62,20 @@ const translations = {
     'homepage.startFreeTest': 'Start Free Test',
     'homepage.browseUniversities': 'Browse Universities',
 
+    // Assessment
+    'assessment.title': 'Career Assessment',
+    'assessment.heroDesc': 'Discover your ideal career path through our comprehensive assessment designed to match your interests, skills, and goals with the perfect major.',
+    'assessment.comingSoonTitle': 'Assessment Coming Soon',
+    'assessment.comingSoonDesc': "We're currently developing a comprehensive assessment tool that will help you discover your ideal career path. Our assessment will analyze your interests, strengths, and goals to provide personalized major recommendations.",
+    'assessment.feature.personalized': 'Personalized for your unique profile',
+    'assessment.expectTitle': 'What You Can Expect',
+    'assessment.step1.title': 'Interest Analysis',
+    'assessment.step1.desc': 'Answer questions about your interests and activities to understand what motivates you.',
+    'assessment.step2.title': 'Skills Assessment',
+    'assessment.step2.desc': 'Identify your natural strengths and abilities across different domains.',
+    'assessment.step3.title': 'Career Matching',
+    'assessment.step3.desc': 'Receive personalized major and career recommendations based on your profile.',
+
     // Auth
     'auth.tagline': 'Your guide to choosing the right major',
     'auth.actions.backToHome': 'Back to Home',
@@ -306,6 +320,20 @@ const translations = {
     'homepage.readyToDiscoverDesc': 'ابدأ الآن واحصل على توصيات مخصصة تناسب شغفك ومهاراتك',
     'homepage.startFreeTest': 'ابدأ الاختبار المجاني',
     'homepage.browseUniversities': 'تصفح الجامعات',
+
+    // Assessment
+    'assessment.title': 'تقييم الميول المهنية',
+    'assessment.heroDesc': 'اكتشف مسارك المهني المثالي من خلال تقييم شامل يطابق اهتماماتك ومهاراتك وأهدافك مع التخصص الأنسب لك.',
+    'assessment.comingSoonTitle': 'قريباً: التقييم',
+    'assessment.comingSoonDesc': 'نعمل حالياً على تطوير أداة تقييم شاملة تساعدك على اكتشاف مسارك المهني المثالي. سيحلل التقييم اهتماماتك ونقاط قوتك وأهدافك لتقديم توصيات مخصصة بالتخصصات المناسبة.',
+    'assessment.feature.personalized': 'مصمم خصيصاً لملفك الشخصي',
+    'assessment.expectTitle': 'ما الذي ستجده في التقييم',
+    'assessment.step1.title': 'تحليل الاهتمامات',
+    'assessment.step1.desc': 'أجب عن أسئلة حول اهتماماتك وأنشطتك لفهم ما يحفزك.',
+    'assessment.step2.title': 'تقييم المهارات',
+    'assessment.step2.desc': 'تعرف على نقاط قوتك وقدراتك في مجالات متنوعة.',
+    'assessment.step3.title': 'مواءمة وظيفية',
+    'assessment.step3.desc': 'احصل على توصيات مخصصة بالتخصصات والوظائف بناءً على ملفك.',
     
     // Auth
     'auth.tagline': 'دليلك لاختيار التخصص المناسب',

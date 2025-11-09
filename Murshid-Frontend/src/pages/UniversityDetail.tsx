@@ -72,6 +72,20 @@ export default function UniversityDetail() {
   const universityName = language === 'ar' && university?.name_ar ? university.name_ar : university?.name;
   const universityDescription = language === 'ar' && university?.description_ar ? university.description_ar : university?.description;
   const universityLocation = language === 'ar' && university?.location_ar ? university.location_ar : university?.location;
+  const studentCount = Number(university?.student_count ?? 0);
+
+  const getLocalizedType = (type?: string): string | undefined => {
+    if (!type) return undefined;
+    if (language === 'ar') {
+      const map: Record<string, string> = {
+        Public: 'حكومية',
+        Private: 'أهلية',
+        International: 'دولية',
+      };
+      return map[type] ?? type;
+    }
+    return type;
+  };
 
   if (loading) {
     return (
@@ -139,7 +153,7 @@ export default function UniversityDetail() {
                       <img 
                         src={`${university.logo_url}?t=${new Date(university.updated_at || Date.now()).getTime()}`}
                         alt={universityName} 
-                        className="w-full h-full object-contain p-3"
+                        className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                           const fallback = e.currentTarget.nextElementSibling as HTMLElement;
@@ -183,7 +197,7 @@ export default function UniversityDetail() {
               <div className="flex flex-wrap gap-2 mb-6">
                 {university.university_type && (
                   <Badge variant="outline" className="text-sm">
-                    {university.university_type}
+                    {getLocalizedType(university.university_type)}
                   </Badge>
                 )}
                 {university.establishment_year && (
@@ -334,7 +348,7 @@ export default function UniversityDetail() {
                   </div>
                 )}
 
-                {university.student_count && (
+                {studentCount > 0 && (
                   <div className="flex items-start gap-3">
                     <Users className="w-5 h-5 text-gray-500 mt-0.5" />
                     <div>
@@ -342,7 +356,7 @@ export default function UniversityDetail() {
                         {language === 'ar' ? 'عدد الطلاب' : 'Students'}
                       </p>
                       <p className="font-medium text-gray-900 dark:text-gray-100">
-                        {university.student_count.toLocaleString()}+
+                        {studentCount.toLocaleString()}+
                       </p>
                     </div>
                   </div>
@@ -369,4 +383,3 @@ export default function UniversityDetail() {
     </div>
   );
 }
-
