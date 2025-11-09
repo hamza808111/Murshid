@@ -74,6 +74,19 @@ export default function UniversityDetail() {
   const universityLocation = language === 'ar' && university?.location_ar ? university.location_ar : university?.location;
   const studentCount = Number(university?.student_count ?? 0);
 
+  const getLocalizedType = (type?: string): string | undefined => {
+    if (!type) return undefined;
+    if (language === 'ar') {
+      const map: Record<string, string> = {
+        Public: 'حكومية',
+        Private: 'أهلية',
+        International: 'دولية',
+      };
+      return map[type] ?? type;
+    }
+    return type;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
@@ -184,7 +197,7 @@ export default function UniversityDetail() {
               <div className="flex flex-wrap gap-2 mb-6">
                 {university.university_type && (
                   <Badge variant="outline" className="text-sm">
-                    {university.university_type}
+                    {getLocalizedType(university.university_type)}
                   </Badge>
                 )}
                 {university.establishment_year && (

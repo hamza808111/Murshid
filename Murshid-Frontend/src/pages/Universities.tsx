@@ -96,6 +96,19 @@ export default function UniversitiesPage() {
     return type ? colors[type] : 'from-gray-400 to-gray-500';
   };
 
+  const getLocalizedType = (type?: UniversityType): string | undefined => {
+    if (!type) return undefined;
+    if (language === 'ar') {
+      const map: Record<UniversityType, string> = {
+        Public: 'حكومية',
+        Private: 'أهلية',
+        International: 'دولية',
+      };
+      return map[type] ?? type;
+    }
+    return type;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
       <Navbar />
@@ -278,7 +291,7 @@ export default function UniversitiesPage() {
                     <div className="flex flex-wrap gap-2 mb-4">
                       {university.university_type && (
                         <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm">
-                          {university.university_type}
+                          {getLocalizedType(university.university_type)}
                         </span>
                       )}
                       {Number(university.establishment_year ?? 0) > 0 && (
