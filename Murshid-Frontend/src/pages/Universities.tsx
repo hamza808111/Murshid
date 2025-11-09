@@ -255,7 +255,7 @@ export default function UniversitiesPage() {
                         </div>
                       )}
                       
-                      {university.ranking_national && (
+                      {Number(university.ranking_national ?? 0) > 0 && (
                         <div className="flex items-center gap-2">
                           <Star className="w-4 h-4 text-yellow-500 fill-current" />
                           <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -265,7 +265,7 @@ export default function UniversitiesPage() {
                         </div>
                       )}
                       
-                      {university.student_count && (
+                      {Number(university.student_count ?? 0) > 0 && (
                         <div className="flex items-center gap-2">
                           <Users className="w-4 h-4 text-gray-500" />
                           <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -281,7 +281,7 @@ export default function UniversitiesPage() {
                           {university.university_type}
                         </span>
                       )}
-                      {university.establishment_year && (
+                      {Number(university.establishment_year ?? 0) > 0 && (
                         <span className="px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm">
                           {university.establishment_year}
                         </span>

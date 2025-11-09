@@ -72,6 +72,7 @@ export default function UniversityDetail() {
   const universityName = language === 'ar' && university?.name_ar ? university.name_ar : university?.name;
   const universityDescription = language === 'ar' && university?.description_ar ? university.description_ar : university?.description;
   const universityLocation = language === 'ar' && university?.location_ar ? university.location_ar : university?.location;
+  const studentCount = Number(university?.student_count ?? 0);
 
   if (loading) {
     return (
@@ -334,7 +335,7 @@ export default function UniversityDetail() {
                   </div>
                 )}
 
-                {university.student_count && (
+                {studentCount > 0 && (
                   <div className="flex items-start gap-3">
                     <Users className="w-5 h-5 text-gray-500 mt-0.5" />
                     <div>
@@ -342,7 +343,7 @@ export default function UniversityDetail() {
                         {language === 'ar' ? 'عدد الطلاب' : 'Students'}
                       </p>
                       <p className="font-medium text-gray-900 dark:text-gray-100">
-                        {university.student_count.toLocaleString()}+
+                        {studentCount.toLocaleString()}+
                       </p>
                     </div>
                   </div>
@@ -369,4 +370,3 @@ export default function UniversityDetail() {
     </div>
   );
 }
-
