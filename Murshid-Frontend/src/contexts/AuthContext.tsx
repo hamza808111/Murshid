@@ -15,6 +15,7 @@ interface AppUser {
   student_type?: string;
   track?: string;
   is_admin?: boolean;
+  avatar_url?: string;
 }
 
 interface AuthContextType {
@@ -53,11 +54,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let track: string | undefined;
     
     // Always load profile data to get all fields, regardless of whether name is in metadata
-    const { data: profileData, error } = await supabase
+    // Add timeout to prevent hanging
+    const profilePromise = supabase
       .from("profiles")
       .select("name, establishment_name, level, gender, role, student_type, track, is_admin")
       .eq("id", authUser.id)
       .single();
+    
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Profile fetch timeout")), 5000)
+    );
+    
+    let profileData, error;
+    try {
+      const result = await Promise.race([profilePromise, timeoutPromise]) as any;
+      profileData = result.data;
+      error = result.error;
+    } catch (timeoutError) {
+      console.warn("Profile fetch timed out, using fallback data");
+      error = timeoutError;
+    }
     
     // Use profile data if available, otherwise fall back to metadata or email
     if (profileData && !error) {
@@ -103,27 +119,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
     const init = async () => {
-      const { data } = await supabase.auth.getSession();
-      const session = data.session;
-      if (!isMounted) return;
-      if (session?.user) {
-        const mapped = await mapUserWithProfile(session.user);
+      try {
+        // Add timeout to getSession call
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Session fetch timeout")), 8000)
+        );
+        
+        const { data } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        const session = data?.session;
+        
         if (!isMounted) return;
-        setUser(mapped);
-      } else {
+        if (session?.user) {
+          const mapped = await mapUserWithProfile(session.user);
+          if (!isMounted) return;
+          setUser(mapped);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Error initializing session:", error);
+        // If session restoration fails, just set user to null and stop loading
         setUser(null);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
     };
     init();
 
     const { data: authSub } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!isMounted) return;
-      if (session?.user) {
-        const mapped = await mapUserWithProfile(session.user);
-        if (!isMounted) return;
-        setUser(mapped);
-      } else {
+      try {
+        if (session?.user) {
+          const mapped = await mapUserWithProfile(session.user);
+          if (!isMounted) return;
+          setUser(mapped);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Error handling auth state change:", error);
         setUser(null);
       }
     });
@@ -152,7 +189,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           is_admin: mapped.is_admin
         });
         
-        toast.success("Successfully logged in!");
+        const language = localStorage.getItem('language') || 'en';
+        toast.success(language === 'ar' ? 'تم تسجيل الدخول بنجاح!' : 'Successfully logged in!');
         
         // Redirect admin users to admin dashboard
         if (mapped.is_admin) {
@@ -164,11 +202,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     } catch (error) {
+      const language = localStorage.getItem('language') || 'en';
       const supabaseError = error as unknown as { message?: string };
       if (supabaseError?.message?.toLowerCase().includes("invalid login credentials")) {
-        toast.error("Incorrect email or password. Please try again or sign up.");
+        toast.error(language === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى أو التسجيل.' : 'Incorrect email or password. Please try again or sign up.');
       } else {
-        const message = (error as Error)?.message || "Login failed. Please check your credentials.";
+        const message = (error as Error)?.message || (language === 'ar' ? 'فشل تسجيل الدخول. يرجى التحقق من بيانات الاعتماد الخاصة بك.' : 'Login failed. Please check your credentials.');
         toast.error(message);
       }
       throw error;
@@ -259,10 +298,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         name: "Guest User"
       };
       setUser(guestUser);
-      toast.success("Logged in as guest!");
+      const language = localStorage.getItem('language') || 'en';
+      toast.success(language === 'ar' ? 'تم تسجيل الدخول كضيف!' : 'Logged in as guest!');
       navigate("/");
     } catch (error) {
-      toast.error("Guest login failed. Please try again.");
+      const language = localStorage.getItem('language') || 'en';
+      toast.error(language === 'ar' ? 'فشل تسجيل الدخول كضيف. يرجى المحاولة مرة أخرى.' : 'Guest login failed. Please try again.');
       throw error;
     } finally {
       setLoading(false);
@@ -285,12 +326,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Small delay to ensure state updates
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      toast.success("Logged out successfully");
-      navigate("/login");
+      const language = localStorage.getItem('language') || 'en';
+      toast.success(language === 'ar' ? 'تم تسجيل الخروج بنجاح' : 'Logged out successfully');
+      // Navigation is handled by the component calling logout()
       console.log("✅ Logout successful");
     } catch (error) {
       console.error("❌ Logout error:", error);
-      toast.error("Logout failed. Please try again.");
+      const language = localStorage.getItem('language') || 'en';
+      toast.error(language === 'ar' ? 'فشل تسجيل الخروج. يرجى المحاولة مرة أخرى.' : 'Logout failed. Please try again.');
     }
   };
 

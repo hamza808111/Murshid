@@ -1,90 +1,287 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, LogIn, LogOut, User, Loader2 } from "lucide-react";
+import { Menu, X, LogIn, User, BookmarkCheck, LayoutDashboard } from "lucide-react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useI18n } from "@/contexts/I18nContext";
+import { ThemeToggle } from "./ThemeToggle";
+import { LanguageToggle } from "./LanguageToggle";
 import { toast } from "sonner";
 
-const Navbar = () => {
-  const location = useLocation();
-  const { user, logout } = useAuth();
-  const [loggingOut, setLoggingOut] = useState(false);
-  
-  const isActive = (path: string) => location.pathname === path;
+interface NavbarProps {
+  currentPage?: string;
+  onNavigate?: (page: string) => void;
+}
 
-  const handleLogout = async () => {
-    try {
-      setLoggingOut(true);
-      await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
-      toast.error("Logout failed. Please try again.");
-      setLoggingOut(false);
+const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { t, language } = useI18n();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const getCurrentPage = () => {
+    if (currentPage) return currentPage;
+
+    if (user?.is_admin) {
+      if (location.pathname === '/admin') return 'dashboard';
+      if (location.pathname.startsWith('/admin/majors')) return 'admin-majors';
+      if (location.pathname.startsWith('/admin/universities')) return 'admin-universities';
+      if (location.pathname.startsWith('/admin/university-majors')) return 'admin-universities';
+    }
+
+    if (location.pathname === '/') return 'home';
+    if (location.pathname === '/majors' || location.pathname.startsWith('/majors/')) return 'majors';
+    if (location.pathname === '/universities' || location.pathname.startsWith('/universities/')) return 'universities';
+    if (location.pathname === '/assessment') return 'quiz';
+    if (location.pathname === '/profile') return 'profile';
+    return 'home';
+  };
+
+  const handleNavigate = (page: string) => {
+    if (onNavigate) {
+      onNavigate(page);
+    } else {
+      switch (page) {
+        case 'home':
+          navigate('/');
+          break;
+        case 'dashboard':
+          navigate('/admin');
+          break;
+        case 'majors':
+          if (user?.is_admin) {
+            navigate('/admin/majors');
+          } else {
+            navigate('/majors');
+          }
+          break;
+        case 'universities':
+          if (user?.is_admin) {
+            navigate('/admin/universities');
+          } else {
+            navigate('/universities');
+          }
+          break;
+        case 'admin-majors':
+          navigate('/admin/majors');
+          break;
+        case 'admin-universities':
+          navigate('/admin/universities');
+          break;
+        case 'quiz':
+          if (user) {
+            navigate('/assessment');
+          } else {
+            navigate('/login');
+          }
+          break;
+        case 'contact':
+          break;
+        default:
+          navigate('/');
+      }
     }
   };
 
-  return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Murshid
-            </span>
-          </Link>
+  const isActive = (page: string) => getCurrentPage() === page;
 
-          <div className="flex items-center gap-4">
+  // Dynamic nav items based on user role
+  const navItems = user?.is_admin
+    ? [
+        { id: "dashboard", label: language === "ar" ? "لوحة التحكم" : "Dashboard" },
+        { id: "admin-majors", label: t("navbar.majors") },
+        { id: "admin-universities", label: t("navbar.universities") },
+      ]
+    : [
+        { id: 'home', label: t('navbar.home') },
+        { id: 'majors', label: t('navbar.majors') },
+        { id: 'universities', label: t('navbar.universities') },
+        { id: 'quiz', label: t('navbar.quiz') },
+        { id: 'contact', label: t('navbar.contact') },
+      ];
+
+  return (
+    <nav className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 shadow-sm" dir="ltr">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10" dir="ltr">
+        <div className="flex justify-between items-center h-20">
+          <button
+            onClick={() => handleNavigate(user?.is_admin ? 'dashboard' : 'home')}
+            id="navbar-logo-button"
+            className="flex items-center group"
+          >
+            <img 
+              src="/logo4.png" 
+              alt="Murshid Logo" 
+              className="h-14 object-contain transition-transform group-hover:scale-105"
+            />
+            <h1 className={`text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 ${language === "ar" ? "leading-normal pb-1.5" : ""}`}>
+              {language === "ar" ? "مرشــــد" : "Murshid"}
+            </h1>          
+          </button>
+
+          <div className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleNavigate(item.id)}
+                id={`navbar-nav-${item.id}`}
+                className={`px-4 py-2 rounded-xl transition-all ${
+                  isActive(item.id)
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="hidden md:flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <LanguageToggle />
+              <ThemeToggle />
+            </div>
             
             {user ? (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground hidden sm:block">
-                  {user.email}
-                </span>
-                <Link to="/profile">
+                <Link to="/bookmarks" id="navbar-bookmarks-link">
                   <Button 
-                    variant={isActive("/profile") ? "default" : "ghost"}
-                    className={isActive("/profile") ? "" : "hover:bg-accent/10"}
+                    variant="outline"
+                    size="icon"
+                    id="navbar-bookmarks-button"
                   >
-                    <User className="w-4 h-4 mr-2" />
-                    Profile
+                    <BookmarkCheck className="h-[1.2rem] w-[1.2rem]" />
+                    <span className="sr-only">Bookmarks</span>
                   </Button>
                 </Link>
-                <Button 
-                  onClick={handleLogout}
-                  variant="outline"
-                  className="border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                  disabled={loggingOut}
-                >
-                  {loggingOut ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Logging out...
-                    </>
-                  ) : (
-                    <>
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </>
-                  )}
-                </Button>
+                <Link to="/profile" id="navbar-profile-link">
+                  <Button 
+                    variant="ghost"
+                    className="rounded-xl"
+                    id="navbar-profile-button"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    {t('navbar.profile')}
+                  </Button>
+                </Link>
               </div>
             ) : (
-              <Link to="/login">
-                <Button 
-                  variant={isActive("/login") ? "default" : "outline"}
-                  className={isActive("/login") ? "" : "border-primary/50 hover:bg-primary/10"}
-                >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Login
-                </Button>
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link to="/login" id="navbar-login-link">
+                  <Button
+                    variant="ghost"
+                    className="rounded-xl"
+                    id="navbar-login-button"
+                  >
+                    {t('navbar.login')}
+                  </Button>
+                </Link>
+                <Link to="/signup" id="navbar-signup-link">
+                  <Button className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl px-6 shadow-md" id="navbar-signup-button">
+                    {t('navbar.signUp')}
+                  </Button>
+                </Link>
+              </div>
             )}
+          </div>
+
+          <div className="md:hidden flex items-center gap-2">
+            <LanguageToggle />
+            <ThemeToggle />
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              id="navbar-mobile-menu-toggle"
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+              ) : (
+                <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+              )}
+            </button>
           </div>
         </div>
       </div>
+
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shadow-lg">
+          <div className="px-4 py-4 space-y-2">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  handleNavigate(item.id);
+                  setMobileMenuOpen(false);
+                }}
+                id={`navbar-mobile-nav-${item.id}`}
+                className={`w-full text-right px-4 py-3 rounded-xl transition-all ${
+                  isActive(item.id)
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+            <div className="pt-4 space-y-2 border-t border-gray-100 dark:border-gray-800">
+              {user ? (
+                <>
+                  <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-bookmarks-link">
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-xl"
+                      id="navbar-mobile-bookmarks-button"
+                    >
+                      <BookmarkCheck className="w-4 h-4 mr-2" />
+                      {language === 'ar' ? 'المحفوظات' : 'Bookmarks'}
+                    </Button>
+                  </Link>
+                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-profile-link">
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-xl"
+                      id="navbar-mobile-profile-button"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      {t('navbar.profile')}
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-profile-guest-link">
+                    <Button
+                      id="navbar-mobile-profile-guest-button"
+                      variant="outline"
+                      className="w-full rounded-xl"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      {t('navbar.profile')}
+                    </Button>
+                  </Link>
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-login-link">
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-xl"
+                      id="navbar-mobile-login-button"
+                    >
+                      <LogIn className="w-4 h-4 mr-2" />
+                      {t('navbar.login')}
+                    </Button>
+                  </Link>
+                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-signup-link">
+                    <Button className="w-full bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl" id="navbar-mobile-signup-button">
+                      {t('navbar.signUp')}
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </nav>
   );
 };

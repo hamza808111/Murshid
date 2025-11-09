@@ -17,9 +17,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Shield, Search, Users, LogOut, Loader2, Trash2, RefreshCw } from "lucide-react";
+import { Shield, Search, Users, Loader2, Trash2, RefreshCw, Building2, BookOpen, Link as LinkIcon, Ban, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
+import { Link } from "react-router-dom";
+import { useI18n } from "@/contexts/I18nContext";
 
 interface UserData {
   id: string;
@@ -32,12 +34,16 @@ interface UserData {
   student_type: string | null;
   track: string | null;
   is_admin: boolean | null;
+  is_suspended?: boolean | null;
+  suspended_reason?: string | null;
+  suspended_until?: string | null;
   created_at: string;
 }
 
 const AdminDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const { t, language } = useI18n();
   const [users, setUsers] = useState<UserData[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +51,11 @@ const AdminDashboard = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
+  const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
+  const [userToSuspend, setUserToSuspend] = useState<UserData | null>(null);
+  const [suspendReason, setSuspendReason] = useState("");
+  const [suspendUntil, setSuspendUntil] = useState("");
+  const [suspending, setSuspending] = useState(false);
 
   useEffect(() => {
     // Check if user is admin
@@ -55,7 +65,7 @@ const AdminDashboard = () => {
     }
     
     if (!user.is_admin) {
-      toast.error("Access denied. Admin privileges required.");
+      toast.error(t("admin.dashboard.toast.accessDenied"));
       navigate("/");
       return;
     }
@@ -78,11 +88,11 @@ const AdminDashboard = () => {
       
       // Only show success message if manually refreshed (not on initial load)
       if (users.length > 0) {
-        toast.success(`Refreshed! Found ${data?.length || 0} users`);
+        toast.success(t("admin.dashboard.toast.refreshSuccess", { count: data?.length || 0 }));
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      toast.error("Failed to load users");
+      toast.error(t("admin.dashboard.toast.loadError"));
     } finally {
       setLoading(false);
     }
@@ -114,7 +124,7 @@ const AdminDashboard = () => {
   const handleDeleteClick = (userData: UserData) => {
     // Prevent admin from deleting themselves
     if (userData.id === user?.id) {
-      toast.error("You cannot delete your own account");
+      toast.error(t("admin.dashboard.toast.deleteSelf"));
       return;
     }
     setUserToDelete(userData);
@@ -145,12 +155,12 @@ const AdminDashboard = () => {
       setUsers(users.filter((u) => u.id !== userToDelete.id));
       setFilteredUsers(filteredUsers.filter((u) => u.id !== userToDelete.id));
 
-      toast.success(`User ${userToDelete.name || userToDelete.email} has been deleted`);
+      toast.success(t("admin.dashboard.toast.deleteSuccess", { name: userToDelete.name || userToDelete.email }));
       setDeleteDialogOpen(false);
       setUserToDelete(null);
     } catch (error) {
       console.error("Error deleting user:", error);
-      toast.error("Failed to delete user. Please try again.");
+      toast.error(t("admin.dashboard.toast.deleteError"));
     } finally {
       setDeleting(false);
     }
@@ -161,15 +171,101 @@ const AdminDashboard = () => {
     setUserToDelete(null);
   };
 
-  const handleLogout = async () => {
-    try {
-      setLoggingOut(true);
-      await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
-      toast.error("Logout failed. Please try again.");
-      setLoggingOut(false);
+  const handleSuspendClick = (userData: UserData) => {
+    // Prevent admin from suspending themselves or other admins
+    if (userData.id === user?.id) {
+      toast.error("You cannot suspend your own account");
+      return;
     }
+    if (userData.is_admin) {
+      toast.error("You cannot suspend another admin");
+      return;
+    }
+    setUserToSuspend(userData);
+    setSuspendReason(userData.suspended_reason || "");
+    // Format suspended_until for datetime-local input if it exists
+    if (userData.suspended_until) {
+      const date = new Date(userData.suspended_until);
+      setSuspendUntil(date.toISOString().slice(0, 16));
+    } else {
+      setSuspendUntil("");
+    }
+    setSuspendDialogOpen(true);
+  };
+
+  const handleSuspendConfirm = async () => {
+    if (!userToSuspend) return;
+
+    try {
+      setSuspending(true);
+      const payload: any = {
+        is_suspended: true,
+        suspended_reason: suspendReason || null,
+        suspended_until: suspendUntil ? new Date(suspendUntil).toISOString() : null,
+      };
+
+      const { error } = await supabase
+        .from("profiles")
+        .update(payload)
+        .eq("id", userToSuspend.id);
+
+      if (error) throw error;
+
+      // Update local state
+      const updated = users.map((u) =>
+        u.id === userToSuspend.id ? { ...u, ...payload } : u
+      );
+      setUsers(updated);
+      setFilteredUsers(updated);
+
+      toast.success(`User ${userToSuspend.name || userToSuspend.email} has been suspended`);
+      setSuspendDialogOpen(false);
+      setUserToSuspend(null);
+      setSuspendReason("");
+      setSuspendUntil("");
+    } catch (error) {
+      console.error("Error suspending user:", error);
+      toast.error("Failed to suspend user. Please try again.");
+    } finally {
+      setSuspending(false);
+    }
+  };
+
+  const handleUnsuspend = async (userData: UserData) => {
+    try {
+      setSuspending(true);
+      const payload = {
+        is_suspended: false,
+        suspended_reason: null,
+        suspended_until: null,
+      };
+
+      const { error } = await supabase
+        .from("profiles")
+        .update(payload)
+        .eq("id", userData.id);
+
+      if (error) throw error;
+
+      // Update local state
+      const updated = users.map((u) => (u.id === userData.id ? { ...u, ...payload } : u));
+      setUsers(updated);
+      setFilteredUsers(updated);
+
+      toast.success(`User ${userData.name || userData.email} has been unsuspended`);
+    } catch (error) {
+      console.error("Error unsuspending user:", error);
+      toast.error("Failed to unsuspend user. Please try again.");
+    } finally {
+      setSuspending(false);
+    }
+  };
+
+  const handleSuspendCancel = () => {
+    setSuspendDialogOpen(false);
+    setUserToSuspend(null);
+    setSuspendReason("");
+    setSuspendUntil("");
   };
 
   if (!user?.is_admin) {
@@ -177,7 +273,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+    <div className="admin-layout min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5" dir={language}>
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
@@ -187,37 +283,20 @@ const AdminDashboard = () => {
             <div>
               <h1 className="text-4xl font-bold flex items-center gap-3">
                 <Shield className="w-10 h-10 text-primary" />
-                Admin Dashboard
+                {t("admin.dashboard.title")}
               </h1>
-              <p className="text-muted-foreground mt-2">Manage users and monitor platform activity</p>
+              <p className="text-muted-foreground mt-2">{t("admin.dashboard.subtitle")}</p>
             </div>
             <div className="flex items-center gap-2">
               <Button 
                 onClick={fetchUsers} 
+                id="admin-dashboard-refresh-button"
                 variant="outline" 
                 className="gap-2"
                 disabled={loading}
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button 
-                onClick={handleLogout} 
-                variant="outline" 
-                className="gap-2"
-                disabled={loggingOut}
-              >
-                {loggingOut ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Logging out...
-                  </>
-                ) : (
-                  <>
-                    <LogOut className="w-4 h-4" />
-                    Logout
-                  </>
-                )}
+                {t("admin.dashboard.refresh")}
               </Button>
             </div>
           </div>
@@ -227,7 +306,7 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("admin.dashboard.stats.totalUsers")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{users.length}</div>
@@ -236,7 +315,7 @@ const AdminDashboard = () => {
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Students</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("admin.dashboard.stats.students")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">
@@ -244,10 +323,10 @@ const AdminDashboard = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Specialists</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("admin.dashboard.stats.specialists")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">
@@ -257,21 +336,76 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
+        {/* Quick Actions */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-4">{t("admin.dashboard.tools.title")}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link to="/admin/universities" id="admin-dashboard-universities-link">
+              <Card id="admin-dashboard-universities-card" className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                      <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{t("admin.dashboard.tools.manageUniversities.title")}</h3>
+                      <p className="text-sm text-muted-foreground">{t("admin.dashboard.tools.manageUniversities.desc")}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/admin/majors" id="admin-dashboard-majors-link">
+              <Card id="admin-dashboard-majors-card" className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                      <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{t("admin.dashboard.tools.manageMajors.title")}</h3>
+                      <p className="text-sm text-muted-foreground">{t("admin.dashboard.tools.manageMajors.desc")}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/admin/university-majors" id="admin-dashboard-university-majors-link">
+              <Card id="admin-dashboard-university-majors-card" className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                      <LinkIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{t("admin.dashboard.tools.assignMajors.title")}</h3>
+                      <p className="text-sm text-muted-foreground">{t("admin.dashboard.tools.assignMajors.desc")}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        </div>
+
         {/* Users Table */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                All Users
+                {t("admin.dashboard.table.title")}
               </CardTitle>
               <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className={`absolute ${language === "ar" ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
                 <Input
-                  placeholder="Search users..."
+                  id="admin-dashboard-search-input"
+                  placeholder={t("admin.dashboard.table.searchPlaceholder")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className={language === "ar" ? "pr-10" : "pl-10"}
                 />
               </div>
             </div>
@@ -283,72 +417,107 @@ const AdminDashboard = () => {
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                {searchTerm ? "No users found matching your search" : "No users found"}
+                {searchTerm ? t("admin.dashboard.table.noSearchResults") : t("admin.dashboard.table.noResults")}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Institution</TableHead>
-                      <TableHead>Level</TableHead>
-                      <TableHead>Gender</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.name")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.email")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.role")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.institution")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.level")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.gender")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                        {t("admin.dashboard.table.headers.joined")}
+                      </TableHead>
+                      <TableHead className={language === "ar" ? "text-left" : "text-right"}>
+                        {t("admin.dashboard.table.headers.actions")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredUsers.map((userData) => (
                       <TableRow key={userData.id}>
-                        <TableCell className="font-medium">
-                          {userData.name || "N/A"}
+                        <TableCell className={`font-medium ${language === "ar" ? "text-right" : "text-left"}`}>
+                          {userData.name || t("profile.display.notSet")}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className={`text-sm text-muted-foreground ${language === "ar" ? "text-right" : "text-left"}`}>
                           {userData.email}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={language === "ar" ? "text-right" : "text-left"}>
                           {userData.role ? (
-                            <Badge variant="outline">{userData.role}</Badge>
+                            <Badge variant="outline">{userData.role === "Student" ? t("auth.role.student") : userData.role === "Specialist" ? t("auth.role.specialist") : userData.role}</Badge>
                           ) : (
-                            <span className="text-muted-foreground text-sm">N/A</span>
+                            <span className="text-muted-foreground text-sm">{t("profile.display.notSet")}</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm">
-                          {userData.establishment_name || "N/A"}
+                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
+                          {userData.establishment_name || t("profile.display.notSet")}
                         </TableCell>
-                        <TableCell className="text-sm">
-                          {userData.level || "N/A"}
+                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
+                          {userData.level || t("profile.display.notSet")}
                         </TableCell>
-                        <TableCell className="text-sm">
-                          {userData.gender || "N/A"}
+                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
+                          {userData.gender === "Male"
+                            ? t("auth.gender.male")
+                            : userData.gender === "Female"
+                            ? t("auth.gender.female")
+                            : userData.gender || t("profile.display.notSet")}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className={`text-sm text-muted-foreground ${language === "ar" ? "text-right" : "text-left"}`}>
                           {formatDate(userData.created_at)}
                         </TableCell>
-                        <TableCell>
-                          {userData.is_admin ? (
-                            <Badge className="bg-gradient-to-r from-primary to-accent">
-                              <Shield className="w-3 h-3 mr-1" />
-                              Admin
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary">User</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteClick(userData)}
-                            disabled={userData.id === user?.id}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                        <TableCell className={language === "ar" ? "text-left" : "text-right"}>
+                          <div className={`flex items-center gap-1 ${language === "ar" ? "justify-start" : "justify-end"}`}>
+                            {userData.is_suspended ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                id={`admin-dashboard-unsuspend-user-${userData.id}`}
+                                onClick={() => handleUnsuspend(userData)}
+                                disabled={suspending}
+                                className="gap-1"
+                              >
+                                <Undo2 className="w-4 h-4" />
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                id={`admin-dashboard-suspend-user-${userData.id}`}
+                                onClick={() => handleSuspendClick(userData)}
+                                disabled={suspending || userData.id === user?.id || !!userData.is_admin}
+                                className="gap-1 text-amber-600 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-950/20"
+                              >
+                                <Ban className="w-4 h-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              id={`admin-dashboard-delete-user-${userData.id}`}
+                              onClick={() => handleDeleteClick(userData)}
+                              disabled={userData.id === user?.id}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -364,31 +533,92 @@ const AdminDashboard = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.dashboard.dialog.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the user{" "}
-              <span className="font-semibold text-foreground">
-                {userToDelete?.name || userToDelete?.email}
-              </span>
-              . This action cannot be undone.
+              {t("admin.dashboard.dialog.description", {
+                name: userToDelete?.name || userToDelete?.email || "",
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleDeleteCancel} disabled={deleting}>
-              Cancel
+            <AlertDialogCancel onClick={handleDeleteCancel} id="admin-dashboard-delete-cancel-button" disabled={deleting}>
+              {t("admin.dashboard.dialog.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
+              id="admin-dashboard-delete-confirm-button"
               disabled={deleting}
               className="bg-destructive hover:bg-destructive/90"
             >
               {deleting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Deleting...
+                  <Loader2 className={`w-4 h-4 ${language === "ar" ? "ml-2" : "mr-2"} animate-spin`} />
+                  {t("admin.dashboard.dialog.deleting")}
                 </>
               ) : (
-                "Delete"
+                t("admin.dashboard.dialog.delete")
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Suspend Dialog */}
+      <AlertDialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Suspend User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Suspend user{" "}
+              <span className="font-semibold text-foreground">
+                {userToSuspend?.name || userToSuspend?.email}
+              </span>
+              . You can provide an optional reason and expiration date. The user will be blocked from logging in.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Reason (optional)
+              </label>
+              <Input
+                placeholder="e.g., Policy violation, Terms of service breach"
+                value={suspendReason}
+                onChange={(e) => setSuspendReason(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Suspend Until (optional)
+              </label>
+              <Input
+                type="datetime-local"
+                value={suspendUntil}
+                onChange={(e) => setSuspendUntil(e.target.value)}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Leave empty for indefinite suspension
+              </p>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleSuspendCancel} disabled={suspending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSuspendConfirm}
+              disabled={suspending}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              {suspending ? (
+                <>
+                  <Loader2 className={`w-4 h-4 ${language === "ar" ? "ml-2" : "mr-2"} animate-spin`} />
+                  Suspending...
+                </>
+              ) : (
+                "Suspend"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

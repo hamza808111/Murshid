@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
 import { Check, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useMemo } from "react";
+import { useI18n } from "@/contexts/I18nContext";
 
 interface PasswordValidationPopupProps {
   password: string;
@@ -14,37 +15,38 @@ interface ValidationRule {
 }
 
 const PasswordValidationPopup = ({ password, isVisible }: PasswordValidationPopupProps) => {
-  const [validationRules, setValidationRules] = useState<ValidationRule[]>([
-    { id: "length", text: "At least 8 characters", isValid: false },
-    { id: "uppercase", text: "At least one uppercase letter", isValid: false },
-    { id: "lowercase", text: "At least one lowercase letter", isValid: false },
-  ]);
+  const { t, language } = useI18n();
 
-  useEffect(() => {
-    const newRules = validationRules.map((rule) => {
-      switch (rule.id) {
-        case "length":
-          return { ...rule, isValid: password.length >= 8 };
-        case "uppercase":
-          return { ...rule, isValid: /[A-Z]/.test(password) };
-        case "lowercase":
-          return { ...rule, isValid: /[a-z]/.test(password) };
-        default:
-          return rule;
-      }
-    });
-    setValidationRules(newRules);
-  }, [password]);
+  const validationRules = useMemo<ValidationRule[]>(
+    () => [
+      {
+        id: "length",
+        text: t("auth.passwordRules.length"),
+        isValid: password.length >= 8,
+      },
+      {
+        id: "uppercase",
+        text: t("auth.passwordRules.uppercase"),
+        isValid: /[A-Z]/.test(password),
+      },
+      {
+        id: "lowercase",
+        text: t("auth.passwordRules.lowercase"),
+        isValid: /[a-z]/.test(password),
+      },
+    ],
+    [password, language, t],
+  );
 
   if (!isVisible || password.length === 0) {
     return null;
   }
 
   return (
-    <Card className="absolute top-full left-0 right-0 mt-2 z-50 border-border/50 shadow-lg">
+    <Card className="absolute top-full left-0 right-0 mt-2 z-50 border-border/50 shadow-lg" dir={language}>
       <CardContent className="p-4">
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-foreground mb-2">Password Requirements:</h4>
+          <h4 className="text-sm font-medium text-foreground mb-2">{t("auth.passwordRules.title")}</h4>
           {validationRules.map((rule) => (
             <div key={rule.id} className="flex items-center gap-2 text-sm">
               <div className={`w-4 h-4 rounded-full flex items-center justify-center ${

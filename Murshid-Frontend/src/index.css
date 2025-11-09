@@ -117,4 +117,8 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  .admin-layout footer {
+    display: none !important;
+  }
 }
