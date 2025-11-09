@@ -56,16 +56,31 @@ export default function ImageUpload({
       };
       reader.readAsDataURL(file);
 
-      // Generate unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${path}.${fileExt}`;
-      const filePath = `${fileName}`;
+      // Generate path in a user-specific folder to satisfy RLS
+      // storage policy expects first folder to be auth.uid()
+      const fileExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const baseName = `avatar_${Date.now()}`;
+      const filePath = `${path}/${baseName}.${fileExt}`;
 
       // Delete old image if exists
       if (currentImage) {
-        const oldPath = currentImage.split('/').pop();
-        if (oldPath) {
-          await supabase.storage.from(bucket).remove([oldPath]);
+        const relPath = (() => {
+          try {
+            const url = new URL(currentImage);
+            const marker = `/object/public/${bucket}/`;
+            const idx = url.pathname.indexOf(marker);
+            if (idx !== -1) return url.pathname.substring(idx + marker.length);
+            const parts = url.pathname.split('/');
+            const bIdx = parts.indexOf(bucket);
+            if (bIdx >= 0) return parts.slice(bIdx + 1).join('/');
+            return parts.slice(-2).join('/');
+          } catch {
+            const parts = currentImage.split('/');
+            return parts.slice(-2).join('/');
+          }
+        })();
+        if (relPath) {
+          await supabase.storage.from(bucket).remove([relPath]);
         }
       }
 
@@ -108,13 +123,27 @@ export default function ImageUpload({
       setUploading(true);
 
       // Extract filename from URL
-      const urlParts = currentImage.split('/');
-      const fileName = urlParts[urlParts.length - 1];
+      // Compute relative path within bucket (folder/filename)
+      const relPath = (() => {
+        try {
+          const url = new URL(currentImage);
+          const marker = `/object/public/${bucket}/`;
+          const idx = url.pathname.indexOf(marker);
+          if (idx !== -1) return url.pathname.substring(idx + marker.length);
+          const parts = url.pathname.split('/');
+          const bIdx = parts.indexOf(bucket);
+          if (bIdx >= 0) return parts.slice(bIdx + 1).join('/');
+          return parts.slice(-2).join('/');
+        } catch {
+          const parts = currentImage.split('/');
+          return parts.slice(-2).join('/');
+        }
+      })();
 
       // Delete from storage
       const { error } = await supabase.storage
         .from(bucket)
-        .remove([fileName]);
+        .remove([relPath]);
 
       if (error) throw error;
 
