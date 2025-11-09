@@ -215,7 +215,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                   setMobileMenuOpen(false);
                 }}
                 id={`navbar-mobile-nav-${item.id}`}
-                className={`w-full text-right px-4 py-3 rounded-xl transition-all ${
+                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${
                   isActive(item.id)
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -224,58 +224,48 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                 {item.label}
               </button>
             ))}
-            <div className="pt-4 space-y-2 border-t border-gray-100 dark:border-gray-800">
+            <div className="pt-4 space-y-3 border-t border-gray-100 dark:border-gray-800">
               {user ? (
-                <>
-                  <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-bookmarks-link">
+                <div className="space-y-3">
+                  <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-bookmarks-link" className="block">
                     <Button
                       variant="outline"
-                      className="w-full rounded-xl"
+                      className="w-full justify-start rounded-xl"
                       id="navbar-mobile-bookmarks-button"
                     >
                       <BookmarkCheck className="w-4 h-4 mr-2" />
                       {language === 'ar' ? 'المحفوظات' : 'Bookmarks'}
                     </Button>
                   </Link>
-                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-profile-link">
+                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-profile-link" className="block">
                     <Button
                       variant="outline"
-                      className="w-full rounded-xl"
+                      className="w-full justify-start rounded-xl"
                       id="navbar-mobile-profile-button"
                     >
                       <User className="w-4 h-4 mr-2" />
                       {t('navbar.profile')}
                     </Button>
                   </Link>
-                </>
+                </div>
               ) : (
-                <>
-                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-profile-guest-link">
-                    <Button
-                      id="navbar-mobile-profile-guest-button"
-                      variant="outline"
-                      className="w-full rounded-xl"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      {t('navbar.profile')}
-                    </Button>
-                  </Link>
-                  <Link to="/login" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-login-link">
+                <div className="space-y-3">
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-login-link" className="block">
                     <Button
                       variant="outline"
-                      className="w-full rounded-xl"
+                      className="w-full justify-start rounded-xl"
                       id="navbar-mobile-login-button"
                     >
                       <LogIn className="w-4 h-4 mr-2" />
                       {t('navbar.login')}
                     </Button>
                   </Link>
-                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-signup-link">
-                    <Button className="w-full bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl" id="navbar-mobile-signup-button">
+                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-signup-link" className="block">
+                    <Button className="w-full justify-start bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl" id="navbar-mobile-signup-button">
                       {t('navbar.signUp')}
                     </Button>
                   </Link>
-                </>
+                </div>
               )}
             </div>
           </div>
