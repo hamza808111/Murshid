@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Add timeout to prevent hanging
     const profilePromise = supabase
       .from("profiles")
-      .select("name, establishment_name, level, gender, role, student_type, track, is_admin")
+      .select("name, establishment_name, level, gender, role, student_type, track, is_admin, avatar_url")
       .eq("id", authUser.id)
       .single();
     
@@ -101,18 +101,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("No profile data found for user:", authUser.id, "Error:", error);
     }
     
-    return {
-      id: authUser.id,
-      email: authUser.email || "",
-      name: derivedName,
-      establishment_name: establishmentName,
-      level: level,
-      gender: gender,
-      role: role,
-      student_type: studentType,
-      track: track,
-      is_admin: profileData?.is_admin || false,
-    } as AppUser;
+      return {
+        id: authUser.id,
+        email: authUser.email || "",
+        name: derivedName,
+        establishment_name: establishmentName,
+        level: level,
+        gender: gender,
+        role: role,
+        student_type: studentType,
+        track: track,
+        is_admin: profileData?.is_admin || false,
+        avatar_url: profileData?.avatar_url || undefined,
+      } as AppUser;
   };
 
   // Load session and subscribe to auth state changes
@@ -403,6 +404,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role,
         student_type,
         track,
+        avatar_url: (user as AppUser)?.avatar_url,
       };
       setUser(updatedUser);
       

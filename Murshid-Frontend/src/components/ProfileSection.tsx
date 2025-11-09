@@ -77,7 +77,9 @@ const ProfileSection = () => {
       student_type: user?.student_type || "",
       track: user?.track || "",
     });
-    setAvatarUrl(user?.avatar_url || "");
+    if (user?.avatar_url) {
+      setAvatarUrl(user.avatar_url);
+    }
   }, [user]);
 
   const handleAvatarUpload = async (url: string) => {
