@@ -27,7 +27,7 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordValidation, setShowPasswordValidation] = useState(false);
 
-  const { user, signup, loginAsGuest } = useAuth();
+  const { user, signup } = useAuth();
   const navigate = useNavigate();
   const { t, language } = useI18n();
 
@@ -95,14 +95,7 @@ const Signup = () => {
     }
   };
 
-  const handleGuestLogin = async () => {
-    setIsLoading(true);
-    try {
-      await loginAsGuest();
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Guest login removed
 
   return (
     <div
@@ -358,25 +351,7 @@ const Signup = () => {
                 )}
               </Button>
               
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">{t("auth.common.or")}</span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                id="signup-guest-button"
-                variant="outline"
-                className="w-full rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
-                onClick={handleGuestLogin}
-                disabled={isLoading}
-              >
-                {t("auth.common.continueAsGuest")}
-              </Button>
+              {/* Guest option removed */}
             </form>
 
             <p className="text-center text-sm text-muted-foreground mt-4">
