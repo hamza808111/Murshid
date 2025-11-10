@@ -7,7 +7,7 @@ describe('Filter Majors', () => {
         cy.get('[role="option"]').contains('IT').click();
     });
 
-    it('1-Filter Majors by City', () => {
+    it('1-Filter Majors by degree', () => {
         cy.loginAsStudent();
         cy.get('#navbar-nav-majors').click();
         cy.get('#majors-degree-type-select').click();
