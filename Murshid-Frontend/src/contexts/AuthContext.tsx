@@ -16,6 +16,9 @@ interface AppUser {
   track?: string;
   is_admin?: boolean;
   avatar_url?: string;
+  is_suspended?: boolean;
+  suspended_reason?: string | null;
+  suspended_until?: string | null;
 }
 
 interface AuthContextType {
@@ -57,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Add timeout to prevent hanging
     const profilePromise = supabase
       .from("profiles")
-      .select("name, establishment_name, level, gender, role, student_type, track, is_admin, avatar_url")
+      .select("name, establishment_name, level, gender, role, student_type, track, is_admin, avatar_url, is_suspended, suspended_reason, suspended_until")
       .eq("id", authUser.id)
       .single();
     
@@ -93,7 +96,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role,
         studentType,
         track,
-        is_admin: profileData.is_admin
+        is_admin: profileData.is_admin,
+        is_suspended: profileData.is_suspended,
+        suspended_reason: profileData.suspended_reason,
+        suspended_until: profileData.suspended_until
       });
     } else {
       // If no profile data exists, use fallback values
@@ -113,6 +119,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         track: track,
         is_admin: profileData?.is_admin || false,
         avatar_url: profileData?.avatar_url || undefined,
+        is_suspended: profileData?.is_suspended || false,
+        suspended_reason: profileData?.suspended_reason ?? null,
+        suspended_until: profileData?.suspended_until ?? null,
       } as AppUser;
   };
 
@@ -182,6 +191,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (data.user && data.session) {
         const mapped = await mapUserWithProfile(data.user);
         setUser(mapped);
+        // If the account is suspended, redirect to the suspended page
+        {
+          const lang = localStorage.getItem('language') || 'en';
+          if ((mapped as any)?.is_suspended) {
+            toast.error(lang === 'ar' ? 'تم تعليق حسابك من قبل المشرف.' : 'Your account has been suspended by an administrator.');
+            navigate('/suspended');
+            return;
+          }
+        }
         localStorage.setItem("murshid_token", data.session.access_token);
         
         console.log("🔐 Login successful - User data:", {

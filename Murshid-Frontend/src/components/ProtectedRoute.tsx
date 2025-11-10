@@ -11,8 +11,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/login");
+    if (!loading) {
+      if (!user) {
+        navigate("/login");
+      } else if (user.is_suspended) {
+        navigate("/suspended");
+      }
     }
   }, [user, loading, navigate]);
 
@@ -25,6 +29,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
+    return null;
+  }
+
+  if (user.is_suspended) {
     return null;
   }
 
