@@ -299,7 +299,7 @@ export default function UniversitiesPage() {
                           {university.establishment_year}
                         </span>
                       )}
-                      {university.major_count && university.major_count > 0 && (
+                      {Number(university.major_count ?? 0) > 0 && (
                         <span className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm">
                           {university.major_count} {language === 'ar' ? 'تخصص' : 'Majors'}
                         </span>

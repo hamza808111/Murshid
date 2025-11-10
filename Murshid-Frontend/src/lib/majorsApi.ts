@@ -145,7 +145,7 @@ export async function getMajorsByUniversity(universityId: string) {
       major:majors(*)
     `)
     .eq('university_id', universityId)
-    .eq('is_available', true);
+    ;
 
   if (error) {
     console.error('Error fetching majors by university:', error);
@@ -155,3 +155,17 @@ export async function getMajorsByUniversity(universityId: string) {
   return data?.map(item => item.major) || [];
 }
 
+// Get count of majors for a specific university (all assignments)
+export async function getMajorsCountByUniversity(universityId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('university_majors')
+    .select('*', { count: 'exact', head: true })
+    .eq('university_id', universityId);
+
+  if (error) {
+    console.error('Error counting majors by university:', error);
+    throw error;
+  }
+
+  return count ?? 0;
+}

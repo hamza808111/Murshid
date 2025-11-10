@@ -200,13 +200,13 @@ export default function UniversityDetail() {
                     {getLocalizedType(university.university_type)}
                   </Badge>
                 )}
-                {university.establishment_year && (
+                {Number(university.establishment_year ?? 0) > 0 && (
                   <Badge variant="outline" className="text-sm">
                     <Calendar className="w-3 h-3 mr-1" />
                     {language === 'ar' ? 'تأسست ' : 'Est. '}{university.establishment_year}
                   </Badge>
                 )}
-                {university.ranking_national && (
+                {Number(university.ranking_national ?? 0) > 0 && (
                   <Badge variant="outline" className="text-sm">
                     <Star className="w-3 h-3 mr-1 fill-yellow-500 text-yellow-500" />
                     #{university.ranking_national} {language === 'ar' ? 'محلياً' : 'National'}

@@ -36,7 +36,17 @@ export async function getUniversities(filters?: UniversityFilters): Promise<Univ
     throw error;
   }
 
-  return data || [];
+  // Map relationship count into a flat major_count number
+  const mapped = (data || []).map((row: any) => {
+    let majorCount = 0;
+    const rel = (row as any)?.university_majors;
+    if (Array.isArray(rel) && rel.length > 0 && typeof rel[0]?.count === 'number') {
+      majorCount = rel[0].count as number;
+    }
+    return { ...row, major_count: majorCount } as UniversityWithMajors;
+  });
+
+  return mapped;
 }
 
 // Fetch a single university by ID with its majors
