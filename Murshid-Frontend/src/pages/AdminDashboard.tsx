@@ -80,9 +80,35 @@ const AdminDashboard = () => {
       const { data: rpcData, error: rpcError } = await supabase.rpc("admin_user_list");
 
       if (!rpcError && rpcData) {
-        const sorted = [...(rpcData as any[])].sort((a, b) => (a.created_at > b.created_at ? -1 : 1));
-        setUsers(sorted as any);
-        setFilteredUsers(sorted as any);
+        // Ensure suspension fields exist by merging with profiles
+        const base = [...(rpcData as any[])];
+        const ids = base.map((u) => u.id).filter(Boolean);
+        try {
+          const { data: profilesData } = await supabase
+            .from("profiles")
+            .select("id, is_suspended, suspended_reason, suspended_until")
+            .in("id", ids);
+
+          const byId: Record<string, any> = {};
+          (profilesData || []).forEach((p: any) => {
+            byId[p.id] = {
+              is_suspended: p.is_suspended ?? false,
+              suspended_reason: p.suspended_reason ?? null,
+              suspended_until: p.suspended_until ?? null,
+            };
+          });
+
+          const merged = base.map((u) => ({ ...u, ...(byId[u.id] || {}) }));
+          const sorted = merged.sort((a, b) => (a.created_at > b.created_at ? -1 : 1));
+          setUsers(sorted as any);
+          setFilteredUsers(sorted as any);
+        } catch (_) {
+          // Fallback to base if merge fails
+          const sorted = base.sort((a, b) => (a.created_at > b.created_at ? -1 : 1));
+          setUsers(sorted as any);
+          setFilteredUsers(sorted as any);
+        }
+
         if (users.length > 0) {
           toast.success(t("admin.dashboard.toast.refreshSuccess", { count: (rpcData as any[])?.length || 0 }));
         }
