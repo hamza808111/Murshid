@@ -282,7 +282,7 @@ const translations = {
     'navbar.home': 'الرئيسية',
     'navbar.majors': 'التخصصات',
     'navbar.universities': 'الجامعات',
-    'navbar.quiz': 'الاختبار',
+    'navbar.quiz': 'التقييم',
     'navbar.about': 'من نحن',
     'navbar.contact': 'تواصل معنا',
     'navbar.signUp': 'حساب جديد',

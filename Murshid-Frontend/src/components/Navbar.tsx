@@ -1,12 +1,29 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn, User, BookmarkCheck, LayoutDashboard } from "lucide-react";
+import { Menu, X, LogIn, User, BookmarkCheck, LayoutDashboard, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageToggle } from "./LanguageToggle";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface NavbarProps {
   currentPage?: string;
@@ -16,9 +33,10 @@ interface NavbarProps {
 const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { t, language } = useI18n();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   
   const getCurrentPage = () => {
     if (currentPage) return currentPage;
@@ -148,23 +166,42 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                 <Link to="/bookmarks" id="navbar-bookmarks-link">
                   <Button 
                     variant="outline"
-                    size="icon"
+                    className="rounded-xl"
                     id="navbar-bookmarks-button"
                   >
-                    <BookmarkCheck className="h-[1.2rem] w-[1.2rem]" />
-                    <span className="sr-only">Bookmarks</span>
+                    <BookmarkCheck className="h-[1.2rem] w-[1.2rem] mr-2" />
+                    {language === "ar" ? "المفضلة" : "Bookmarks"}
                   </Button>
                 </Link>
-                <Link to="/profile" id="navbar-profile-link">
-                  <Button 
-                    variant="ghost"
-                    className="rounded-xl"
-                    id="navbar-profile-button"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    {t('navbar.profile')}
-                  </Button>
-                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost"
+                      className="rounded-xl"
+                      id="navbar-profile-button"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      {t('navbar.profile')}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" id="navbar-profile-menu-item" className="cursor-pointer">
+                        <User className="w-4 h-4 mr-2" />
+                        {language === "ar" ? "عرض الملف الشخصي" : "View Profile"}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => setShowLogoutDialog(true)}
+                      id="navbar-logout-menu-item"
+                      className="cursor-pointer text-red-600 dark:text-red-400 focus:text-red-700 dark:focus:text-red-300"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      {t('navbar.logout')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <div className="flex items-center gap-3">
@@ -234,19 +271,41 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                       id="navbar-mobile-bookmarks-button"
                     >
                       <BookmarkCheck className="w-4 h-4 mr-2" />
-                      {language === 'ar' ? 'المحفوظات' : 'Bookmarks'}
+                      {language === 'ar' ? 'المفضلة' : 'Bookmarks'}
                     </Button>
                   </Link>
-                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-profile-link" className="block">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start rounded-xl"
-                      id="navbar-mobile-profile-button"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      {t('navbar.profile')}
-                    </Button>
-                  </Link>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start rounded-xl"
+                        id="navbar-mobile-profile-button"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        {t('navbar.profile')}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuItem asChild>
+                        <Link to="/profile" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-profile-menu-item" className="cursor-pointer">
+                          <User className="w-4 h-4 mr-2" />
+                          {language === "ar" ? "عرض الملف الشخصي" : "View Profile"}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setShowLogoutDialog(true);
+                        }}
+                        id="navbar-mobile-logout-menu-item"
+                        className="cursor-pointer text-red-600 dark:text-red-400 focus:text-red-700 dark:focus:text-red-300"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        {t('navbar.logout')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -271,6 +330,36 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
           </div>
         </div>
       )}
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent className="bg-white dark:bg-gray-900" dir={language}>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-gray-900 dark:text-gray-100">
+              {t('navbar.logout.confirmTitle')}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
+              {t('navbar.logout.confirmDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className={language === "ar" ? "flex-row-reverse sm:flex-row-reverse sm:space-x-0 sm:gap-2" : ""}>
+            <AlertDialogCancel id="navbar-logout-cancel-button" className="rounded-xl">
+              {t('navbar.logout.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                logout();
+                navigate('/', { replace: true });
+                setShowLogoutDialog(false);
+              }}
+              id="navbar-logout-confirm-button"
+              className="rounded-xl bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
+            >
+              {t('navbar.logout')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </nav>
   );

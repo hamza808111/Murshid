@@ -38,7 +38,7 @@ export default function Bookmarks() {
           <div className="text-center">
             <BookmarkCheck className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              {language === 'ar' ? 'قم بتسجيل الدخول لرؤية العناصر المحفوظة' : 'Login to See Your Bookmarks'}
+              {language === 'ar' ? 'قم بتسجيل الدخول لرؤية العناصر المفضلة' : 'Login to See Your Bookmarks'}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               {language === 'ar' 
@@ -70,7 +70,7 @@ export default function Bookmarks() {
             <BookmarkCheck className="w-8 h-8 text-blue-600 dark:text-blue-400" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
-            {language === 'ar' ? 'العناصر المحفوظة' : 'My Bookmarks'}
+            {language === 'ar' ? 'العناصر المفضلة' : 'My Bookmarks'}
           </h1>
           <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto" dir={language}>
             {language === 'ar' 
