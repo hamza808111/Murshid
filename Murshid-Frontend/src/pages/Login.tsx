@@ -16,7 +16,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const { user, login, loginAsGuest } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
   const { t, language } = useI18n();
 
@@ -49,15 +49,6 @@ const Login = () => {
       if (error instanceof z.ZodError) {
         error.errors.forEach((err) => toast.error(err.message));
       }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGuestLogin = async () => {
-    setIsLoading(true);
-    try {
-      await loginAsGuest();
     } finally {
       setIsLoading(false);
     }
@@ -149,28 +140,6 @@ const Login = () => {
                 ) : (
                   t("auth.login.submit")
                 )}
-              </Button>
-              
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background dark:bg-gray-900 px-2 text-muted-foreground">
-                    {t("auth.common.or")}
-                  </span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                id="login-guest-button"
-                variant="outline"
-                className="w-full rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
-                onClick={handleGuestLogin}
-                disabled={isLoading}
-              >
-                {t("auth.common.continueAsGuest")}
               </Button>
             </form>
 

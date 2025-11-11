@@ -163,16 +163,19 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             
             {user ? (
               <div className="flex items-center gap-3">
-                <Link to="/bookmarks" id="navbar-bookmarks-link">
-                  <Button 
-                    variant="outline"
-                    className="rounded-xl"
-                    id="navbar-bookmarks-button"
-                  >
-                    <BookmarkCheck className="h-[1.2rem] w-[1.2rem] mr-2" />
-                    {language === "ar" ? "المفضلة" : "Bookmarks"}
-                  </Button>
-                </Link>
+                {/* Bookmarks - Hidden for admins */}
+                {!user.is_admin && (
+                  <Link to="/bookmarks" id="navbar-bookmarks-link">
+                    <Button 
+                      variant="outline"
+                      className="rounded-xl"
+                      id="navbar-bookmarks-button"
+                    >
+                      <BookmarkCheck className="h-[1.2rem] w-[1.2rem] mr-2" />
+                      {language === "ar" ? "المفضلة" : "Bookmarks"}
+                    </Button>
+                  </Link>
+                )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
@@ -264,16 +267,19 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             <div className="pt-4 space-y-3 border-t border-gray-100 dark:border-gray-800">
               {user ? (
                 <div className="space-y-3">
-                  <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-bookmarks-link" className="block">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start rounded-xl"
-                      id="navbar-mobile-bookmarks-button"
-                    >
-                      <BookmarkCheck className="w-4 h-4 mr-2" />
-                      {language === 'ar' ? 'المفضلة' : 'Bookmarks'}
-                    </Button>
-                  </Link>
+                  {/* Bookmarks - Hidden for admins */}
+                  {!user.is_admin && (
+                    <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-bookmarks-link" className="block">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start rounded-xl"
+                        id="navbar-mobile-bookmarks-button"
+                      >
+                        <BookmarkCheck className="w-4 h-4 mr-2" />
+                        {language === 'ar' ? 'المفضلة' : 'Bookmarks'}
+                      </Button>
+                    </Link>
+                  )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button

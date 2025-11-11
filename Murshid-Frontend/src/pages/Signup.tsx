@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, BookOpen, Users, UserCheck, ArrowLeft } from "lucide-react";
+import { Loader2, BookOpen, Users, UserCheck, ArrowLeft, Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { z } from "zod";
@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import PasswordValidationPopup from "@/components/PasswordValidationPopup";
 import PasswordInput from "@/components/PasswordInput";
 import { useI18n } from "@/contexts/I18nContext";
+import { getUniversities } from "@/lib/universitiesApi";
+import type { University } from "@/types/database";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -26,8 +28,10 @@ const Signup = () => {
   const [track, setTrack] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordValidation, setShowPasswordValidation] = useState(false);
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [loadingUniversities, setLoadingUniversities] = useState(false);
 
-  const { user, signup, loginAsGuest } = useAuth();
+  const { user, signup } = useAuth();
   const navigate = useNavigate();
   const { t, language } = useI18n();
 
@@ -68,6 +72,40 @@ const Signup = () => {
     }
   }, [user, navigate]);
 
+  // Fetch universities on component mount
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      try {
+        setLoadingUniversities(true);
+        const data = await getUniversities();
+        setUniversities(data);
+      } catch (error) {
+        console.error("Error fetching universities:", error);
+        toast.error("Failed to load universities");
+      } finally {
+        setLoadingUniversities(false);
+      }
+    };
+
+    fetchUniversities();
+  }, []);
+
+  // Clear establishment_name and track when student_type changes away from "University"
+  useEffect(() => {
+    if (student_type !== "University") {
+      setEstablishmentName("");
+      setTrack("");
+    }
+  }, [student_type]);
+
+  // Clear establishment_name and track when role changes away from "Student" or "Specialist"
+  useEffect(() => {
+    if (role !== "Student" && role !== "Specialist") {
+      setEstablishmentName("");
+      setTrack("");
+    }
+  }, [role]);
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -90,15 +128,6 @@ const Signup = () => {
       if (error instanceof z.ZodError) {
         error.errors.forEach((err) => toast.error(err.message));
       }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGuestLogin = async () => {
-    setIsLoading(true);
-    try {
-      await loginAsGuest();
     } finally {
       setIsLoading(false);
     }
@@ -202,21 +231,6 @@ const Signup = () => {
                   disabled={isLoading}
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="signup-establishment-name" className="text-gray-900 dark:text-gray-200">
-                  {t("auth.fields.institution")}
-                </Label>
-                <Input
-                  id="signup-establishment-name"
-                  type="text"
-                  placeholder={t("auth.placeholders.institution")}
-                  value={establishment_name}
-                  onChange={(e) => setEstablishmentName(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-
 
               <div className="space-y-2">
                 <Label htmlFor="signup-gender" className="text-gray-900 dark:text-gray-200">
@@ -297,48 +311,148 @@ const Signup = () => {
                   )}
 
                   {student_type === "University" && (
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-track" className="text-gray-900 dark:text-gray-200">
-                        {t("auth.fields.academicTrack")}
-                      </Label>
-                      <Select value={track} onValueChange={setTrack} disabled={isLoading}>
-                        <SelectTrigger id="signup-track">
-                          <div className="flex items-center">
-                            <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
-                            <SelectValue placeholder={t("auth.placeholders.academicTrack")} />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Science" id="signup-track-science">{t("auth.track.science")}</SelectItem>
-                          <SelectItem value="Medicine" id="signup-track-medicine">{t("auth.track.medicine")}</SelectItem>
-                          <SelectItem value="Literature" id="signup-track-literature">{t("auth.track.literature")}</SelectItem>
-                          <SelectItem value="Business" id="signup-track-business">{t("auth.track.business")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-track" className="text-gray-900 dark:text-gray-200">
+                          {t("auth.fields.academicTrack")}
+                        </Label>
+                        <Select value={track} onValueChange={setTrack} disabled={isLoading}>
+                          <SelectTrigger id="signup-track">
+                            <div className="flex items-center">
+                              <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
+                              <SelectValue placeholder={t("auth.placeholders.academicTrack")} />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Science" id="signup-track-science">{t("auth.track.science")}</SelectItem>
+                            <SelectItem value="Medicine" id="signup-track-medicine">{t("auth.track.medicine")}</SelectItem>
+                            <SelectItem value="Literature" id="signup-track-literature">{t("auth.track.literature")}</SelectItem>
+                            <SelectItem value="Business" id="signup-track-business">{t("auth.track.business")}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-establishment-name" className="text-gray-900 dark:text-gray-200">
+                          {t("auth.fields.institution")}
+                        </Label>
+                        <Select 
+                          value={establishment_name} 
+                          onValueChange={setEstablishmentName} 
+                          disabled={isLoading || loadingUniversities}
+                        >
+                          <SelectTrigger id="signup-establishment-name">
+                            <div className="flex items-center">
+                              <Building2 className="w-4 h-4 mr-2 text-muted-foreground" />
+                              <SelectValue placeholder={loadingUniversities ? "Loading..." : t("auth.placeholders.institution")} />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {universities.length === 0 && !loadingUniversities ? (
+                              <div className="px-2 py-1.5 text-sm text-muted-foreground text-center">
+                                {language === 'ar' ? 'لا توجد جامعات متاحة' : 'No universities available'}
+                              </div>
+                            ) : (
+                              universities.map((university) => {
+                                const universityName = language === 'ar' && university.name_ar ? university.name_ar : university.name;
+                                return (
+                                  <SelectItem 
+                                    key={university.id} 
+                                    value={university.name}
+                                    id={`signup-university-${university.id}`}
+                                  >
+                                    {universityName}
+                                  </SelectItem>
+                                );
+                              })
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
                   )}
                 </>
               )}
 
               {role === "Specialist" && (
-                <div className="space-y-2">
-                  <Label htmlFor="signup-level-specialist" className="text-gray-900 dark:text-gray-200">
-                    {t("auth.fields.academicLevel")}
-                  </Label>
-                  <Select value={level} onValueChange={setLevel} disabled={isLoading}>
-                    <SelectTrigger id="signup-level-specialist">
-                      <div className="flex items-center">
-                        <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
-                        <SelectValue placeholder={t("auth.placeholders.academicLevel")} />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="3rd Year" id="signup-level-specialist-3">{t("auth.academicLevel.year3")}</SelectItem>
-                      <SelectItem value="4th Year" id="signup-level-specialist-4">{t("auth.academicLevel.year4")}</SelectItem>
-                      <SelectItem value="Graduate" id="signup-level-specialist-graduate">{t("auth.academicLevel.graduate")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-level-specialist" className="text-gray-900 dark:text-gray-200">
+                      {t("auth.fields.academicLevel")}
+                    </Label>
+                    <Select value={level} onValueChange={setLevel} disabled={isLoading}>
+                      <SelectTrigger id="signup-level-specialist">
+                        <div className="flex items-center">
+                          <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
+                          <SelectValue placeholder={t("auth.placeholders.academicLevel")} />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="3rd Year" id="signup-level-specialist-3">{t("auth.academicLevel.year3")}</SelectItem>
+                        <SelectItem value="4th Year" id="signup-level-specialist-4">{t("auth.academicLevel.year4")}</SelectItem>
+                        <SelectItem value="Graduate" id="signup-level-specialist-graduate">{t("auth.academicLevel.graduate")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-track-specialist" className="text-gray-900 dark:text-gray-200">
+                      {t("auth.fields.academicTrack")}
+                    </Label>
+                    <Select value={track} onValueChange={setTrack} disabled={isLoading}>
+                      <SelectTrigger id="signup-track-specialist">
+                        <div className="flex items-center">
+                          <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
+                          <SelectValue placeholder={t("auth.placeholders.academicTrack")} />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Science" id="signup-track-specialist-science">{t("auth.track.science")}</SelectItem>
+                        <SelectItem value="Medicine" id="signup-track-specialist-medicine">{t("auth.track.medicine")}</SelectItem>
+                        <SelectItem value="Literature" id="signup-track-specialist-literature">{t("auth.track.literature")}</SelectItem>
+                        <SelectItem value="Business" id="signup-track-specialist-business">{t("auth.track.business")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-establishment-name-specialist" className="text-gray-900 dark:text-gray-200">
+                      {t("auth.fields.institution")}
+                    </Label>
+                    <Select 
+                      value={establishment_name} 
+                      onValueChange={setEstablishmentName} 
+                      disabled={isLoading || loadingUniversities}
+                    >
+                      <SelectTrigger id="signup-establishment-name-specialist">
+                        <div className="flex items-center">
+                          <Building2 className="w-4 h-4 mr-2 text-muted-foreground" />
+                          <SelectValue placeholder={loadingUniversities ? "Loading..." : t("auth.placeholders.institution")} />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {universities.length === 0 && !loadingUniversities ? (
+                          <div className="px-2 py-1.5 text-sm text-muted-foreground text-center">
+                            {language === 'ar' ? 'لا توجد جامعات متاحة' : 'No universities available'}
+                          </div>
+                        ) : (
+                          universities.map((university) => {
+                            const universityName = language === 'ar' && university.name_ar ? university.name_ar : university.name;
+                            return (
+                              <SelectItem 
+                                key={university.id} 
+                                value={university.name}
+                                id={`signup-university-specialist-${university.id}`}
+                              >
+                                {universityName}
+                              </SelectItem>
+                            );
+                          })
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
               )}
               <Button
                 type="submit"
@@ -356,26 +470,6 @@ const Signup = () => {
                 ) : (
                   t("auth.signup.submit")
                 )}
-              </Button>
-              
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">{t("auth.common.or")}</span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                id="signup-guest-button"
-                variant="outline"
-                className="w-full rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
-                onClick={handleGuestLogin}
-                disabled={isLoading}
-              >
-                {t("auth.common.continueAsGuest")}
               </Button>
             </form>
 

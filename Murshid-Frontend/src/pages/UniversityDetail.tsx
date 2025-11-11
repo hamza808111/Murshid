@@ -23,6 +23,7 @@ import { getUniversityById } from '@/lib/universitiesApi';
 import { getMajorsByUniversity } from '@/lib/majorsApi';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useI18n } from '@/contexts/I18nContext';
+import { useAuth } from '@/contexts/AuthContext';
 import type { University, Major } from '@/types/database';
 import { toast } from 'sonner';
 
@@ -31,6 +32,7 @@ export default function UniversityDetail() {
   const navigate = useNavigate();
   const { language } = useI18n();
   const { toggleBookmark, isBookmarked } = useBookmarks();
+  const { user } = useAuth();
   
   const [university, setUniversity] = useState<University | null>(null);
   const [majors, setMajors] = useState<Major[]>([]);
@@ -178,19 +180,22 @@ export default function UniversityDetail() {
                   </div>
                 </div>
                 
-                <Button
-                  onClick={handleBookmark}
-                  id="university-detail-bookmark-button"
-                  variant="outline"
-                  size="lg"
-                  className="rounded-full"
-                >
-                  {bookmarked ? (
-                    <BookmarkCheck className="w-5 h-5 text-blue-500 fill-blue-500" />
-                  ) : (
-                    <Bookmark className="w-5 h-5" />
-                  )}
-                </Button>
+                {/* Bookmark Button - Hidden for admins */}
+                {!user?.is_admin && (
+                  <Button
+                    onClick={handleBookmark}
+                    id="university-detail-bookmark-button"
+                    variant="outline"
+                    size="lg"
+                    className="rounded-full"
+                  >
+                    {bookmarked ? (
+                      <BookmarkCheck className="w-5 h-5 text-blue-500 fill-blue-500" />
+                    ) : (
+                      <Bookmark className="w-5 h-5" />
+                    )}
+                  </Button>
+                )}
               </div>
 
               {/* Badges */}

@@ -8,6 +8,7 @@ import { useI18n } from '@/contexts/I18nContext';
 import { useNavigate } from 'react-router-dom';
 import { getUniversities, getUniversityCities } from '@/lib/universitiesApi';
 import { useBookmarks } from '@/hooks/useBookmarks';
+import { useAuth } from '@/contexts/AuthContext';
 import type { UniversityWithMajors, UniversityType } from '@/types/database';
 import { toast } from 'sonner';
 import {
@@ -29,6 +30,7 @@ export default function UniversitiesPage() {
   const { t, language } = useI18n();
   const navigate = useNavigate();
   const { toggleBookmark, isBookmarked } = useBookmarks();
+  const { user } = useAuth();
 
   // Fetch universities from database
   useEffect(() => {
@@ -218,18 +220,20 @@ export default function UniversitiesPage() {
                     className="p-6 rounded-3xl shadow-md hover:shadow-xl transition-all border-0 bg-white dark:bg-gray-800 cursor-pointer group relative"
                     onClick={() => navigate(`/universities/${university.id}`)}
                   >
-                    {/* Bookmark Button */}
-                    <button
-                      onClick={(e) => handleBookmark(university.id, e)}
-                      id={`universities-bookmark-${university.id}`}
-                      className={`absolute top-4 ${language === 'ar' ? 'left-4' : 'right-4'} p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10`}
-                    >
-                      {bookmarked ? (
-                        <BookmarkCheck className="w-5 h-5 text-blue-500 fill-blue-500" />
-                      ) : (
-                        <Bookmark className="w-5 h-5 text-gray-400" />
-                      )}
-                    </button>
+                    {/* Bookmark Button - Hidden for admins */}
+                    {!user?.is_admin && (
+                      <button
+                        onClick={(e) => handleBookmark(university.id, e)}
+                        id={`universities-bookmark-${university.id}`}
+                        className={`absolute top-4 ${language === 'ar' ? 'left-4' : 'right-4'} p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10`}
+                      >
+                        {bookmarked ? (
+                          <BookmarkCheck className="w-5 h-5 text-blue-500 fill-blue-500" />
+                        ) : (
+                          <Bookmark className="w-5 h-5 text-gray-400" />
+                        )}
+                      </button>
+                    )}
 
                     {/* University Logo or Icon */}
                     <div className={`w-20 h-20 bg-gradient-to-br ${getTypeColor(university.university_type)} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg overflow-hidden`}>
@@ -252,7 +256,7 @@ export default function UniversitiesPage() {
                       />
                     </div>
                     
-                    <h3 className={`text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 ${language === 'ar' ? 'pl-8' : 'pr-8'}`} dir={language}>
+                    <h3 className={`text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 ${!user?.is_admin && language === 'ar' ? 'pl-8' : !user?.is_admin && language !== 'ar' ? 'pr-8' : ''}`} dir={language}>
                       {universityName}
                     </h3>
                     
