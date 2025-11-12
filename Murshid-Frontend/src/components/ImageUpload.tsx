@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 interface ImageUploadProps {
   currentImage?: string;
   onImageUpload: (url: string) => void;
-  bucket: 'avatars' | 'university-logos' | 'major-icons';
+  bucket: 'avatars' | 'university-logos' | 'major-icons' | 'specialist-proofs';
   path: string;
   label?: string;
   accept?: string;

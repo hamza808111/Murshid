@@ -26,6 +26,7 @@ const Signup = () => {
   const [track, setTrack] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordValidation, setShowPasswordValidation] = useState(false);
+  const [specialistProofFile, setSpecialistProofFile] = useState<File | null>(null);
 
   const { user, signup } = useAuth();
   const navigate = useNavigate();
@@ -85,7 +86,11 @@ const Signup = () => {
         track,
       });
       setIsLoading(true);
-      await signup(email, password, name, establishment_name, level, gender, role, student_type, track);
+      if (role === 'Specialist' && !specialistProofFile) {
+        toast.error(language === 'ar' ? 'الرجاء رفع صورة إثبات قبل التسجيل' : 'Please upload a proof image before signing up');
+        return;
+      }
+      await signup(email, password, name, establishment_name, level, gender, role, student_type, track, specialistProofFile);
     } catch (error) {
       if (error instanceof z.ZodError) {
         error.errors.forEach((err) => toast.error(err.message));
@@ -149,6 +154,24 @@ const Signup = () => {
                   disabled={isLoading}
                 />
               </div>
+              {role === "Specialist" && (
+                <div className="space-y-2">
+                  <Label htmlFor="signup-specialist-proof" className="text-gray-900 dark:text-gray-200">
+                    {language === 'ar' ? 'إثبات الحالة (صورة)' : 'Proof of status (image)'}
+                  </Label>
+                  <input
+                    id="signup-specialist-proof"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setSpecialistProofFile(e.target.files?.[0] || null)}
+                    disabled={isLoading}
+                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-300 dark:bg-gray-800 dark:border-gray-700"
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {language === 'ar' ? 'يرجى رفع بطاقة الطالب/الخريج أو أي إثبات مناسب' : 'Please upload a student/graduate card or any valid proof'}
+                  </p>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="signup-email" className="text-gray-900 dark:text-gray-200">
                   {t("auth.fields.email")}

@@ -37,6 +37,7 @@ interface UserData {
   is_suspended?: boolean | null;
   suspended_reason?: string | null;
   suspended_until?: string | null;
+  specialist_proof_url?: string | null;
   created_at: string;
 }
 
@@ -56,6 +57,53 @@ const AdminDashboard = () => {
   const [suspendReason, setSuspendReason] = useState("");
   const [suspendUntil, setSuspendUntil] = useState("");
   const [suspending, setSuspending] = useState(false);
+
+  // Open specialist proof with a signed URL (works even if bucket is private)
+  const handleViewProof = async (userData: UserData) => {
+    try {
+      if (!userData.specialist_proof_url) return;
+      const url = new URL(userData.specialist_proof_url);
+      const marker = "/object/public/";
+      let bucket = "";
+      let relPath = "";
+      const idx = url.pathname.indexOf(marker);
+      if (idx !== -1) {
+        const after = url.pathname.substring(idx + marker.length); // bucket/path
+        const parts = after.split("/");
+        bucket = parts.shift() || "";
+        relPath = parts.join("/");
+      } else {
+        // Fallback: try to infer bucket and path
+        const parts = url.pathname.split("/");
+        const bIdx = parts.findIndex((p) => p === "specialist-proofs");
+        if (bIdx >= 0) {
+          bucket = parts[bIdx];
+          relPath = parts.slice(bIdx + 1).join("/");
+        }
+      }
+
+      if (!bucket || !relPath) {
+        toast.error("Cannot parse proof path. Please re-upload the file.");
+        return;
+      }
+
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(relPath, 60 * 60);
+
+      if (error || !data?.signedUrl) {
+        toast.error(
+          "Proof not accessible. Ensure the 'specialist-proofs' bucket exists and policies are applied."
+        );
+        return;
+      }
+
+      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      console.error("Error opening proof:", e);
+      toast.error("Failed to open proof document.");
+    }
+  };
 
   useEffect(() => {
     // Check if user is admin
@@ -86,7 +134,7 @@ const AdminDashboard = () => {
         try {
           const { data: profilesData } = await supabase
             .from("profiles")
-            .select("id, is_suspended, suspended_reason, suspended_until")
+            .select("id, is_suspended, suspended_reason, suspended_until, specialist_proof_url")
             .in("id", ids);
 
           const byId: Record<string, any> = {};
@@ -95,6 +143,7 @@ const AdminDashboard = () => {
               is_suspended: p.is_suspended ?? false,
               suspended_reason: p.suspended_reason ?? null,
               suspended_until: p.suspended_until ?? null,
+              specialist_proof_url: p.specialist_proof_url ?? null,
             };
           });
 
@@ -118,7 +167,7 @@ const AdminDashboard = () => {
       // Fallback: profiles only (email may be empty)
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, name, establishment_name, level, gender, role, student_type, track, is_admin, created_at, suspended_reason, suspended_until, is_suspended")
+        .select("id, name, establishment_name, level, gender, role, student_type, track, is_admin, created_at, suspended_reason, suspended_until, is_suspended, specialist_proof_url")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -462,8 +511,8 @@ const AdminDashboard = () => {
             ) : (
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader>
-                    <TableRow>
+          <TableHeader>
+            <TableRow>
                       <TableHead className={language === "ar" ? "text-right" : "text-left"}>
                         {t("admin.dashboard.table.headers.name")}
                       </TableHead>
@@ -479,17 +528,20 @@ const AdminDashboard = () => {
                       <TableHead className={language === "ar" ? "text-right" : "text-left"}>
                         {t("admin.dashboard.table.headers.level")}
                       </TableHead>
-                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
-                        {t("admin.dashboard.table.headers.gender")}
-                      </TableHead>
-                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
-                        {t("admin.dashboard.table.headers.joined")}
-                      </TableHead>
-                      <TableHead className={language === "ar" ? "text-left" : "text-right"}>
-                        {t("admin.dashboard.table.headers.actions")}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
+              <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                {t("admin.dashboard.table.headers.gender")}
+              </TableHead>
+              <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                Proof
+              </TableHead>
+              <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                {t("admin.dashboard.table.headers.joined")}
+              </TableHead>
+            <TableHead className={language === "ar" ? "text-left" : "text-right"}>
+              {t("admin.dashboard.table.headers.actions")}
+            </TableHead>
+          </TableRow>
+          </TableHeader>
                   <TableBody>
                     {filteredUsers.map((userData) => (
                       <TableRow key={userData.id}>
@@ -518,6 +570,26 @@ const AdminDashboard = () => {
                             : userData.gender === "Female"
                             ? t("auth.gender.female")
                             : userData.gender || t("profile.display.notSet")}
+                        </TableCell>
+                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
+                          {userData.gender === "Male"
+                            ? t("auth.gender.male")
+                            : userData.gender === "Female"
+                            ? t("auth.gender.female")
+                            : userData.gender || t("profile.display.notSet")}
+                        </TableCell>
+                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
+                          {userData.role === 'Specialist' && userData.specialist_proof_url ? (
+                            <button
+                              onClick={() => handleViewProof(userData)}
+                              className="text-blue-600 hover:underline dark:text-blue-400"
+                              id={`admin-dashboard-proof-link-${userData.id}`}
+                            >
+                              View
+                            </button>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">{t("profile.display.notSet")}</span>
+                          )}
                         </TableCell>
                         <TableCell className={`text-sm text-muted-foreground ${language === "ar" ? "text-right" : "text-left"}`}>
                           {formatDate(userData.created_at)}

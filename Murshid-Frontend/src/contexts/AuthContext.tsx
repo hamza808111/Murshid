@@ -25,7 +25,18 @@ interface AuthContextType {
   user: AppUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name?: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => Promise<void>;
+  signup: (
+    email: string,
+    password: string,
+    name?: string,
+    establishment_name?: string,
+    level?: string,
+    gender?: string,
+    role?: string,
+    student_type?: string,
+    track?: string,
+    specialistProofFile?: File | null
+  ) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (name: string, email: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => Promise<void>;
 }
@@ -234,7 +245,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signup = async (email: string, password: string, name?: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => {
+  const signup = async (
+    email: string,
+    password: string,
+    name?: string,
+    establishment_name?: string,
+    level?: string,
+    gender?: string,
+    role?: string,
+    student_type?: string,
+    track?: string,
+    specialistProofFile?: File | null
+  ) => {
     try {
       setLoading(true);
       const { data, error } = await supabase.auth.signUp({
@@ -285,12 +307,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           console.log("Profile created successfully:", profileData);
         }
+
+        // If Specialist, upload proof and deactivate account until approved
+        try {
+          if (role === 'Specialist' && specialistProofFile) {
+            const file = specialistProofFile;
+            const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+            const path = `${data.user.id}/proof_${Date.now()}.${ext}`;
+            const { error: uploadErr } = await supabase.storage
+              .from('specialist-proofs')
+              .upload(path, file, { upsert: true, contentType: file.type });
+            if (uploadErr) throw uploadErr;
+
+            const { data: pub } = supabase.storage
+              .from('specialist-proofs')
+              .getPublicUrl(path);
+            const proofUrl = pub.publicUrl;
+
+            // Mark account as suspended pending verification and save reason
+            await supabase.from('profiles')
+              .update({
+                is_suspended: true,
+                suspended_reason: 'Pending specialist verification',
+                // If the column exists, store proof url
+                specialist_proof_url: (proofUrl as any)
+              } as any)
+              .eq('id', data.user.id);
+          }
+        } catch (e) {
+          console.warn('Specialist proof handling encountered an issue:', e);
+        }
         
-        const mapped = await mapUserWithProfile(data.user);
-        setUser(mapped);
         localStorage.setItem("murshid_token", data.session.access_token);
         toast.success("Account created successfully!");
-        navigate("/");
+        // If suspended (e.g., Specialist pending), redirect to suspended page
+        const mapped = await mapUserWithProfile(data.user);
+        setUser(mapped);
+        if ((mapped as any)?.is_suspended) {
+          toast.error('Your account is pending verification by an administrator.');
+          navigate('/suspended');
+        } else {
+          navigate("/");
+        }
       } else {
         // Email confirmation required
         toast.success("Account created! Please check your email to confirm your account.");

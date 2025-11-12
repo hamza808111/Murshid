@@ -24,9 +24,13 @@ const Suspended = () => {
       <div className="max-w-md w-full border rounded-lg p-6 shadow-sm bg-card text-card-foreground">
         <div className="space-y-2 text-center">
           <h1 className="text-2xl font-semibold">Account Suspended</h1>
-          <p className="text-muted-foreground">
-            Your account has been suspended by an administrator. You cannot access the application at this time.
-          </p>
+          {user?.suspended_reason ? (
+            <p className="text-muted-foreground">{user.suspended_reason}</p>
+          ) : (
+            <p className="text-muted-foreground">
+              Your account has been suspended by an administrator. You cannot access the application at this time.
+            </p>
+          )}
           <p className="text-muted-foreground">
             Please contact support or your administrator if you believe this is a mistake.
           </p>
@@ -42,4 +46,3 @@ const Suspended = () => {
 };
 
 export default Suspended;
-
