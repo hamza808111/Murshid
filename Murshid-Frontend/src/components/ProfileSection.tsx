@@ -342,16 +342,18 @@ const ProfileSection = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="profile-establishment-name">{t("auth.fields.institution")}</Label>
-                  <Input
-                    id="profile-establishment-name"
-                    type="text"
-                    value={formData.establishment_name}
-                    onChange={(e) => setFormData({ ...formData, establishment_name: e.target.value })}
-                    placeholder={t("auth.placeholders.institution")}
-                  />
-                </div>
+                {(formData.role === "Specialist" || (formData.role === "Student" && formData.student_type === "University")) && (
+                  <div className="space-y-2">
+                    <Label htmlFor="profile-establishment-name">{t("auth.fields.institution")}</Label>
+                    <Input
+                      id="profile-establishment-name"
+                      type="text"
+                      value={formData.establishment_name}
+                      onChange={(e) => setFormData({ ...formData, establishment_name: e.target.value })}
+                      placeholder={t("auth.placeholders.institution")}
+                    />
+                  </div>
+                )}
 
 
                 <div className="space-y-2">
@@ -577,17 +579,19 @@ const ProfileSection = () => {
                     {t("profile.sections.academic")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <Building2 className="w-4 h-4 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">{t("profile.details.institution")}</p>
-                          <p className="font-semibold text-foreground">{translateInstitution(user.establishment_name)}</p>
+                    {!(user.role === "Student" && user.student_type === "High School") && (
+                      <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <Building2 className="w-4 h-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">{t("profile.details.institution")}</p>
+                            <p className="font-semibold text-foreground">{translateInstitution(user.establishment_name)}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                     
                     <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-accent/5 to-transparent hover:border-accent/30 transition-all duration-200">
                       <div className="flex items-center gap-3">

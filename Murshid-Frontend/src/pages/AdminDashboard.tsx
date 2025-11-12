@@ -28,6 +28,7 @@ interface UserData {
   email: string;
   name: string | null;
   establishment_name: string | null;
+  university_id?: string | null;
   level: string | null;
   gender: string | null;
   role: string | null;
@@ -134,7 +135,7 @@ const AdminDashboard = () => {
         try {
           const { data: profilesData } = await supabase
             .from("profiles")
-            .select("id, is_suspended, suspended_reason, suspended_until, specialist_proof_url")
+            .select("id, is_suspended, suspended_reason, suspended_until, specialist_proof_url, university_id")
             .in("id", ids);
 
           const byId: Record<string, any> = {};
@@ -167,7 +168,7 @@ const AdminDashboard = () => {
       // Fallback: profiles only (email may be empty)
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, name, establishment_name, level, gender, role, student_type, track, is_admin, created_at, suspended_reason, suspended_until, is_suspended, specialist_proof_url")
+        .select("id, name, establishment_name, university_id, level, gender, role, student_type, track, is_admin, created_at, suspended_reason, suspended_until, is_suspended, specialist_proof_url")
         .order("created_at", { ascending: false });
 
       if (error) throw error;

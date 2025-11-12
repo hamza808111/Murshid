@@ -9,6 +9,7 @@ interface AppUser {
   email: string;
   name?: string;
   establishment_name?: string;
+  university_id?: string;
   level?: string;
   gender?: string;
   role?: string;
@@ -35,7 +36,8 @@ interface AuthContextType {
     role?: string,
     student_type?: string,
     track?: string,
-    specialistProofFile?: File | null
+    specialistProofFile?: File | null,
+    specialistUniversityId?: string | null
   ) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (name: string, email: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => Promise<void>;
@@ -70,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Add timeout to prevent hanging
     const profilePromise = supabase
       .from("profiles")
-      .select("name, establishment_name, level, gender, role, student_type, track, is_admin, avatar_url, is_suspended, suspended_reason, suspended_until")
+      .select("name, establishment_name, university_id, level, gender, role, student_type, track, is_admin, avatar_url, is_suspended, suspended_reason, suspended_until")
       .eq("id", authUser.id)
       .single();
     
@@ -122,6 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: authUser.email || "",
         name: derivedName,
         establishment_name: establishmentName,
+        university_id: profileData?.university_id || undefined,
         level: level,
         gender: gender,
         role: role,
@@ -255,7 +258,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     role?: string,
     student_type?: string,
     track?: string,
-    specialistProofFile?: File | null
+    specialistProofFile?: File | null,
+    specialistUniversityId?: string | null
   ) => {
     try {
       setLoading(true);
@@ -291,6 +295,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             id: data.user.id, 
             name: name || null, 
             establishment_name: establishment_name || null, 
+            university_id: specialistUniversityId || null,
             level: level || null, 
             gender: gender || null,
             role: role || null,

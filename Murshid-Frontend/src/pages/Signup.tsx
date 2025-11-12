@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import PasswordValidationPopup from "@/components/PasswordValidationPopup";
 import PasswordInput from "@/components/PasswordInput";
 import { useI18n } from "@/contexts/I18nContext";
+import { getUniversities } from "@/lib/universitiesApi";
+import type { University } from "@/types/database";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -19,6 +21,7 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [establishment_name, setEstablishmentName] = useState("");
+  const [selectedUniversityId, setSelectedUniversityId] = useState<string>("");
   const [level, setLevel] = useState("");
   const [gender, setGender] = useState("");
   const [role, setRole] = useState("");
@@ -27,6 +30,8 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordValidation, setShowPasswordValidation] = useState(false);
   const [specialistProofFile, setSpecialistProofFile] = useState<File | null>(null);
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [loadingUniversities, setLoadingUniversities] = useState(false);
 
   const { user, signup } = useAuth();
   const navigate = useNavigate();
@@ -69,6 +74,23 @@ const Signup = () => {
     }
   }, [user, navigate]);
 
+  // Load universities list (for Specialists)
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoadingUniversities(true);
+        const data = await getUniversities();
+        setUniversities(data || []);
+      } catch (e) {
+        console.error('Failed to load universities', e);
+      } finally {
+        setLoadingUniversities(false);
+      }
+    };
+    // Load once; list is reused when role toggles to Specialist
+    load();
+  }, []);
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -90,7 +112,23 @@ const Signup = () => {
         toast.error(language === 'ar' ? 'الرجاء رفع صورة إثبات قبل التسجيل' : 'Please upload a proof image before signing up');
         return;
       }
-      await signup(email, password, name, establishment_name, level, gender, role, student_type, track, specialistProofFile);
+      if (role === 'Specialist' && !selectedUniversityId) {
+        toast.error(language === 'ar' ? 'يرجى اختيار الجامعة' : 'Please select your university');
+        return;
+      }
+      await signup(
+        email,
+        password,
+        name,
+        establishment_name,
+        level,
+        gender,
+        role,
+        student_type,
+        track,
+        specialistProofFile,
+        role === 'Specialist' ? selectedUniversityId : null
+      );
     } catch (error) {
       if (error instanceof z.ZodError) {
         error.errors.forEach((err) => toast.error(err.message));
@@ -154,24 +192,7 @@ const Signup = () => {
                   disabled={isLoading}
                 />
               </div>
-              {role === "Specialist" && (
-                <div className="space-y-2">
-                  <Label htmlFor="signup-specialist-proof" className="text-gray-900 dark:text-gray-200">
-                    {language === 'ar' ? 'إثبات الحالة (صورة)' : 'Proof of status (image)'}
-                  </Label>
-                  <input
-                    id="signup-specialist-proof"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setSpecialistProofFile(e.target.files?.[0] || null)}
-                    disabled={isLoading}
-                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-300 dark:bg-gray-800 dark:border-gray-700"
-                  />
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {language === 'ar' ? 'يرجى رفع بطاقة الطالب/الخريج أو أي إثبات مناسب' : 'Please upload a student/graduate card or any valid proof'}
-                  </p>
-                </div>
-              )}
+              {/* Proof upload moved to the end of the form */}
               <div className="space-y-2">
                 <Label htmlFor="signup-email" className="text-gray-900 dark:text-gray-200">
                   {t("auth.fields.email")}
@@ -219,19 +240,125 @@ const Signup = () => {
                 />
               </div>
               
+              {/* Gender just after Confirm Password */}
+              
+
+              {/* Role selection just after Confirm Password */}
               <div className="space-y-2">
-                <Label htmlFor="signup-establishment-name" className="text-gray-900 dark:text-gray-200">
-                  {t("auth.fields.institution")}
+                <Label htmlFor="signup-role" className="text-gray-900 dark:text-gray-200">
+                  {t("auth.fields.role")}
                 </Label>
-                <Input
-                  id="signup-establishment-name"
-                  type="text"
-                  placeholder={t("auth.placeholders.institution")}
-                  value={establishment_name}
-                  onChange={(e) => setEstablishmentName(e.target.value)}
-                  disabled={isLoading}
-                />
+                <Select value={role} onValueChange={setRole} disabled={isLoading}>
+                  <SelectTrigger id="signup-role">
+                    <div className="flex items-center">
+                      <UserCheck className="w-4 h-4 mr-2 text-muted-foreground" />
+                      <SelectValue placeholder={t("auth.placeholders.role")} />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Student" id="signup-role-student">{t("auth.role.student")}</SelectItem>
+                    <SelectItem value="Specialist" id="signup-role-specialist">{t("auth.role.specialist")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+
+              {role && (
+                <>
+                  {/* Student Type immediately after Role */}
+                  {role === "Student" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-student-type" className="text-gray-900 dark:text-gray-200">
+                        {t("auth.fields.studentType")}
+                      </Label>
+                      <Select value={student_type} onValueChange={setStudentType} disabled={isLoading}>
+                        <SelectTrigger id="signup-student-type">
+                          <div className="flex items-center">
+                            <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
+                            <SelectValue placeholder={t("auth.placeholders.studentType")} />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="High School" id="signup-student-type-high-school">{t("auth.studentType.highSchool")}</SelectItem>
+                          <SelectItem value="University" id="signup-student-type-university">{t("auth.studentType.university")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+              {role === 'Specialist' ? (
+                <div className="space-y-2">
+                  <Label htmlFor="signup-university" className="text-gray-900 dark:text-gray-200">
+                    {language === 'ar' ? 'الجامعة' : 'University'}
+                  </Label>
+                  <Select
+                    value={selectedUniversityId}
+                    onValueChange={(val) => {
+                      setSelectedUniversityId(val);
+                      const u = universities.find((x) => x.id === val);
+                      setEstablishmentName(
+                        u ? (language === 'ar' && u.name_ar ? u.name_ar : u.name) : ''
+                      );
+                    }}
+                    disabled={isLoading || loadingUniversities}
+                  >
+                    <SelectTrigger id="signup-university">
+                      <div className="flex items-center">
+                        <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
+                        <SelectValue placeholder={language === 'ar' ? 'اختر الجامعة' : 'Select a university'} />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {universities.length > 0 ? (
+                        universities.map((u) => (
+                          <SelectItem key={u.id} value={u.id} id={`signup-university-${u.id}`}>
+                            {language === 'ar' && u.name_ar ? `${u.name_ar} (${u.name})` : u.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>
+                          {language === 'ar' ? 'لا توجد جامعات' : 'No universities available'}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : role === 'Student' && student_type === 'University' ? (
+                <div className="space-y-2">
+                  <Label htmlFor="signup-university" className="text-gray-900 dark:text-gray-200">
+                    {language === 'ar' ? 'الجامعة' : 'University'}
+                  </Label>
+                  <Select
+                    value={selectedUniversityId}
+                    onValueChange={(val) => {
+                      setSelectedUniversityId(val);
+                      const u = universities.find((x) => x.id === val);
+                      setEstablishmentName(
+                        u ? (language === 'ar' && u.name_ar ? u.name_ar : u.name) : ''
+                      );
+                    }}
+                    disabled={isLoading || loadingUniversities}
+                  >
+                    <SelectTrigger id="signup-university">
+                      <div className="flex items-center">
+                        <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
+                        <SelectValue placeholder={language === 'ar' ? 'اختر الجامعة' : 'Select a university'} />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {universities.length > 0 ? (
+                        universities.map((u) => (
+                          <SelectItem key={u.id} value={u.id} id={`signup-university-${u.id}`}>
+                            {language === 'ar' && u.name_ar ? `${u.name_ar} (${u.name})` : u.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>
+                          {language === 'ar' ? 'لا توجد جامعات' : 'No universities available'}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
 
 
               <div className="space-y-2">
@@ -252,45 +379,11 @@ const Signup = () => {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="signup-role" className="text-gray-900 dark:text-gray-200">
-                  {t("auth.fields.role")}
-                </Label>
-                <Select value={role} onValueChange={setRole} disabled={isLoading}>
-                  <SelectTrigger id="signup-role">
-                    <div className="flex items-center">
-                      <UserCheck className="w-4 h-4 mr-2 text-muted-foreground" />
-                      <SelectValue placeholder={t("auth.placeholders.role")} />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Student" id="signup-role-student">{t("auth.role.student")}</SelectItem>
-                    <SelectItem value="Specialist" id="signup-role-specialist">{t("auth.role.specialist")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Role moved above; removed here */}
 
               {/* Conditional fields based on role */}
               {role === "Student" && (
                 <>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-student-type" className="text-gray-900 dark:text-gray-200">
-                      {t("auth.fields.studentType")}
-                    </Label>
-                    <Select value={student_type} onValueChange={setStudentType} disabled={isLoading}>
-                      <SelectTrigger id="signup-student-type">
-                        <div className="flex items-center">
-                          <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
-                          <SelectValue placeholder={t("auth.placeholders.studentType")} />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="High School" id="signup-student-type-high-school">{t("auth.studentType.highSchool")}</SelectItem>
-                        <SelectItem value="University" id="signup-student-type-university">{t("auth.studentType.university")}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
                   {student_type === "High School" && (
                     <div className="space-y-2">
                       <Label htmlFor="signup-level-high-school" className="text-gray-900 dark:text-gray-200">
@@ -356,6 +449,25 @@ const Signup = () => {
                   </Select>
                 </div>
               )}
+              {role === "Specialist" && (
+                <div className="space-y-2">
+                  <Label htmlFor="signup-specialist-proof" className="text-gray-900 dark:text-gray-200">
+                    {language === 'ar' ? 'إثبات الحالة (صورة)' : 'Proof of status (image)'}
+                  </Label>
+                  <input
+                    id="signup-specialist-proof"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setSpecialistProofFile(e.target.files?.[0] || null)}
+                    disabled={isLoading}
+                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-300 dark:bg-gray-800 dark:border-gray-700"
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {language === 'ar' ? 'يرجى رفع بطاقة الطالب/الخريج أو أي إثبات مناسب' : 'Please upload a student/graduate card or any valid proof'}
+                  </p>
+                </div>
+              )}
+
               <Button
                 type="submit"
                 id="signup-submit-button"
@@ -373,6 +485,8 @@ const Signup = () => {
                   t("auth.signup.submit")
                 )}
               </Button>
+              </>
+              )}
               
               {/* Guest option removed */}
             </form>
