@@ -76,6 +76,9 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             navigate('/login');
           }
           break;
+        case 'community':
+          navigate('/community');
+          break;
         case 'contact':
           break;
         default:
@@ -97,6 +100,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
         { id: 'home', label: t('navbar.home') },
         { id: 'majors', label: t('navbar.majors') },
         { id: 'universities', label: t('navbar.universities') },
+        { id: 'community', label: language === 'ar' ? 'المجتمع' : 'Community' },
         { id: 'quiz', label: t('navbar.quiz') },
         { id: 'contact', label: t('navbar.contact') },
       ];

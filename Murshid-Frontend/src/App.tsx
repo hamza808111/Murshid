@@ -25,6 +25,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminUniversities from "./pages/AdminUniversities";
 import AdminMajors from "./pages/AdminMajors";
 import AdminUniversityMajors from "./pages/AdminUniversityMajors";
+import Community from "./pages/Community";
 import Suspended from "./pages/Suspended";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/admin/universities" element={<ProtectedRoute><AdminUniversities /></ProtectedRoute>} />
               <Route path="/admin/majors" element={<ProtectedRoute><AdminMajors /></ProtectedRoute>} />
               <Route path="/admin/university-majors" element={<ProtectedRoute><AdminUniversityMajors /></ProtectedRoute>} />
+              <Route path="/community" element={<Community />} />
               <Route path="/suspended" element={<Suspended />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />

@@ -25,6 +25,7 @@ import { useBookmarks } from '@/hooks/useBookmarks';
 import { useI18n } from '@/contexts/I18nContext';
 import type { University, Major } from '@/types/database';
 import { toast } from 'sonner';
+import PostsFeed from '@/components/PostsFeed';
 
 export default function UniversityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -141,7 +142,7 @@ export default function UniversityDetail() {
           {language === 'ar' ? 'العودة إلى الجامعات' : 'Back to Universities'}
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
             {/* Header */}
@@ -166,7 +167,7 @@ export default function UniversityDetail() {
                       style={{ display: university.logo_url ? 'none' : 'block' }}
                     />
                   </div>
-                  <div>
+            <div>
                     <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2" dir={language}>
                       {universityName}
                     </h1>
@@ -377,9 +378,15 @@ export default function UniversityDetail() {
                 )}
               </div>
             </Card>
+            </div>
+          </div>
+
+          {/* Community section for this university */}
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-4">Community Posts</h2>
+            <PostsFeed scope="university" universityId={university.id} />
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
 }

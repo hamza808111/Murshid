@@ -22,6 +22,7 @@ import { useBookmarks } from '@/hooks/useBookmarks';
 import { useI18n } from '@/contexts/I18nContext';
 import type { Major, University } from '@/types/database';
 import { toast } from 'sonner';
+import PostsFeed from '@/components/PostsFeed';
 
 export default function MajorDetail() {
   const { id } = useParams<{ id: string }>();
@@ -315,6 +316,14 @@ export default function MajorDetail() {
                   {language === 'ar' ? 'لا توجد جامعات تقدم هذا التخصص حالياً' : 'No universities offer this major at this time'}
                 </p>
               )}
+            </Card>
+
+            {/* Community section for this major */}
+            <Card className="p-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6" dir={language}>
+                Community Posts
+              </h2>
+              <PostsFeed scope="major" majorId={id!} />
             </Card>
           </div>
 
