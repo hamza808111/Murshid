@@ -42,7 +42,7 @@ const translations = {
     'homepage.exploreInterests': 'Explore Your Interests',
     'homepage.exploreInterestsDesc': 'Answer simple questions to understand your tendencies and skills',
     'homepage.getRecommendations': 'Get Recommendations',
-    'homepage.getRecommendationsDesc': 'We provide you with a list of suitable majors for you',
+    'homepage.getRecommendationsDesc': 'We provide you with a detailed list of suitable majors for you',
     'homepage.makeDecision': 'Make Your Decision with Confidence',
     'homepage.makeDecisionDesc': 'Choose your university major based on accurate information',
     'homepage.whyChooseMurshid': 'Why choose Murshid?',

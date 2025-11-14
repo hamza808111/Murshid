@@ -25,7 +25,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const ProfileSection = () => {
+interface ProfileSectionProps {
+  onClose?: () => void;
+}
+
+const ProfileSection = ({ onClose }: ProfileSectionProps = {}) => {
   const { user, updateProfile, logout } = useAuth();
   const { t, language } = useI18n();
   const navigate = useNavigate();
@@ -219,7 +223,15 @@ const ProfileSection = () => {
           {/* Header with gradient background */}
           <div className="relative h-32 bg-gradient-to-r from-primary via-primary/90 to-accent overflow-hidden">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bTAgMTBjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
-            <Sparkles className={`absolute top-4 w-6 h-6 text-white/40 ${language === "ar" ? "left-4" : "right-4"}`} />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose || (() => navigate(user?.role === 'admin' ? '/dashboard' : '/'))}
+              className={`absolute top-4 w-8 h-8 text-white/80 hover:text-white hover:bg-white/20 ${language === "ar" ? "left-4" : "right-4"}`}
+            >
+              <X className="w-5 h-5" />
+            </Button>
+            <Sparkles className={`absolute top-4 w-6 h-6 text-white/40 ${language === "ar" ? "right-4" : "left-4"}`} />
           </div>
 
           <CardHeader className="relative -mt-16 pb-2">
@@ -518,14 +530,14 @@ const ProfileSection = () => {
                 {/* Personal Information Section */}
                 <div>
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <User className="w-5 h-5 text-primary" />
+                    <User className="w-5 h-5 text-accent" />
                     {t("profile.sections.personal")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <User className="w-4 h-4 text-primary" />
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <User className="w-4 h-4 text-accent" />
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">{t("profile.details.fullName")}</p>
@@ -548,8 +560,8 @@ const ProfileSection = () => {
                     
                     <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <Users className="w-4 h-4 text-primary" />
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Users className="w-4 h-4 text-accent" />
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">{t("profile.details.gender")}</p>
@@ -575,15 +587,15 @@ const ProfileSection = () => {
                 {/* Academic Information Section */}
                 <div>
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-primary" />
+                    <BookOpen className="w-5 h-5 text-accent" />
                     {t("profile.sections.academic")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {!(user.role === "Student" && user.student_type === "High School") && (
                       <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/10">
-                            <Building2 className="w-4 h-4 text-primary" />
+                          <div className="p-2 rounded-lg bg-accent/10">
+                            <Building2 className="w-4 h-4 text-accent" />
                           </div>
                           <div>
                             <p className="text-xs text-muted-foreground mb-1">{t("profile.details.institution")}</p>

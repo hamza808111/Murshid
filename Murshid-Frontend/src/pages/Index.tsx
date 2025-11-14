@@ -228,7 +228,7 @@ const Index = () => {
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           <div className="text-center mb-16">
             <h2
-              className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4"
+              className="  text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4"
               dir={language}
             >
               {t("homepage.howItWorks")}
@@ -321,25 +321,27 @@ const Index = () => {
       </ScrollAnimation>
 
       {/* CTA Section */}
-      <ScrollAnimation delay={0.4}>
+      <ScrollAnimation>
         <section className="py-20 bg-[#cdd6ff] dark:bg-[#2a3b6b]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 text-center">
-          <h2
-            className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6"
-            dir={language}
-          >
-            {t("homepage.readyToDiscover")}
-          </h2>
-          <p className="text-gray-700 dark:text-gray-200 mb-8 max-w-2xl mx-auto" dir={language}>
-            {t("homepage.readyToDiscoverDesc")}
-          </p>
-          <Button
-            onClick={() => onNavigate("quiz")}
-            id="home-start-free-test-button"
-            className="bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-2xl px-8 py-6 shadow-lg transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
-          >
-            {t("homepage.startFreeTest")}
-          </Button>
+          <ScrollAnimation delay={0.2}>
+            <h2
+              className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6"
+              dir={language}
+            >
+              {t("homepage.readyToDiscover")}
+            </h2>
+            <p className="text-gray-700 dark:text-gray-200 mb-8 max-w-2xl mx-auto" dir={language}>
+              {t("homepage.readyToDiscoverDesc")}
+            </p>
+            <Button
+              onClick={() => onNavigate("quiz")}
+              id="home-start-free-test-button"
+              className="bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-2xl px-8 py-6 shadow-lg transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
+            >
+              {t("homepage.startFreeTest")}
+            </Button>
+          </ScrollAnimation>
         </div>
       </section>
       </ScrollAnimation>
