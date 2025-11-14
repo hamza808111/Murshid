@@ -17,6 +17,7 @@ export function useBookmarks() {
   const [bookmarkedUniversities, setBookmarkedUniversities] = useState<University[]>([]);
   const [bookmarkedMajors, setBookmarkedMajors] = useState<Major[]>([]);
   const [loading, setLoading] = useState(true);
+  const [animateBookmark, setAnimateBookmark] = useState(false);
 
   // Fetch all bookmarks
   const fetchBookmarks = async () => {
@@ -55,25 +56,22 @@ export function useBookmarks() {
     try {
       const newState = await toggleBookmarkApi(user.id, itemType, itemId);
       
-      // Update local state
-      if (itemType === 'university') {
-        if (newState) {
-          toast.success(language === 'ar' ? 'تم إضافة الجامعة إلى المفضلة!' : 'University bookmarked!');
-        } else {
-          setBookmarkedUniversities(prev => prev.filter(u => u.id !== itemId));
-          toast.success(language === 'ar' ? 'تم إزالة الجامعة من المفضلة' : 'University removed from bookmarks');
-        }
-      } else {
-        if (newState) {
-          toast.success(language === 'ar' ? 'تم إضافة التخصص إلى المفضلة!' : 'Major bookmarked!');
-        } else {
-          setBookmarkedMajors(prev => prev.filter(m => m.id !== itemId));
-          toast.success(language === 'ar' ? 'تم إزالة التخصص من المفضلة' : 'Major removed from bookmarks');
-        }
-      }
-
-      // Refresh bookmarks
+      // Fetch fresh data immediately after toggle
       await fetchBookmarks();
+      
+      if (newState) {
+        setAnimateBookmark(true);
+        setTimeout(() => setAnimateBookmark(false), 600);
+        toast.success(language === 'ar' ? 
+          (itemType === 'university' ? 'تم إضافة الجامعة إلى المفضلة!' : 'تم إضافة التخصص إلى المفضلة!') :
+          (itemType === 'university' ? 'University bookmarked!' : 'Major bookmarked!')
+        );
+      } else {
+        toast.success(language === 'ar' ? 
+          (itemType === 'university' ? 'تم إزالة الجامعة من المفضلة' : 'تم إزالة التخصص من المفضلة') :
+          (itemType === 'university' ? 'University removed from bookmarks' : 'Major removed from bookmarks')
+        );
+      }
       return newState;
     } catch (error) {
       console.error('Error toggling bookmark:', error);
@@ -91,13 +89,17 @@ export function useBookmarks() {
     }
   };
 
+  const totalBookmarks = bookmarkedUniversities.length + bookmarkedMajors.length;
+
   return {
     bookmarkedUniversities,
     bookmarkedMajors,
+    totalBookmarks,
     loading,
     toggleBookmark,
     isBookmarked: checkIsBookmarked,
-    refreshBookmarks: fetchBookmarks
+    refreshBookmarks: fetchBookmarks,
+    animateBookmark
   };
 }
 

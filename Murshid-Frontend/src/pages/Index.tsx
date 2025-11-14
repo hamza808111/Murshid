@@ -2,6 +2,8 @@ import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AnimatedHero } from "@/components/AnimatedHero";
+import { PageAnimation } from "@/components/animations/PageAnimation";
+import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
 import {
   Search,
   Target,
@@ -57,7 +59,10 @@ const Index = () => {
     );
   }
 
-  // Don't render homepage for admins - redirect immediately
+  // Don't render homepage for admins - redirect immediately redirect to dashboard
+  if(user?.is_admin){
+    navigate("/admin");
+  }
   if (user?.is_admin) {
     return null;
   }
@@ -136,29 +141,30 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
+    <PageAnimation>
+      <div className="min-h-screen">
+        <Navbar />
 
-      {/* Hidden diagnostics to preserve backend ping behavior without UI noise */}
-      {user && user.id !== "guest" && (
-        <div className="hidden">
-          <span>
-            {pingLoading
-              ? "Checking connectivity..."
-              : pingResponse
-              ? `Backend: ${pingResponse.message}`
-              : pingError
-              ? `Error: ${String((pingErrorObj as Error)?.message || "")}`
-              : ""}
-          </span>
-          <button onClick={() => refetchPing()} aria-hidden>
-            retry
-          </button>
-        </div>
-      )}
+        {/* Hidden diagnostics to preserve backend ping behavior without UI noise */}
+        {user && user.id !== "guest" && (
+          <div className="hidden">
+            <span>
+              {pingLoading
+                ? "Checking connectivity..."
+                : pingResponse
+                ? `Backend: ${pingResponse.message}`
+                : pingError
+                ? `Error: ${String((pingErrorObj as Error)?.message || "")}`
+                : ""}
+            </span>
+            <button onClick={() => refetchPing()} aria-hidden>
+              retry
+            </button>
+          </div>
+        )}
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b] pt-10 pb-32">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b] pt-10 pb-32">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Text Content */}
@@ -217,7 +223,8 @@ const Index = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <ScrollAnimation>
+        <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           <div className="text-center mb-16">
             <h2
@@ -227,7 +234,7 @@ const Index = () => {
               {t("homepage.howItWorks")}
             </h2>
             <p
-              className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
+              className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto "
               dir={language}
             >
               {t("homepage.threeSteps")}
@@ -236,10 +243,10 @@ const Index = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((step, index) => (
-              <Card
-                key={step.title}
-                className="relative p-8 text-center rounded-3xl shadow-lg hover:shadow-xl transition-shadow border-0 bg-white dark:bg-gray-800"
-              >
+              <ScrollAnimation key={step.title} delay={index * 0.2}>
+                <Card
+                  className="relative p-8 text-center rounded-3xl shadow-lg moving-shadow border-0 bg-white dark:bg-gray-800"
+                >
                 <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
                   <div
                     className={`w-16 h-16 bg-gradient-to-br ${step.color} rounded-2xl flex items-center justify-center shadow-lg`}
@@ -258,14 +265,17 @@ const Index = () => {
                     {step.description}
                   </p>
                 </div>
-              </Card>
+                </Card>
+              </ScrollAnimation>
             ))}
           </div>
         </div>
       </section>
+      </ScrollAnimation>
 
       {/* Features Section */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20">
+      <ScrollAnimation delay={0.2}>
+        <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           <div className="text-center mb-16">
             <h2
@@ -283,11 +293,11 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature) => (
-              <Card
-                key={feature.title}
-                className="p-6 rounded-3xl shadow-md hover:shadow-lg transition-all border-0 bg-white dark:bg-gray-800"
-              >
+            {features.map((feature, index) => (
+              <ScrollAnimation key={feature.title} delay={index * 0.1}>
+                <Card
+                  className="p-6 rounded-3xl shadow-md moving-shadow border-0 bg-white dark:bg-gray-800"
+                >
                 <div
                   className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center mb-4`}
                 >
@@ -302,14 +312,17 @@ const Index = () => {
                 <p className="text-gray-600 dark:text-gray-300" dir={language}>
                   {feature.description}
                 </p>
-              </Card>
+                </Card>
+              </ScrollAnimation>
             ))}
           </div>
         </div>
       </section>
+      </ScrollAnimation>
 
       {/* CTA Section */}
-      <section className="py-20 bg-[#cdd6ff] dark:bg-[#2a3b6b]">
+      <ScrollAnimation delay={0.4}>
+        <section className="py-20 bg-[#cdd6ff] dark:bg-[#2a3b6b]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 text-center">
           <h2
             className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6"
@@ -329,7 +342,9 @@ const Index = () => {
           </Button>
         </div>
       </section>
-    </div>
+      </ScrollAnimation>
+      </div>
+    </PageAnimation>
   );
 };
 

@@ -4,6 +4,8 @@ import { Search, MapPin, Star, Users, Bookmark, BookmarkCheck, Building2 } from 
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PageAnimation } from "@/components/animations/PageAnimation";
+import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
 import { useI18n } from '@/contexts/I18nContext';
 import { useNavigate } from 'react-router-dom';
 import { getUniversities, getUniversityCities } from '@/lib/universitiesApi';
@@ -110,22 +112,25 @@ export default function UniversitiesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
-      <Navbar />
+    <PageAnimation>
+      <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
+        <Navbar />
       
       <div className="py-20">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
-              {language === 'ar' ? 'استكشف الجامعات' : 'Explore Universities'}
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto" dir={language}>
-              {language === 'ar' 
-                ? 'اكتشف أفضل الجامعات في المملكة وابحث عن الخيار المناسب لك'
-                : 'Discover top universities in the Kingdom and find the right fit for you'}
-            </p>
-          </div>
+          <ScrollAnimation>
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
+                {language === 'ar' ? 'استكشف الجامعات' : 'Explore Universities'}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto" dir={language}>
+                {language === 'ar'
+                  ? 'اكتشف أفضل الجامعات في المملكة وابحث عن الخيار المناسب لك'
+                  : 'Discover top universities in the Kingdom and find the right fit for you'}
+              </p>
+            </div>
+          </ScrollAnimation>
 
           {/* Search and Filters */}
           <div className="max-w-4xl mx-auto mb-12 space-y-4">
@@ -204,20 +209,21 @@ export default function UniversitiesPage() {
 
           {/* Universities Grid */}
           {!loading && universities.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {universities.map((university) => {
+            <ScrollAnimation delay={0.2}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {universities.map((university, index) => {
                 const bookmarked = isBookmarked('university', university.id);
                 const universityName = language === 'ar' && university.name_ar ? university.name_ar : university.name;
                 const universityDescription = language === 'ar' && university.description_ar ? university.description_ar : university.description;
                 const universityLocation = language === 'ar' && university.location_ar ? university.location_ar : university.location;
 
                 return (
-                  <Card
-                    key={university.id}
-                    id={`universities-card-${university.id}`}
-                    className="p-6 rounded-3xl shadow-md hover:shadow-xl transition-all border-0 bg-white dark:bg-gray-800 cursor-pointer group relative"
-                    onClick={() => navigate(`/universities/${university.id}`)}
-                  >
+                  <ScrollAnimation key={university.id} delay={index * 0.1}>
+                    <Card
+                      id={`universities-card-${university.id}`}
+                      className="p-6 rounded-3xl shadow-md card-hover border-0 bg-white dark:bg-gray-800 cursor-pointer group relative h-full flex flex-col min-h-96"
+                      onClick={() => navigate(`/universities/${university.id}`)}
+                    >
                     {/* Bookmark Button */}
                     <button
                       onClick={(e) => handleBookmark(university.id, e)}
@@ -252,7 +258,7 @@ export default function UniversitiesPage() {
                       />
                     </div>
                     
-                    <h3 className={`text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 ${language === 'ar' ? 'pl-8' : 'pr-8'}`} dir={language}>
+                    <h3 className={`text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 ${language === 'ar' ? 'pl-8' : 'pr-8'} h-14 flex items-start`} dir={language}>
                       {universityName}
                     </h3>
                     
@@ -288,7 +294,7 @@ export default function UniversitiesPage() {
                       )}
                     </div>
                     
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-2 mb-4 flex-grow">
                       {university.university_type && (
                         <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm">
                           {getLocalizedType(university.university_type)}
@@ -296,7 +302,7 @@ export default function UniversitiesPage() {
                       )}
                       {Number(university.establishment_year ?? 0) > 0 && (
                         <span className="px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm">
-                          {university.establishment_year}
+                          {language === 'ar' ? `تأسست ${university.establishment_year}` : `Founded ${university.establishment_year}`}
                         </span>
                       )}
                       {Number(university.major_count ?? 0) > 0 && (
@@ -315,9 +321,11 @@ export default function UniversitiesPage() {
                       {language === 'ar' ? 'المزيد' : 'Learn More'} {language === 'ar' ? '←' : '→'}
                     </Button>
                   </Card>
+                  </ScrollAnimation>
                 );
               })}
             </div>
+            </ScrollAnimation>
           )}
 
           {/* No Results */}
@@ -336,7 +344,8 @@ export default function UniversitiesPage() {
           )}
 
           {/* CTA Section */}
-          <div className="mt-20 bg-[#cdd6ff] dark:bg-[#2a3b6b] rounded-3xl p-12 text-center shadow-xl">
+          <ScrollAnimation delay={0.4}>
+            <div className="mt-20 bg-[#cdd6ff] dark:bg-[#2a3b6b] rounded-3xl p-12 text-center shadow-xl">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
               {language === 'ar' ? 'لا تزال محتاراً؟' : 'Still Confused?'}
             </h2>
@@ -345,7 +354,7 @@ export default function UniversitiesPage() {
                 ? 'خذ اختبارنا الشامل لاكتشاف أفضل الجامعات والتخصصات المناسبة لك'
                 : 'Take our comprehensive test to discover the best universities and majors for you'}
             </p>
-            <Button 
+            <Button
               onClick={handleStartTest}
               id="universities-start-test-button"
               variant="outline"
@@ -354,8 +363,10 @@ export default function UniversitiesPage() {
               {language === 'ar' ? 'ابدأ الاختبار الآن' : 'Start Test Now'}
             </Button>
           </div>
+        </ScrollAnimation>
         </div>
       </div>
     </div>
+    </PageAnimation>
   );
 }

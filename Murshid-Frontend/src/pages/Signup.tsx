@@ -14,6 +14,8 @@ import PasswordInput from "@/components/PasswordInput";
 import { useI18n } from "@/contexts/I18nContext";
 import { getUniversities } from "@/lib/universitiesApi";
 import type { University } from "@/types/database";
+import { PageAnimation } from "@/components/animations/PageAnimation";
+import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -141,11 +143,13 @@ const Signup = () => {
   // Guest login removed
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4"
-      dir={language}
-    >
-      <div className="w-full max-w-md">
+    <PageAnimation>
+      <div
+        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/30 p-4"
+        dir={language}
+      >
+        <ScrollAnimation>
+          <div className="w-full max-w-md">
         <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center gap-3 mb-4 overflow-hidden h-24">
             <img 
@@ -503,8 +507,10 @@ const Signup = () => {
         <p className="text-center text-sm text-muted-foreground mt-6">
           {t("auth.common.agreement")}
         </p>
+          </div>
+        </ScrollAnimation>
       </div>
-    </div>
+    </PageAnimation>
   );
 };
 

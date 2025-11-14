@@ -200,7 +200,7 @@ export default function AdminUniversities() {
               setDialogOpen(true);
             }}
             id="admin-universities-add-button"
-            className="bg-blue-500 hover:bg-blue-600"
+            className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add University
@@ -225,7 +225,7 @@ export default function AdminUniversities() {
         {/* Universities List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredUniversities.map((university) => (
-            <Card key={university.id} className="p-6">
+            <Card key={university.id} className="p-6 h-65 flex flex-col">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
@@ -244,7 +244,7 @@ export default function AdminUniversities() {
                 </div>
               </div>
 
-              <div className="space-y-2 mb-4 text-sm">
+              <div className="space-y-2 mb-4 text-sm flex-1">
                 {university.city && (
                   <p className="text-gray-600 dark:text-gray-400">
                     📍 {university.city}
@@ -262,13 +262,13 @@ export default function AdminUniversities() {
                 )}
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-auto">
                 <Button
                   onClick={() => handleEdit(university)}
                   id={`admin-universities-edit-${university.id}`}
                   variant="outline"
                   size="sm"
-                  className="flex-1"
+                  className="flex-1 rounded-xl border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                 >
                   <Edit className="w-4 h-4 mr-1" />
                   Edit
@@ -278,7 +278,7 @@ export default function AdminUniversities() {
                   id={`admin-universities-delete-${university.id}`}
                   variant="destructive"
                   size="sm"
-                  className="flex-1"
+                  className="flex-1 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
                   Delete
@@ -448,6 +448,7 @@ export default function AdminUniversities() {
                 type="button"
                 id="admin-universities-form-cancel-button"
                 variant="outline"
+                className="rounded-2xl px-6 py-3 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                 onClick={() => {
                   setDialogOpen(false);
                   resetForm();
@@ -455,7 +456,7 @@ export default function AdminUniversities() {
               >
                 Cancel
               </Button>
-              <Button type="submit" id="admin-universities-form-submit-button" className="bg-blue-500 hover:bg-blue-600">
+              <Button type="submit" id="admin-universities-form-submit-button" className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-6 py-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                 {editingUniversity ? 'Update' : 'Create'} University
               </Button>
             </DialogFooter>

@@ -45,7 +45,11 @@ export default function Bookmarks() {
                 ? 'يجب عليك تسجيل الدخول لحفظ الجامعات والتخصصات المفضلة لديك'
                 : 'You need to be logged in to save your favorite universities and majors'}
             </p>
-            <Button onClick={() => navigate('/login')} id="bookmarks-login-button">
+            <Button 
+              onClick={() => navigate('/login')} 
+              id="bookmarks-login-button"
+              className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+            >
               {language === 'ar' ? 'تسجيل الدخول' : 'Login'}
             </Button>
           </div>
@@ -254,11 +258,20 @@ export default function Bookmarks() {
                     : 'Start bookmarking your favorite universities and majors'}
                 </p>
                 <div className="flex gap-4 justify-center">
-                  <Button onClick={() => navigate('/universities')} id="bookmarks-browse-universities-button">
+                  <Button 
+                    onClick={() => navigate('/universities')} 
+                    id="bookmarks-browse-universities-button"
+                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                  >
                     {language === 'ar' ? 'تصفح الجامعات' : 'Browse Universities'}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
-                  <Button onClick={() => navigate('/majors')} id="bookmarks-browse-majors-button" variant="outline">
+                  <Button 
+                    onClick={() => navigate('/majors')} 
+                    id="bookmarks-browse-majors-button" 
+                    variant="outline"
+                    className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                  >
                     {language === 'ar' ? 'تصفح التخصصات' : 'Browse Majors'}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -371,7 +384,11 @@ export default function Bookmarks() {
                     ? 'ابدأ بحفظ الجامعات المفضلة لديك'
                     : 'Start bookmarking your favorite universities'}
                 </p>
-                <Button onClick={() => navigate('/universities')} id="bookmarks-tab-universities-browse-button">
+                <Button 
+                  onClick={() => navigate('/universities')} 
+                  id="bookmarks-tab-universities-browse-button"
+                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                >
                   {language === 'ar' ? 'تصفح الجامعات' : 'Browse Universities'}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
@@ -446,7 +463,11 @@ export default function Bookmarks() {
                     ? 'ابدأ بحفظ التخصصات المفضلة لديك'
                     : 'Start bookmarking your favorite majors'}
                 </p>
-                <Button onClick={() => navigate('/majors')} id="bookmarks-tab-majors-browse-button">
+                <Button 
+                  onClick={() => navigate('/majors')} 
+                  id="bookmarks-tab-majors-browse-button"
+                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                >
                   {language === 'ar' ? 'تصفح التخصصات' : 'Browse Majors'}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>

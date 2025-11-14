@@ -4,6 +4,7 @@ import { Menu, X, LogIn, User, BookmarkCheck, LayoutDashboard } from "lucide-rea
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
+import { useBookmarks } from "@/hooks/useBookmarks";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageToggle } from "./LanguageToggle";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t, language } = useI18n();
+  const { totalBookmarks, animateBookmark } = useBookmarks();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const getCurrentPage = () => {
@@ -33,6 +35,8 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
     if (location.pathname === '/') return 'home';
     if (location.pathname === '/majors' || location.pathname.startsWith('/majors/')) return 'majors';
     if (location.pathname === '/universities' || location.pathname.startsWith('/universities/')) return 'universities';
+    if (location.pathname === '/community' || location.pathname.startsWith('/community/')) return 'community';
+    if (location.pathname === '/contact') return 'contact';
     if (location.pathname === '/assessment') return 'quiz';
     if (location.pathname === '/profile') return 'profile';
     return 'home';
@@ -62,6 +66,12 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
           } else {
             navigate('/universities');
           }
+          break;
+        case 'community':
+          navigate('/community');
+          break;
+        case 'contact':
+          navigate('/contact');
           break;
         case 'admin-majors':
           navigate('/admin/majors');
@@ -97,6 +107,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
         { id: 'home', label: t('navbar.home') },
         { id: 'majors', label: t('navbar.majors') },
         { id: 'universities', label: t('navbar.universities') },
+        { id: 'community', label: language === 'ar' ? 'المجتمع' : 'Community' },
         { id: 'quiz', label: t('navbar.quiz') },
         { id: 'contact', label: t('navbar.contact') },
       ];
@@ -108,9 +119,9 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
           <button
             onClick={() => handleNavigate(user?.is_admin ? 'dashboard' : 'home')}
             id="navbar-logo-button"
-            className="flex items-center group"
+            className="flex items-center group rounded-xl hover:shadow-lg hover:-translate-y-1 transition-all duration-300 hover:bg-white-100 dark:hover:bg-white-800 p-3"
           >
-            <img 
+             <img 
               src="/logo4.png" 
               alt="Murshid Logo" 
               className="h-14 object-contain transition-transform group-hover:scale-105"
@@ -145,13 +156,21 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             
             {user ? (
               <div className="flex items-center gap-3">
-                <Link to="/bookmarks" id="navbar-bookmarks-link">
+                <Link to="/bookmarks" id="navbar-bookmarks-link" className="relative">
                   <Button 
                     variant="outline"
                     size="icon"
                     id="navbar-bookmarks-button"
+                    className={`relative transition-transform duration-300 ${
+                      animateBookmark ? 'animate-pulse scale-110' : ''
+                    }`}
                   >
                     <BookmarkCheck className="h-[1.2rem] w-[1.2rem]" />
+                    {totalBookmarks > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                        {totalBookmarks > 99 ? '99+' : totalBookmarks}
+                      </span>
+                    )}
                     <span className="sr-only">Bookmarks</span>
                   </Button>
                 </Link>
@@ -230,11 +249,20 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                   <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-bookmarks-link" className="block">
                     <Button
                       variant="outline"
-                      className="w-full justify-start rounded-xl"
+                      className={`w-full justify-start rounded-xl transition-transform duration-300 ${
+                        animateBookmark ? 'animate-pulse scale-105' : ''
+                      }`}
                       id="navbar-mobile-bookmarks-button"
                     >
-                      <BookmarkCheck className="w-4 h-4 mr-2" />
-                      {language === 'ar' ? 'المحفوظات' : 'Bookmarks'}
+                      <div className="relative flex items-center">
+                        <BookmarkCheck className="w-4 h-4 mr-2" />
+                        {language === 'ar' ? 'المحفوظات' : 'Bookmarks'}
+                        {totalBookmarks > 0 && (
+                          <span className="ml-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                            {totalBookmarks > 99 ? '99+' : totalBookmarks}
+                          </span>
+                        )}
+                      </div>
                     </Button>
                   </Link>
                   <Link to="/profile" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-profile-link" className="block">

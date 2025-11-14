@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageAnimation } from "@/components/animations/PageAnimation";
+import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
 import { 
   ArrowLeft, 
   Clock, 
@@ -109,8 +111,9 @@ export default function MajorDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
-      <Navbar />
+    <PageAnimation>
+      <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
+        <Navbar />
       
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-20">
         {/* Back Button */}
@@ -379,6 +382,7 @@ export default function MajorDetail() {
         </div>
       </div>
     </div>
+    </PageAnimation>
   );
 }
 

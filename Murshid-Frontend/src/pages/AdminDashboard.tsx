@@ -22,6 +22,8 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/contexts/I18nContext";
+import { PageAnimation } from "@/components/animations/PageAnimation";
+import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
 
 interface UserData {
   id: string;
@@ -113,13 +115,15 @@ const AdminDashboard = () => {
       return;
     }
     
-    if (!user.is_admin) {
+    if (user.is_admin === false) {
       toast.error(t("admin.dashboard.toast.accessDenied"));
       navigate("/");
       return;
     }
 
-    fetchUsers();
+    if (user.is_admin === true) {
+      fetchUsers();
+    }
   }, [user, navigate]);
 
   const fetchUsers = async () => {
@@ -358,15 +362,18 @@ const AdminDashboard = () => {
     setSuspendUntil("");
   };
 
-  if (!user?.is_admin) {
+  // Don't render if user is not loaded yet or not an admin
+  if (!user || user.is_admin !== true) {
     return null;
   }
 
   return (
-    <div className="admin-layout min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5" dir={language}>
+    <PageAnimation>
+      <div className="admin-layout min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5" dir={language}>
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8">
+        <ScrollAnimation>
+          <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -382,7 +389,7 @@ const AdminDashboard = () => {
                 onClick={fetchUsers} 
                 id="admin-dashboard-refresh-button"
                 variant="outline" 
-                className="gap-2"
+                className="rounded-2xl px-6 py-3 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 gap-2"
                 disabled={loading}
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -604,7 +611,7 @@ const AdminDashboard = () => {
                                 id={`admin-dashboard-unsuspend-user-${userData.id}`}
                                 onClick={() => handleUnsuspend(userData)}
                                 disabled={suspending}
-                                className="gap-1"
+                                className="rounded-xl border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 gap-1"
                               >
                                 <Undo2 className="w-4 h-4" />
                               </Button>
@@ -615,7 +622,7 @@ const AdminDashboard = () => {
                                 id={`admin-dashboard-suspend-user-${userData.id}`}
                                 onClick={() => handleSuspendClick(userData)}
                                 disabled={suspending || userData.id === user?.id || !!userData.is_admin}
-                                className="gap-1 text-amber-600 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-950/20"
+                                className="rounded-xl border-2 text-amber-600 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-950/20 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 gap-1"
                               >
                                 <Ban className="w-4 h-4" />
                               </Button>
@@ -626,7 +633,7 @@ const AdminDashboard = () => {
                               id={`admin-dashboard-delete-user-${userData.id}`}
                               onClick={() => handleDeleteClick(userData)}
                               disabled={userData.id === user?.id}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -640,9 +647,10 @@ const AdminDashboard = () => {
             )}
           </CardContent>
         </Card>
-      </div>
+          </div>
+        </ScrollAnimation>
 
-      {/* Delete Confirmation Dialog */}
+        {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -737,7 +745,8 @@ const AdminDashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+      </div>
+    </PageAnimation>
   );
 };
 

@@ -274,7 +274,7 @@ const ProfileSection = () => {
                       }
                     }} 
                     id="profile-edit-button"
-                    className="bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity shadow-lg"
+                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-6 py-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
                     size="sm"
                   >
                     <Edit2 className={`w-4 h-4 ${language === "ar" ? "ml-2" : "mr-2"}`} />
@@ -285,7 +285,7 @@ const ProfileSection = () => {
                     id="profile-logout-button"
                     variant="outline"
                     size="sm"
-                    className="border-red-300 dark:border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300"
+                    className="rounded-2xl px-6 py-3 border-2 border-red-300 dark:border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                   >
                     <LogOut className={`w-4 h-4 ${language === "ar" ? "ml-2" : "mr-2"}`} />
                     {t('navbar.logout')}
@@ -496,7 +496,7 @@ const ProfileSection = () => {
                     onClick={handleSave} 
                     id="profile-save-button"
                     disabled={loading} 
-                    className="flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity shadow-lg"
+                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-6 py-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
                   >
                     <Save className={`w-4 h-4 ${language === "ar" ? "ml-2" : "mr-2"}`} />
                     {loading ? t("profile.buttons.saving") : t("profile.buttons.save")}
@@ -506,7 +506,7 @@ const ProfileSection = () => {
                     id="profile-cancel-button"
                     variant="outline" 
                     disabled={loading}
-                    className="hover:bg-muted/50"
+                    className="rounded-2xl px-6 py-3 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                   >
                     <X className={`w-4 h-4 ${language === "ar" ? "ml-2" : "mr-2"}`} />
                     {t("profile.buttons.cancel")}

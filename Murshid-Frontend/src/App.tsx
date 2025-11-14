@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import "./animations.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -26,6 +27,11 @@ import AdminUniversities from "./pages/AdminUniversities";
 import AdminMajors from "./pages/AdminMajors";
 import AdminUniversityMajors from "./pages/AdminUniversityMajors";
 import Suspended from "./pages/Suspended";
+import Community from "./pages/Community";
+import CreatePost from "./pages/CreatePost";
+import PostDetail from "./pages/PostDetail";
+import MyPosts from "./pages/MyPosts";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +53,11 @@ const App = () => (
               <Route path="/majors/:id" element={<MajorDetail />} />
               <Route path="/universities" element={<Universities />} />
               <Route path="/universities/:id" element={<UniversityDetail />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/community/create" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
+              <Route path="/community/post/:id" element={<PostDetail />} />
+              <Route path="/community/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
               <Route path="/admin/universities" element={<ProtectedRoute><AdminUniversities /></ProtectedRoute>} />
               <Route path="/admin/majors" element={<ProtectedRoute><AdminMajors /></ProtectedRoute>} />

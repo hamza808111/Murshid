@@ -4,6 +4,8 @@ import { Search, Bookmark, BookmarkCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PageAnimation } from "@/components/animations/PageAnimation";
+import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
 import { useI18n } from '@/contexts/I18nContext';
 import { useNavigate } from 'react-router-dom';
 import { getMajors } from '@/lib/majorsApi';
@@ -106,22 +108,25 @@ export default function MajorsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
-      <Navbar />
+    <PageAnimation>
+      <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
+        <Navbar />
       
       <div className="py-20">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
-              {language === 'ar' ? 'استكشف التخصصات' : 'Explore Majors'}
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto" dir={language}>
-              {language === 'ar' 
-                ? 'اكتشف التخصصات المتاحة واختر المسار المناسب لمستقبلك الأكاديمي'
-                : 'Discover available majors and choose the right path for your academic future'}
-            </p>
-          </div>
+          <ScrollAnimation>
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
+                {language === 'ar' ? 'استكشف التخصصات' : 'Explore Majors'}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto" dir={language}>
+                {language === 'ar'
+                  ? 'اكتشف التخصصات المتاحة واختر المسار المناسب لمستقبلك الأكاديمي'
+                  : 'Discover available majors and choose the right path for your academic future'}
+              </p>
+            </div>
+          </ScrollAnimation>
 
           {/* Search and Filters */}
           <div className="max-w-4xl mx-auto mb-12 space-y-4">
@@ -198,19 +203,20 @@ export default function MajorsPage() {
 
           {/* Majors Grid */}
           {!loading && majors.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {majors.map((major) => {
+            <ScrollAnimation delay={0.2}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {majors.map((major, index) => {
                 const bookmarked = isBookmarked('major', major.id);
                 const majorName = language === 'ar' && major.name_ar ? major.name_ar : major.name;
                 const majorDescription = language === 'ar' && major.description_ar ? major.description_ar : major.description;
 
                 return (
-                  <Card
-                    key={major.id}
-                    id={`majors-card-${major.id}`}
-                    className="p-6 rounded-3xl shadow-md hover:shadow-xl transition-all border-0 bg-white dark:bg-gray-800 cursor-pointer group relative"
-                    onClick={() => navigate(`/majors/${major.id}`)}
-                  >
+                  <ScrollAnimation key={major.id} delay={index * 0.1}>
+                    <Card
+                      id={`majors-card-${major.id}`}
+                      className="p-6 rounded-3xl shadow-md card-hover border-0 bg-white dark:bg-gray-800 cursor-pointer group relative"
+                      onClick={() => navigate(`/majors/${major.id}`)}
+                    >
                     {/* Bookmark Button */}
                     <button
                       onClick={(e) => handleBookmark(major.id, e)}
@@ -269,9 +275,11 @@ export default function MajorsPage() {
                       {language === 'ar' ? 'المزيد' : 'Learn More'} {language === 'ar' ? '←' : '→'}
                     </Button>
                   </Card>
+                  </ScrollAnimation>
                 );
               })}
             </div>
+            </ScrollAnimation>
           )}
 
           {/* No Results */}
@@ -290,7 +298,8 @@ export default function MajorsPage() {
           )}
 
           {/* CTA Section */}
-          <div className="mt-20 bg-[#cdd6ff] dark:bg-[#2a3b6b] rounded-3xl p-12 text-center shadow-xl">
+          <ScrollAnimation delay={0.4}>
+            <div className="mt-20 bg-[#cdd6ff] dark:bg-[#2a3b6b] rounded-3xl p-12 text-center shadow-xl">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
               {language === 'ar' ? 'لا تزال محتاراً؟' : 'Still Confused?'}
             </h2>
@@ -308,8 +317,10 @@ export default function MajorsPage() {
               {language === 'ar' ? 'ابدأ الاختبار الآن' : 'Start Test Now'}
             </Button>
           </div>
+          </ScrollAnimation>
         </div>
       </div>
     </div>
+    </PageAnimation>
   );
 }
