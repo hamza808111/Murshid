@@ -45,7 +45,7 @@ interface UserData {
 }
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { t, language } = useI18n();
   const [users, setUsers] = useState<UserData[]>([]);
@@ -109,6 +109,11 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
+    // Don't check admin access while still loading
+    if (authLoading) {
+      return;
+    }
+    
     // Check if user is admin
     if (!user) {
       navigate("/login");
@@ -124,7 +129,7 @@ const AdminDashboard = () => {
     if (user.is_admin === true) {
       fetchUsers();
     }
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const fetchUsers = async () => {
     try {

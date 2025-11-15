@@ -42,7 +42,7 @@ import { toast } from 'sonner';
 
 export default function AdminUniversities() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [universities, setUniversities] = useState<University[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,12 +68,17 @@ export default function AdminUniversities() {
   });
 
   useEffect(() => {
+    // Don't check admin access while still loading
+    if (authLoading) {
+      return;
+    }
+    
     if (!user?.is_admin) {
       navigate('/');
       return;
     }
     fetchUniversities();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const fetchUniversities = async () => {
     try {

@@ -41,7 +41,7 @@ import { toast } from 'sonner';
 
 export default function AdminMajors() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [majors, setMajors] = useState<Major[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,12 +63,17 @@ export default function AdminMajors() {
   });
 
   useEffect(() => {
+    // Don't check admin access while still loading
+    if (authLoading) {
+      return;
+    }
+    
     if (!user?.is_admin) {
       navigate('/');
       return;
     }
     fetchMajors();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const fetchMajors = async () => {
     try {

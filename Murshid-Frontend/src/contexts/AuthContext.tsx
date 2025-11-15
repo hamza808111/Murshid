@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   // Map Supabase auth user to AppUser, augmenting with profile data if present
-  const mapUserWithProfile = async (authUser: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }) => {
+  const mapUserWithProfile = async (authUser: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }, useCache: boolean = false) => {
     let derivedName: string | undefined = (authUser.user_metadata?.["name"] as string | undefined) || undefined;
     let establishmentName: string | undefined;
     let level: string | undefined;
@@ -67,6 +67,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let role: string | undefined;
     let studentType: string | undefined;
     let track: string | undefined;
+    
+    // Try to get cached profile data first if requested
+    let cachedProfile = null;
+    if (useCache) {
+      try {
+        const cached = localStorage.getItem(`profile_cache_${authUser.id}`);
+        if (cached) {
+          cachedProfile = JSON.parse(cached);
+          console.log("Using cached profile data");
+        }
+      } catch (e) {
+        console.warn("Failed to parse cached profile:", e);
+      }
+    }
     
     // Always load profile data to get all fields, regardless of whether name is in metadata
     // Add timeout to prevent hanging
@@ -77,7 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .single();
     
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Profile fetch timeout")), 5000)
+      setTimeout(() => reject(new Error("Profile fetch timeout")), 10000)
     );
     
     let profileData, error;
@@ -85,9 +99,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const result = await Promise.race([profilePromise, timeoutPromise]) as any;
       profileData = result.data;
       error = result.error;
+      
+      // Cache the profile data on successful fetch
+      if (profileData && !error) {
+        try {
+          localStorage.setItem(`profile_cache_${authUser.id}`, JSON.stringify(profileData));
+        } catch (e) {
+          console.warn("Failed to cache profile data:", e);
+        }
+      }
     } catch (timeoutError) {
-      console.warn("Profile fetch timed out, using fallback data");
+      console.warn("Profile fetch timed out, using cached or fallback data");
       error = timeoutError;
+      // Use cached data if available
+      if (cachedProfile) {
+        profileData = cachedProfile;
+        error = null;
+      }
     }
     
     // Use profile data if available, otherwise fall back to metadata or email
@@ -154,7 +182,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         if (!isMounted) return;
         if (session?.user) {
-          const mapped = await mapUserWithProfile(session.user);
+          // Use cache on initial load to speed up and prevent timeout issues
+          const mapped = await mapUserWithProfile(session.user, true);
           if (!isMounted) return;
           setUser(mapped);
         } else {
@@ -176,7 +205,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!isMounted) return;
       try {
         if (session?.user) {
-          const mapped = await mapUserWithProfile(session.user);
+          // Use cache for state changes as well
+          const mapped = await mapUserWithProfile(session.user, true);
           if (!isMounted) return;
           setUser(mapped);
         } else {
@@ -395,6 +425,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log("🚪 Logging out...");
       
+      // Clear profile cache
+      if (user?.id) {
+        try {
+          localStorage.removeItem(`profile_cache_${user.id}`);
+        } catch (e) {
+          console.warn("Failed to clear profile cache:", e);
+        }
+      }
+      
       // Sign out without waiting (fire and forget - same Supabase promise issue)
       supabase.auth.signOut().catch((error) => {
         console.error("Sign out error (ignored):", error);
@@ -472,6 +511,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       console.log("✅ Profile updated successfully:", profileData);
+
+      // Clear the profile cache to force fresh data on next load
+      if (user?.id) {
+        try {
+          localStorage.removeItem(`profile_cache_${user.id}`);
+        } catch (e) {
+          console.warn("Failed to clear profile cache:", e);
+        }
+      }
 
       // Update local user state
       const updatedUser: AppUser = {

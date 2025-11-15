@@ -31,7 +31,7 @@ import { toast } from 'sonner';
 
 export default function AdminUniversityMajors() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [universities, setUniversities] = useState<University[]>([]);
   const [allMajors, setAllMajors] = useState<Major[]>([]);
   const [selectedUniversity, setSelectedUniversity] = useState<string>('');
@@ -47,12 +47,17 @@ export default function AdminUniversityMajors() {
   });
 
   useEffect(() => {
+    // Don't check admin access while still loading
+    if (authLoading) {
+      return;
+    }
+    
     if (!user?.is_admin) {
       navigate('/');
       return;
     }
     fetchData();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     if (selectedUniversity) {
