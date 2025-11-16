@@ -21,6 +21,7 @@ import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Post } from '@/types/community';
 import { toast } from 'sonner';
+import { getCommunityPosts } from '@/lib/communityApi';
 
 export default function Community() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -47,56 +48,14 @@ export default function Community() {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      // Get created posts from localStorage
-      const savedPosts = localStorage.getItem('community_posts');
-      const createdPosts = savedPosts ? JSON.parse(savedPosts) : [];
-      
-      // Mock data + created posts
-      const mockPosts = [
-        {
-          id: '1',
-          title: 'What are the best programming languages for software engineering?',
-          content: 'I am planning to study software engineering and wondering which programming languages I should focus on...',
-          author_id: '1',
-          author_name: 'Ahmed Ali',
-          author_role: 'student' as const,
-          post_type: 'question' as const,
-          tags: ['programming', 'career'],
-          major_tags: ['Software Engineering'],
-          university_tags: [],
-          likes_count: 15,
-          answers_count: 8,
-          views_count: 120,
-          is_solved: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ];
-      
-      let allPosts = [...createdPosts, ...mockPosts];
-      
-      // Filter by post type
-      if (selectedFilter === 'questions') {
-        allPosts = allPosts.filter(post => post.post_type === 'question');
-      } else if (selectedFilter === 'discussions') {
-        allPosts = allPosts.filter(post => post.post_type === 'discussion');
-      }
-      
-      // Filter by search query
-      if (searchQuery.trim()) {
-        allPosts = allPosts.filter(post => 
-          post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          post.major_tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          post.university_tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-        );
-      }
-      
-      setPosts(allPosts);
+      const fetchedPosts = await getCommunityPosts({
+        type: selectedFilter,
+        search: searchQuery.trim() || undefined,
+      });
+      setPosts(fetchedPosts);
     } catch (error) {
       console.error('Error fetching posts:', error);
-      toast.error('Failed to load posts');
+      toast.error(language === 'ar' ? 'فشل تحميل المشاركات' : 'Failed to load posts');
     } finally {
       setLoading(false);
     }

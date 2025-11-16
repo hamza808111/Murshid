@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { Post, Answer } from '@/types/community';
 import { analyzeContent } from '@/lib/contentFilter';
 import { toast } from 'sonner';
+import { getCommunityPostById, getPostAnswers, createCommunityAnswer } from '@/lib/communityApi';
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -39,68 +40,25 @@ export default function PostDetail() {
   }, [id]);
 
   const fetchPostDetails = async () => {
+    if (!id) return;
     setLoading(true);
     try {
-      // Get posts from localStorage
-      const savedPosts = localStorage.getItem('community_posts');
-      const createdPosts = savedPosts ? JSON.parse(savedPosts) : [];
-      
-      // Mock data
-      const mockPosts = [
-        {
-          id: '1',
-          title: 'What are the best programming languages for software engineering?',
-          content: 'I am planning to study software engineering and wondering which programming languages I should focus on. I have heard about Python, Java, and JavaScript, but I am not sure which ones are most important for getting a job in Saudi Arabia.',
-          author_id: '1',
-          author_name: 'Ahmed Ali',
-          author_role: 'student' as const,
-          post_type: 'question' as const,
-          tags: ['programming', 'career'],
-          major_tags: ['Software Engineering'],
-          university_tags: [],
-          likes_count: 15,
-          answers_count: 3,
-          views_count: 120,
-          is_solved: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ];
-      
-      const allPosts = [...createdPosts, ...mockPosts];
-      const foundPost = allPosts.find(p => p.id === id);
-      
-      if (foundPost) {
-        setPost(foundPost);
-        
-        // Get answers from localStorage
-        const savedAnswers = localStorage.getItem(`post_answers_${id}`);
-        const postAnswers = savedAnswers ? JSON.parse(savedAnswers) : [];
-        
-        // Add mock answer for the mock post
-        if (id === '1') {
-          const mockAnswers = [
-            {
-              id: '1',
-              post_id: '1',
-              content: 'Based on my experience in the Saudi tech industry, I would recommend starting with Java and Python. Java is widely used in enterprise applications, while Python is great for data science and web development.',
-              author_id: '2',
-              author_name: 'Dr. Sarah Ahmed',
-              author_role: 'specialist' as const,
-              likes_count: 8,
-              is_accepted: false,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            }
-          ];
-          setAnswers([...postAnswers, ...mockAnswers]);
-        } else {
-          setAnswers(postAnswers);
-        }
+      const [fetchedPost, fetchedAnswers] = await Promise.all([
+        getCommunityPostById(id),
+        getPostAnswers(id)
+      ]);
+
+      if (!fetchedPost) {
+        toast.error(language === 'ar' ? 'Post not found' : 'Post not found');
+        navigate('/community');
+        return;
       }
+
+      setPost(fetchedPost);
+      setAnswers(fetchedAnswers);
     } catch (error) {
       console.error('Error fetching post details:', error);
-      toast.error('Failed to load post details');
+      toast.error(language === 'ar' ? 'Failed to load post details' : 'Failed to load post details');
     } finally {
       setLoading(false);
     }
@@ -115,12 +73,12 @@ export default function PostDetail() {
 
     // Check if user is trying to answer their own question
     if (post && post.author_id === user.id) {
-      toast.error(language === 'ar' ? 'لا يمكنك الإجابة على سؤالك الخاص' : 'You cannot answer your own question');
+      toast.error(language === 'ar' ? 'You cannot answer your own question' : 'You cannot answer your own question');
       return;
     }
 
     if (!newAnswer.trim()) {
-      toast.error(language === 'ar' ? 'يرجى كتابة إجابة' : 'Please write an answer');
+      toast.error(language === 'ar' ? 'Please write an answer' : 'Please write an answer');
       return;
     }
 
@@ -129,7 +87,7 @@ export default function PostDetail() {
     
     if (!answerAnalysis.isAllowed) {
       toast.error(language === 'ar' ? 
-        `إجابة غير مناسبة: ${answerAnalysis.issues.join(', ')}` :
+        `Answer not allowed: ${answerAnalysis.issues.join(', ')}` :
         `Answer not allowed: ${answerAnalysis.issues.join(', ')}`
       );
       return;
@@ -137,42 +95,36 @@ export default function PostDetail() {
     
     if (answerAnalysis.severity === 'medium') {
       toast.warning(language === 'ar' ? 
-        `تحذير: ${answerAnalysis.issues.join(', ')}` :
+        `Warning: ${answerAnalysis.issues.join(', ')}` :
         `Warning: ${answerAnalysis.issues.join(', ')}`
       );
     }
 
     setSubmitting(true);
     try {
-      // Create new answer
-      const newAnswerObj = {
-        id: Date.now().toString(),
-        post_id: id!,
-        content: newAnswer,
-        author_id: user.id,
-        author_name: user.name || 'Anonymous',
-        author_role: user.role || 'student',
-        author_university: user.university,
-        author_major: user.major,
-        author_academic_level: user.academic_level,
-        likes_count: 0,
-        is_accepted: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      // Save to localStorage
-      const savedAnswers = localStorage.getItem(`post_answers_${id}`);
-      const existingAnswers = savedAnswers ? JSON.parse(savedAnswers) : [];
-      const updatedAnswers = [newAnswerObj, ...existingAnswers];
-      localStorage.setItem(`post_answers_${id}`, JSON.stringify(updatedAnswers));
-      
-      toast.success(language === 'ar' ? 'تم إرسال الإجابة' : 'Answer submitted');
+      const createdAnswer = await createCommunityAnswer(
+        { post_id: id!, content: newAnswer },
+        {
+          id: user.id,
+          name: user.name || user.email,
+          role: user.role,
+          establishment_name: user.establishment_name,
+          track: user.track,
+          level: user.level,
+          university_id: user.university_id,
+          avatar_url: user.avatar_url,
+          is_admin: user.is_admin,
+        }
+      );
+
+      toast.success(language === 'ar' ? 'Answer submitted' : 'Answer submitted');
       setNewAnswer('');
-      fetchPostDetails(); // Refresh to show new answer
-    } catch (error) {
+      setAnswers(prev => [createdAnswer, ...prev]);
+      setPost(prev => prev ? { ...prev, answers_count: (prev.answers_count || 0) + 1 } : prev);
+    } catch (error: any) {
       console.error('Error submitting answer:', error);
-      toast.error(language === 'ar' ? 'فشل في إرسال الإجابة' : 'Failed to submit answer');
+      const message = error?.message || (language === 'ar' ? 'Failed to submit answer' : 'Failed to submit answer');
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }

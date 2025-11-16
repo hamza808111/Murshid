@@ -18,39 +18,42 @@ import {
 import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Post, Answer } from '@/types/community';
+import { toast } from 'sonner';
+import { getCommunityPostsByAuthor, getCommunityAnswersByAuthor, deleteCommunityPost } from '@/lib/communityApi';
 
 export default function MyPosts() {
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [userAnswers, setUserAnswers] = useState<Answer[]>([]);
   const [activeTab, setActiveTab] = useState<'posts' | 'answers'>('posts');
+  const [loading, setLoading] = useState(true);
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      fetchUserContent();
-    }
+    fetchUserContent();
   }, [user]);
 
-  const fetchUserContent = () => {
-    // Get user's posts from localStorage
-    const savedPosts = localStorage.getItem('community_posts');
-    const allPosts = savedPosts ? JSON.parse(savedPosts) : [];
-    const myPosts = allPosts.filter((post: Post) => post.author_id === user?.id);
-    setUserPosts(myPosts);
+  const fetchUserContent = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const [postsData, answersData] = await Promise.all([
+        getCommunityPostsByAuthor(user.id),
+        getCommunityAnswersByAuthor(user.id)
+      ]);
 
-    // Get user's answers from localStorage
-    const myAnswers: Answer[] = [];
-    allPosts.forEach((post: Post) => {
-      const savedAnswers = localStorage.getItem(`post_answers_${post.id}`);
-      if (savedAnswers) {
-        const postAnswers = JSON.parse(savedAnswers);
-        const userPostAnswers = postAnswers.filter((answer: Answer) => answer.author_id === user?.id);
-        myAnswers.push(...userPostAnswers);
-      }
-    });
-    setUserAnswers(myAnswers);
+      setUserPosts(postsData);
+      setUserAnswers(answersData);
+    } catch (error) {
+      console.error('Error loading user content:', error);
+      toast.error(language === 'ar' ? 'Failed to load your community activity' : 'Failed to load your community activity');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatTimeAgo = (dateString: string) => {
@@ -65,14 +68,29 @@ export default function MyPosts() {
   };
 
   const deletePost = (postId: string) => {
-    const savedPosts = localStorage.getItem('community_posts');
-    if (savedPosts) {
-      const allPosts = JSON.parse(savedPosts);
-      const updatedPosts = allPosts.filter((post: Post) => post.id !== postId);
-      localStorage.setItem('community_posts', JSON.stringify(updatedPosts));
-      fetchUserContent();
-    }
+    deleteCommunityPost(postId)
+      .then(() => {
+        setUserPosts(prev => prev.filter(post => post.id !== postId));
+        toast.success(language === 'ar' ? 'Post deleted' : 'Post deleted');
+      })
+      .catch((error) => {
+        console.error('Error deleting post:', error);
+        toast.error(language === 'ar' ? 'Failed to delete post' : 'Failed to delete post');
+      });
   };
+
+  if (loading) {
+    return (
+      <PageAnimation>
+        <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
+          <Navbar />
+          <div className="py-20 flex items-center justify-center">
+            <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+          </div>
+        </div>
+      </PageAnimation>
+    );
+  }
 
   return (
     <PageAnimation>

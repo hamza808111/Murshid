@@ -17,6 +17,7 @@ import { getMajors } from '@/lib/majorsApi';
 import { searchWithFuzzy } from '@/lib/fuzzySearch';
 import { analyzeContent } from '@/lib/contentFilter';
 import { toast } from 'sonner';
+import { createCommunityPost } from '@/lib/communityApi';
 
 export default function CreatePost() {
   const [formData, setFormData] = useState<CreatePostRequest>({
@@ -37,6 +38,14 @@ export default function CreatePost() {
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const normalizedRole = user?.role?.toLowerCase?.();
+  const canSelectPostType = user?.is_admin || normalizedRole === 'specialist';
+  const postTypes = canSelectPostType
+    ? [
+        { id: 'question', label: language === 'ar' ? 'سؤال' : 'Question' },
+        { id: 'discussion', label: language === 'ar' ? 'مناقشة' : 'Discussion' }
+      ]
+    : [{ id: 'question', label: language === 'ar' ? 'سؤال' : 'Question' }];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +63,7 @@ export default function CreatePost() {
     fetchData();
   }, []);
 
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
@@ -62,75 +72,70 @@ export default function CreatePost() {
     }
 
     if (!formData.title.trim() || !formData.content.trim()) {
-      toast.error(language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields');
+      toast.error(language === 'ar' ? 'Please fill all required fields' : 'Please fill all required fields');
       return;
     }
 
     // Content moderation
     const titleAnalysis = analyzeContent(formData.title, language);
     const contentAnalysis = analyzeContent(formData.content, language);
-    
+
     if (!titleAnalysis.isAllowed) {
       toast.error(language === 'ar' ? 
-        `عنوان غير مناسب: ${titleAnalysis.issues.join(', ')}` :
+        `Title not allowed: ${titleAnalysis.issues.join(', ')}` :
         `Title not allowed: ${titleAnalysis.issues.join(', ')}`
       );
       return;
     }
-    
+
     if (!contentAnalysis.isAllowed) {
       toast.error(language === 'ar' ? 
-        `محتوى غير مناسب: ${contentAnalysis.issues.join(', ')}` :
+        `Content not allowed: ${contentAnalysis.issues.join(', ')}` :
         `Content not allowed: ${contentAnalysis.issues.join(', ')}`
       );
       return;
     }
-    
+
     // Show warnings for medium severity issues
     if (titleAnalysis.severity === 'medium' || contentAnalysis.severity === 'medium') {
       const allIssues = [...titleAnalysis.issues, ...contentAnalysis.issues];
       toast.warning(language === 'ar' ? 
-        `تحذير: ${allIssues.join(', ')}` :
+        `Warning: ${allIssues.join(', ')}` :
         `Warning: ${allIssues.join(', ')}`
       );
     }
 
     setLoading(true);
     try {
-      // Create new post object
-      const newPost = {
-        id: Date.now().toString(),
-        title: formData.title,
-        content: formData.content,
-        author_id: user.id,
-        author_name: user.name || 'Anonymous',
-        author_role: user.role || 'student',
-        author_university: user.university,
-        author_major: user.major,
-        author_academic_level: user.academic_level,
-        post_type: formData.post_type,
-        tags: formData.tags || [],
-        major_tags: formData.major_tags || [],
-        university_tags: formData.university_tags || [],
-        likes_count: 0,
-        answers_count: 0,
-        views_count: 0,
-        is_solved: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      // Save to localStorage
-      const savedPosts = localStorage.getItem('community_posts');
-      const existingPosts = savedPosts ? JSON.parse(savedPosts) : [];
-      const updatedPosts = [newPost, ...existingPosts];
-      localStorage.setItem('community_posts', JSON.stringify(updatedPosts));
-      
-      toast.success(language === 'ar' ? 'تم إنشاء المنشور بنجاح' : 'Post created successfully');
+      const safePostType = canSelectPostType ? formData.post_type : 'question';
+      if (!canSelectPostType && formData.post_type !== 'question') {
+        toast.info(language === 'ar' ? 'الطلاب يمكنهم نشر الأسئلة فقط' : 'Students can only create questions');
+      }
+
+      await createCommunityPost(
+        {
+          ...formData,
+          post_type: safePostType,
+        },
+        {
+          id: user.id,
+          name: user.name || user.email,
+          role: user.role,
+          establishment_name: user.establishment_name,
+          track: user.track,
+          level: user.level,
+          university_id: user.university_id,
+          avatar_url: user.avatar_url,
+          is_admin: user.is_admin,
+        }
+      );
+
+      toast.success(language === 'ar' ? 'Post created successfully' : 'Post created successfully');
       navigate('/community');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating post:', error);
-      toast.error(language === 'ar' ? 'فشل في إنشاء المنشور' : 'Failed to create post');
+      const message = error?.message || (language === 'ar' ? 'Failed to create post' : 'Failed to create post');
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -216,24 +221,27 @@ export default function CreatePost() {
                 {/* Post Type */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" dir={language}>
-                    {language === 'ar' ? 'نوع المنشور' : 'Post Type'}
+                    {language === 'ar' ? 'Post Type' : 'Post Type'}
                   </label>
                   <div className="flex gap-4">
-                    {[
-                      { id: 'question', label: language === 'ar' ? 'سؤال' : 'Question' },
-                      { id: 'discussion', label: language === 'ar' ? 'نقاش' : 'Discussion' }
-                    ].map((type) => (
+                    {postTypes.map((type) => (
                       <Button
                         key={type.id}
                         type="button"
                         variant={formData.post_type === type.id ? 'default' : 'outline'}
                         onClick={() => setFormData(prev => ({ ...prev, post_type: type.id as any }))}
+                        disabled={!canSelectPostType && type.id !== 'question'}
                         className="rounded-xl"
                       >
                         {type.label}
                       </Button>
                     ))}
                   </div>
+                  {!canSelectPostType && (
+                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                      {language === 'ar' ? 'Students can post questions. Discussions are reserved for specialists and admins.' : 'Students can post questions. Discussions are reserved for specialists and admins.'}
+                    </p>
+                  )}
                 </div>
 
                 {/* Title */}
