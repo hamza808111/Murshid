@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import type { Post, Answer, CreatePostRequest, CreateAnswerRequest } from "@/types/community";
+import type { Post, Answer, CreatePostRequest, CreateAnswerRequest, CommunityReport, CreateReportRequest, ReportStatus } from "@/types/community";
 
 type CommunityAuthor = {
   id: string;
@@ -49,6 +49,21 @@ const mapAnswer = (row: any): Answer => ({
   author_academic_level: row.author_academic_level ?? undefined,
   likes_count: row.likes_count ?? 0,
   is_accepted: row.is_accepted ?? false,
+  created_at: row.created_at,
+  updated_at: row.updated_at,
+});
+
+const mapReport = (row: any): CommunityReport => ({
+  id: row.id,
+  target_type: row.target_type,
+  target_id: row.target_id,
+  reporter_id: row.reporter_id,
+  reporter_name: row.reporter_name ?? undefined,
+  reason: row.reason,
+  target_title: row.target_title ?? null,
+  target_excerpt: row.target_excerpt ?? null,
+  status: row.status as ReportStatus,
+  admin_notes: row.admin_notes ?? null,
   created_at: row.created_at,
   updated_at: row.updated_at,
 });
@@ -184,6 +199,18 @@ export async function createCommunityAnswer(payload: CreateAnswerRequest, author
   return mapAnswer(data);
 }
 
+export async function deleteCommunityAnswer(answerId: string): Promise<void> {
+  const { error } = await supabase
+    .from("community_answers")
+    .delete()
+    .eq("id", answerId);
+
+  if (error) {
+    console.error("Error deleting answer:", error);
+    throw error;
+  }
+}
+
 export async function getCommunityPostsByAuthor(authorId: string): Promise<Post[]> {
   const { data, error } = await supabase
     .from("community_posts")
@@ -224,4 +251,68 @@ export async function deleteCommunityPost(postId: string): Promise<void> {
     console.error("Error deleting post:", error);
     throw error;
   }
+}
+
+export async function submitCommunityReport(payload: CreateReportRequest, reporter: CommunityAuthor): Promise<CommunityReport> {
+  const { data, error } = await supabase
+    .from("community_reports")
+    .insert([
+      {
+        target_type: payload.target_type,
+        target_id: payload.target_id,
+        reason: payload.reason,
+        target_title: payload.target_title,
+        target_excerpt: payload.target_excerpt,
+        reporter_id: reporter.id,
+        reporter_name: reporter.name ?? "Anonymous",
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error submitting report:", error);
+    throw new Error(error.message || "Failed to submit report");
+  }
+
+  return mapReport(data);
+}
+
+export async function getCommunityReports(status?: ReportStatus): Promise<CommunityReport[]> {
+  let query = supabase
+    .from("community_reports")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error fetching reports:", error);
+    throw error;
+  }
+
+  return (data ?? []).map(mapReport);
+}
+
+export async function updateCommunityReportStatus(reportId: string, status: ReportStatus, adminNotes?: string): Promise<CommunityReport> {
+  const { data, error } = await supabase
+    .from("community_reports")
+    .update({
+      status,
+      admin_notes: adminNotes ?? null,
+    })
+    .eq("id", reportId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating report status:", error);
+    throw new Error(error.message || "Failed to update report");
+  }
+
+  return mapReport(data);
 }

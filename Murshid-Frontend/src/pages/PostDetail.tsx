@@ -20,7 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { Post, Answer } from '@/types/community';
 import { analyzeContent } from '@/lib/contentFilter';
 import { toast } from 'sonner';
-import { getCommunityPostById, getPostAnswers, createCommunityAnswer } from '@/lib/communityApi';
+import { getCommunityPostById, getPostAnswers, createCommunityAnswer, submitCommunityReport } from '@/lib/communityApi';
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +29,7 @@ export default function PostDetail() {
   const [newAnswer, setNewAnswer] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [reportingId, setReportingId] = useState<string | null>(null);
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -61,6 +62,52 @@ export default function PostDetail() {
       toast.error(language === 'ar' ? 'Failed to load post details' : 'Failed to load post details');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleReport = async (
+    targetType: 'post' | 'answer',
+    targetId: string,
+    targetTitle: string,
+    targetExcerpt: string
+  ) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    const reason = window.prompt(language === 'ar' ? '�?�?�?�?�? �?�?�? �?�?�?�?�?�?�?' : 'Describe the issue');
+    if (!reason || !reason.trim()) {
+      return;
+    }
+    setReportingId(targetId);
+    try {
+      await submitCommunityReport(
+        {
+          target_type: targetType,
+          target_id: targetId,
+          reason: reason.trim(),
+          target_title: targetTitle,
+          target_excerpt: targetExcerpt.slice(0, 180),
+        },
+        {
+          id: user.id,
+          name: user.name || user.email,
+          role: user.role,
+          establishment_name: user.establishment_name,
+          track: user.track,
+          level: user.level,
+          university_id: user.university_id,
+          avatar_url: user.avatar_url,
+          is_admin: user.is_admin,
+        }
+      );
+      toast.success(language === 'ar' ? '�?�?�?�?�? �?�?�?�?�?�?�? �?�?�?�?�?' : 'Report submitted');
+    } catch (error: any) {
+      console.error('Error reporting content:', error);
+      const message = error?.message || (language === 'ar' ? '�?�?�? �?�?�?�?�? �?�?�?�?�?�?�?' : 'Failed to submit report');
+      toast.error(message);
+    } finally {
+      setReportingId(null);
     }
   };
 
@@ -268,6 +315,14 @@ export default function PostDetail() {
                       <Eye className="w-4 h-4" />
                       <span>{post.views_count}</span>
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={reportingId === post.id}
+                      onClick={() => handleReport('post', post.id, post.title, post.content || '')}
+                    >
+                      {reportingId === post.id ? (language === 'ar' ? 'Reporting...' : 'Reporting...') : (language === 'ar' ? 'Report' : 'Report')}
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -333,9 +388,17 @@ export default function PostDetail() {
                           {answer.is_accepted && (
                             <div className="flex items-center gap-1 text-green-600">
                               <CheckCircle className="w-4 h-4" />
-                              <span className="text-sm">{language === 'ar' ? 'إجابة مقبولة' : 'Accepted'}</span>
+                              <span className="text-sm">{language === 'ar' ? 'Accepted' : 'Accepted'}</span>
                             </div>
                           )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={reportingId === answer.id}
+                            onClick={() => handleReport('answer', answer.id, post.title, answer.content || '')}
+                          >
+                            {reportingId === answer.id ? (language === 'ar' ? 'Reporting...' : 'Reporting...') : (language === 'ar' ? 'Report' : 'Report')}
+                          </Button>
                         </div>
                       </div>
                     </div>

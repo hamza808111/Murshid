@@ -24,6 +24,8 @@ import { Link } from "react-router-dom";
 import { useI18n } from "@/contexts/I18nContext";
 import { PageAnimation } from "@/components/animations/PageAnimation";
 import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
+import { CommunityReport } from "@/types/community";
+import { getCommunityReports, updateCommunityReportStatus, deleteCommunityPost, deleteCommunityAnswer } from "@/lib/communityApi";
 
 interface UserData {
   id: string;
@@ -60,6 +62,9 @@ const AdminDashboard = () => {
   const [suspendReason, setSuspendReason] = useState("");
   const [suspendUntil, setSuspendUntil] = useState("");
   const [suspending, setSuspending] = useState(false);
+  const [reports, setReports] = useState<CommunityReport[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportActionId, setReportActionId] = useState<string | null>(null);
 
   // Open specialist proof with a signed URL (works even if bucket is private)
   const handleViewProof = async (userData: UserData) => {
@@ -128,6 +133,7 @@ const AdminDashboard = () => {
 
     if (user.is_admin === true) {
       fetchUsers();
+      fetchReports();
     }
   }, [user, authLoading, navigate]);
 
@@ -194,6 +200,51 @@ const AdminDashboard = () => {
       toast.error(t("admin.dashboard.toast.loadError"));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchReports = async () => {
+    try {
+      setReportsLoading(true);
+      const data = await getCommunityReports();
+      setReports(data);
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+      toast.error("Failed to load reports");
+    } finally {
+      setReportsLoading(false);
+    }
+  };
+
+  const handleReportStatus = async (reportId: string, status: CommunityReport["status"]) => {
+    try {
+      setReportActionId(reportId);
+      const updated = await updateCommunityReportStatus(reportId, status);
+      setReports((prev) => prev.map((r) => (r.id === reportId ? updated : r)));
+      toast.success("Report updated");
+    } catch (error) {
+      console.error("Error updating report:", error);
+      toast.error("Failed to update report");
+    } finally {
+      setReportActionId(null);
+    }
+  };
+
+  const handleDeleteContent = async (report: CommunityReport) => {
+    try {
+      setReportActionId(report.id);
+      if (report.target_type === "post") {
+        await deleteCommunityPost(report.target_id);
+      } else {
+        await deleteCommunityAnswer(report.target_id);
+      }
+      await handleReportStatus(report.id, "resolved");
+      toast.success("Content removed");
+    } catch (error) {
+      console.error("Error deleting content:", error);
+      toast.error("Failed to delete content");
+    } finally {
+      setReportActionId(null);
     }
   };
 
@@ -437,6 +488,97 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Community Reports */}
+        <Card className="mb-6">
+          <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <CardTitle>Community Reports</CardTitle>
+              <p className="text-sm text-muted-foreground">Review reported posts and answers</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={fetchReports} disabled={reportsLoading}>
+                <RefreshCw className={`w-4 h-4 ${reportsLoading ? "animate-spin" : ""}`} />
+                Refresh
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {reportsLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" /> Loading reports...
+              </div>
+            ) : reports.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No reports yet.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Reason</TableHead>
+                    <TableHead>Target</TableHead>
+                    <TableHead>Reporter</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {reports.map((report) => (
+                    <TableRow key={report.id}>
+                      <TableCell className="font-medium">{report.target_type}</TableCell>
+                      <TableCell>{report.reason}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-semibold">{report.target_title || 'Untitled'}</span>
+                          {report.target_excerpt && (
+                            <span className="text-xs text-muted-foreground">"{report.target_excerpt}"</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col text-sm">
+                          <span>{report.reporter_name || 'User'}</span>
+                          <span className="text-muted-foreground">{formatDate(report.created_at)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={report.status === "pending" ? "outline" : report.status === "resolved" ? "default" : "secondary"}>
+                          {report.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={reportActionId === report.id || report.status === "resolved"}
+                          onClick={() => handleReportStatus(report.id, "resolved")}
+                        >
+                          Resolve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={reportActionId === report.id}
+                          onClick={() => handleReportStatus(report.id, "dismissed")}
+                        >
+                          Dismiss
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={reportActionId === report.id}
+                          onClick={() => handleDeleteContent(report)}
+                        >
+                          Delete content
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Quick Actions */}
         <div className="mb-6">

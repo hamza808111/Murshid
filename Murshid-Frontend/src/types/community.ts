@@ -51,3 +51,28 @@ export interface CreateAnswerRequest {
   post_id: string;
   content: string;
 }
+
+export type ReportStatus = 'pending' | 'resolved' | 'dismissed';
+
+export interface CommunityReport {
+  id: string;
+  target_type: 'post' | 'answer';
+  target_id: string;
+  reporter_id: string;
+  reporter_name?: string;
+  reason: string;
+  target_title?: string | null;
+  target_excerpt?: string | null;
+  status: ReportStatus;
+  admin_notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateReportRequest {
+  target_type: 'post' | 'answer';
+  target_id: string;
+  reason: string;
+  target_title?: string;
+  target_excerpt?: string;
+}
