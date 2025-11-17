@@ -21,13 +21,15 @@ import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Post } from '@/types/community';
 import { toast } from 'sonner';
-import { getCommunityPosts } from '@/lib/communityApi';
+import { getCommunityPosts, getUserPostLike, likePost, unlikePost } from '@/lib/communityApi';
+import { LikeButton } from '@/components/community/LikeButton';
 
 export default function Community() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'questions' | 'discussions'>('all');
   const [loading, setLoading] = useState(true);
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -44,6 +46,23 @@ export default function Community() {
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
+
+  // Load liked status for all posts
+  useEffect(() => {
+    if (user && posts.length > 0) {
+      Promise.all(
+        posts.map(post => getUserPostLike(post.id, user.id))
+      ).then(likes => {
+        const likedSet = new Set<string>();
+        posts.forEach((post, idx) => {
+          if (likes[idx]) {
+            likedSet.add(post.id);
+          }
+        });
+        setLikedPosts(likedSet);
+      });
+    }
+  }, [user, posts.length]);
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -98,7 +117,7 @@ export default function Community() {
                     ? 'شارك الأسئلة والخبرات مع الطلاب والمختصين'
                     : 'Share questions and experiences with students and specialists'}
                 </p>
-                <div className="flex gap-4 justify-center">
+                <div className="flex gap-4 justify-center flex-wrap">
                   <Button
                     onClick={handleCreatePost}
                     className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
@@ -107,13 +126,23 @@ export default function Community() {
                     {language === 'ar' ? 'إنشاء منشور' : 'Create Post'}
                   </Button>
                   {user && (
-                    <Button
-                      onClick={() => navigate('/community/my-posts')}
-                      variant="outline"
-                      className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                    >
-                      {language === 'ar' ? 'منشوراتي' : 'My Posts'}
-                    </Button>
+                    <>
+                      <Button
+                        onClick={() => navigate('/community/my-posts')}
+                        variant="outline"
+                        className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                      >
+                        {language === 'ar' ? 'منشوراتي' : 'My Posts'}
+                      </Button>
+                      <Button
+                        onClick={() => navigate('/community/my-likes')}
+                        variant="outline"
+                        className="rounded-2xl px-8 py-6 border-2 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                      >
+                        <Heart className={`w-5 h-5 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                        {language === 'ar' ? 'إعجاباتي' : 'My Likes'}
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
@@ -229,17 +258,36 @@ export default function Community() {
                         </div>
                         
                         <div className="flex items-center gap-6 text-sm text-gray-500">
-                          <div className="flex items-center gap-1">
-                            <Heart className="w-4 h-4" />
-                            <span>{post.likes_count}</span>
-                          </div>
+                          <LikeButton
+                            itemId={post.id}
+                            itemType="post"
+                            initialLikesCount={post.likes_count || 0}
+                            initialIsLiked={likedPosts.has(post.id)}
+                            onLike={likePost}
+                            onUnlike={unlikePost}
+                            disabled={!user || !user.role || !user.gender}
+                            onLikeChange={(postId, newCount, isLiked) => {
+                              setPosts(prev => prev.map(p =>
+                                p.id === postId ? { ...p, likes_count: newCount } : p
+                              ));
+                              setLikedPosts(prev => {
+                                const newSet = new Set(prev);
+                                if (isLiked) {
+                                  newSet.add(postId);
+                                } else {
+                                  newSet.delete(postId);
+                                }
+                                return newSet;
+                              });
+                            }}
+                          />
                           <div className="flex items-center gap-1">
                             <MessageCircle className="w-4 h-4" />
-                            <span>{post.answers_count}</span>
+                            <span>{post.answers_count || 0}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Eye className="w-4 h-4" />
-                            <span>{post.views_count}</span>
+                            <span>{post.views_count || 0}</span>
                           </div>
                           {post.is_solved && (
                             <div className="flex items-center gap-1 text-green-600">

@@ -6,26 +6,34 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PageAnimation } from "@/components/animations/PageAnimation";
 import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
-import { 
-  ArrowLeft, 
-  MessageCircle, 
-  Heart, 
-  Eye, 
+import {
+  ArrowLeft,
+  MessageCircle,
+  Heart,
+  Eye,
   CheckCircle,
   Edit,
   Trash2
 } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Post, Answer } from '@/types/community';
+import type { Post, Answer, Comment } from '@/types/community';
 import { toast } from 'sonner';
-import { getCommunityPostsByAuthor, getCommunityAnswersByAuthor, deleteCommunityPost } from '@/lib/communityApi';
+import {
+  getCommunityPostsByAuthor,
+  getCommunityAnswersByAuthor,
+  getCommentsByAuthor,
+  deleteCommunityPost
+} from '@/lib/communityApi';
+import { EditPostModal } from '@/components/community/EditPostModal';
 
 export default function MyPosts() {
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [userAnswers, setUserAnswers] = useState<Answer[]>([]);
-  const [activeTab, setActiveTab] = useState<'posts' | 'answers'>('posts');
+  const [userComments, setUserComments] = useState<Comment[]>([]);
+  const [activeTab, setActiveTab] = useState<'posts' | 'answers' | 'comments'>('posts');
   const [loading, setLoading] = useState(true);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -41,16 +49,18 @@ export default function MyPosts() {
     }
     setLoading(true);
     try {
-      const [postsData, answersData] = await Promise.all([
+      const [postsData, answersData, commentsData] = await Promise.all([
         getCommunityPostsByAuthor(user.id),
-        getCommunityAnswersByAuthor(user.id)
+        getCommunityAnswersByAuthor(user.id),
+        getCommentsByAuthor(user.id)
       ]);
 
       setUserPosts(postsData);
       setUserAnswers(answersData);
+      setUserComments(commentsData);
     } catch (error) {
       console.error('Error loading user content:', error);
-      toast.error(language === 'ar' ? 'Failed to load your community activity' : 'Failed to load your community activity');
+      toast.error(language === 'ar' ? 'فشل تحميل نشاطك المجتمعي' : 'Failed to load your community activity');
     } finally {
       setLoading(false);
     }
@@ -121,8 +131,8 @@ export default function MyPosts() {
                     variant={activeTab === 'posts' ? 'default' : 'outline'}
                     onClick={() => setActiveTab('posts')}
                     className={`rounded-2xl px-6 py-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-                      activeTab === 'posts' 
-                        ? 'bg-blue-500 hover:bg-blue-600 text-white' 
+                      activeTab === 'posts'
+                        ? 'bg-blue-500 hover:bg-blue-600 text-white'
                         : 'border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
                     }`}
                   >
@@ -132,12 +142,23 @@ export default function MyPosts() {
                     variant={activeTab === 'answers' ? 'default' : 'outline'}
                     onClick={() => setActiveTab('answers')}
                     className={`rounded-2xl px-6 py-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-                      activeTab === 'answers' 
-                        ? 'bg-blue-500 hover:bg-blue-600 text-white' 
+                      activeTab === 'answers'
+                        ? 'bg-blue-500 hover:bg-blue-600 text-white'
                         : 'border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
                     }`}
                   >
                     {language === 'ar' ? `إجاباتي (${userAnswers.length})` : `My Answers (${userAnswers.length})`}
+                  </Button>
+                  <Button
+                    variant={activeTab === 'comments' ? 'default' : 'outline'}
+                    onClick={() => setActiveTab('comments')}
+                    className={`rounded-2xl px-6 py-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                      activeTab === 'comments'
+                        ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                        : 'border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
+                    }`}
+                  >
+                    {language === 'ar' ? `تعليقاتي (${userComments.length})` : `My Comments (${userComments.length})`}
                   </Button>
                 </div>
               </div>
@@ -212,7 +233,21 @@ export default function MyPosts() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => deletePost(post.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingPost(post);
+                              }}
+                              className="text-blue-500 hover:text-blue-700 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deletePost(post.id);
+                              }}
                               className="text-red-500 hover:text-red-700 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -253,7 +288,7 @@ export default function MyPosts() {
                           <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
                             <MessageCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                           </div>
-                          
+
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <span className="text-sm text-gray-500">
@@ -266,11 +301,11 @@ export default function MyPosts() {
                                 </Badge>
                               )}
                             </div>
-                            
+
                             <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed" dir={language}>
                               {answer.content}
                             </p>
-                            
+
                             <div className="flex items-center gap-4">
                               <div className="flex items-center gap-1 text-sm text-gray-500">
                                 <Heart className="w-4 h-4" />
@@ -303,9 +338,88 @@ export default function MyPosts() {
                 )}
               </div>
             )}
+
+            {/* Comments Tab */}
+            {activeTab === 'comments' && (
+              <div className="space-y-6">
+                {userComments.length > 0 ? (
+                  userComments.map((comment) => (
+                    <ScrollAnimation key={comment.id}>
+                      <Card className="p-6 hover:shadow-lg transition-shadow">
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                            <MessageCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                          </div>
+
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm text-gray-500">
+                                {language === 'ar' ? 'علقت منذ' : 'Commented'} {formatTimeAgo(comment.created_at)}
+                              </span>
+                              {comment.parent_comment_id && (
+                                <Badge variant="outline" className="text-xs">
+                                  {language === 'ar' ? 'رد' : 'Reply'}
+                                </Badge>
+                              )}
+                            </div>
+
+                            <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed" dir={language}>
+                              {comment.content}
+                            </p>
+
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-1 text-sm text-gray-500">
+                                <Heart className="w-4 h-4" />
+                                <span>{comment.likes_count}</span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  // Navigate to the post containing this comment
+                                  // We need to get the post_id from the answer
+                                  // For now, just show a message
+                                  toast.info(language === 'ar' ? 'انتقل إلى المنشور لعرض السياق' : 'Navigate to the post to view context');
+                                }}
+                                className="text-blue-600 hover:text-blue-800 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                              >
+                                {language === 'ar' ? 'عرض السياق' : 'View Context'}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    </ScrollAnimation>
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2" dir={language}>
+                      {language === 'ar' ? 'لا توجد تعليقات' : 'No Comments Yet'}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300" dir={language}>
+                      {language === 'ar' ? 'ابدأ بالتعليق على الإجابات' : 'Start by commenting on answers'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Edit Post Modal */}
+      {editingPost && (
+        <EditPostModal
+          post={editingPost}
+          isOpen={!!editingPost}
+          onClose={() => setEditingPost(null)}
+          onSuccess={(updatedPost) => {
+            setUserPosts(prev => prev.map(p => p.id === updatedPost.id ? updatedPost : p));
+            setEditingPost(null);
+          }}
+        />
+      )}
     </PageAnimation>
   );
 }

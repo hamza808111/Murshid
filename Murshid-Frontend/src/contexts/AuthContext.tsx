@@ -26,6 +26,7 @@ interface AuthContextType {
   user: AppUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   signup: (
     email: string,
     password: string,
@@ -244,16 +245,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         }
         localStorage.setItem("murshid_token", data.session.access_token);
-        
+
         console.log("🔐 Login successful - User data:", {
           id: mapped.id,
           email: mapped.email,
           is_admin: mapped.is_admin
         });
-        
+
         const language = localStorage.getItem('language') || 'en';
         toast.success(language === 'ar' ? 'تم تسجيل الدخول بنجاح!' : 'Successfully logged in!');
-        
+
         // Redirect admin users to admin dashboard
         if (mapped.is_admin) {
           console.log("✅ Admin detected - redirecting to /admin");
@@ -275,6 +276,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw error;
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+      // Note: The actual sign-in happens after redirect, handled by onAuthStateChange
+    } catch (error) {
+      const language = localStorage.getItem('language') || 'en';
+      const message = (error as Error)?.message || (language === 'ar' ? 'فشل تسجيل الدخول عبر Google' : 'Google sign-in failed');
+      toast.error(message);
+      throw error;
     }
   };
 
@@ -549,7 +575,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, signup, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

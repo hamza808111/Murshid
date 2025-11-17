@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Shield, Search, Users, Loader2, Trash2, RefreshCw, Building2, BookOpen, Link as LinkIcon, Ban, Undo2 } from "lucide-react";
+import { Shield, Search, Users, Loader2, Trash2, RefreshCw, Building2, BookOpen, Link as LinkIcon, Ban, Undo2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { Link } from "react-router-dom";
@@ -583,7 +583,7 @@ const AdminDashboard = () => {
         {/* Quick Actions */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-4">{t("admin.dashboard.tools.title")}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link to="/admin/universities" id="admin-dashboard-universities-link">
               <Card id="admin-dashboard-universities-card" className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardContent className="pt-6">
@@ -626,6 +626,22 @@ const AdminDashboard = () => {
                     <div>
                       <h3 className="font-semibold">{t("admin.dashboard.tools.assignMajors.title")}</h3>
                       <p className="text-sm text-muted-foreground">{t("admin.dashboard.tools.assignMajors.desc")}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/admin/community" id="admin-dashboard-community-link">
+              <Card id="admin-dashboard-community-card" className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
+                      <MessageSquare className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{language === "ar" ? "إدارة المجتمع" : "Manage Community"}</h3>
+                      <p className="text-sm text-muted-foreground">{language === "ar" ? "عرض وحذف المنشورات والإجابات والتعليقات" : "View and delete posts, answers, comments"}</p>
                     </div>
                   </div>
                 </CardContent>

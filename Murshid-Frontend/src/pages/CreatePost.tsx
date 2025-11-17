@@ -38,6 +38,10 @@ export default function CreatePost() {
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Check if profile is complete
+  const isProfileComplete = user && user.role && user.gender;
+
   const normalizedRole = user?.role?.toLowerCase?.();
   const canSelectPostType = user?.is_admin || normalizedRole === 'specialist';
   const postTypes = canSelectPostType
@@ -209,14 +213,47 @@ export default function CreatePost() {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 {language === 'ar' ? 'العودة إلى المجتمع' : 'Back to Community'}
               </Button>
-              
+
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100" dir={language}>
                 {language === 'ar' ? 'إنشاء منشور جديد' : 'Create New Post'}
               </h1>
             </div>
 
-            {/* Form */}
-            <Card className="p-8 card-hover">
+            {/* Profile Completion Check */}
+            {!isProfileComplete ? (
+              <Card className="p-8 border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">⚠️</span>
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                    {language === 'ar' ? 'الملف الشخصي غير مكتمل' : 'Profile Incomplete'}
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-300 mb-6" dir={language}>
+                    {language === 'ar'
+                      ? 'الرجاء إكمال ملفك الشخصي قبل إنشاء منشور في المجتمع'
+                      : 'Please complete your profile before creating a community post'}
+                  </p>
+                  <div className="flex gap-4 justify-center">
+                    <Button
+                      onClick={() => navigate('/profile-setup')}
+                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8"
+                    >
+                      {language === 'ar' ? 'إكمال الملف الشخصي' : 'Complete Profile'}
+                    </Button>
+                    <Button
+                      onClick={() => navigate('/community')}
+                      variant="outline"
+                      className="rounded-2xl px-8"
+                    >
+                      {language === 'ar' ? 'العودة' : 'Go Back'}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ) : (
+              /* Form */
+              <Card className="p-8 card-hover">
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Post Type */}
                 <div>
@@ -403,6 +440,7 @@ export default function CreatePost() {
                 </div>
               </form>
             </Card>
+            )}
           </div>
         </div>
       </div>

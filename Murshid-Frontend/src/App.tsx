@@ -26,12 +26,16 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminUniversities from "./pages/AdminUniversities";
 import AdminMajors from "./pages/AdminMajors";
 import AdminUniversityMajors from "./pages/AdminUniversityMajors";
+import AdminCommunity from "./pages/AdminCommunity";
 import Suspended from "./pages/Suspended";
 import Community from "./pages/Community";
 import CreatePost from "./pages/CreatePost";
 import PostDetail from "./pages/PostDetail";
 import MyPosts from "./pages/MyPosts";
+import MyLikes from "./pages/MyLikes";
 import Contact from "./pages/Contact";
+import AuthCallback from "./pages/AuthCallback";
+import ProfileSetup from "./pages/ProfileSetup";
 
 const queryClient = new QueryClient();
 
@@ -57,16 +61,20 @@ const App = () => (
               <Route path="/community/create" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
               <Route path="/community/post/:id" element={<PostDetail />} />
               <Route path="/community/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
+              <Route path="/community/my-likes" element={<ProtectedRoute><MyLikes /></ProtectedRoute>} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
               <Route path="/admin/universities" element={<ProtectedRoute><AdminUniversities /></ProtectedRoute>} />
               <Route path="/admin/majors" element={<ProtectedRoute><AdminMajors /></ProtectedRoute>} />
               <Route path="/admin/university-majors" element={<ProtectedRoute><AdminUniversityMajors /></ProtectedRoute>} />
+              <Route path="/admin/community" element={<ProtectedRoute><AdminCommunity /></ProtectedRoute>} />
               <Route path="/suspended" element={<Suspended />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetup /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
