@@ -156,26 +156,28 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             
             {user ? (
               <div className="flex items-center gap-3">
-                <Link to="/bookmarks" id="navbar-bookmarks-link" className="relative">
-                  <Button 
-                    variant="outline"
-                    size="icon"
-                    id="navbar-bookmarks-button"
-                    className={`relative transition-transform duration-300 ${
-                      animateBookmark ? 'animate-pulse scale-110' : ''
-                    }`}
-                  >
-                    <BookmarkCheck className="h-[1.2rem] w-[1.2rem]" />
-                    {totalBookmarks > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                        {totalBookmarks > 99 ? '99+' : totalBookmarks}
-                      </span>
-                    )}
-                    <span className="sr-only">Bookmarks</span>
-                  </Button>
-                </Link>
+                {!user.is_admin && (
+                  <Link to="/bookmarks" id="navbar-bookmarks-link" className="relative">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      id="navbar-bookmarks-button"
+                      className={`relative transition-transform duration-300 ${
+                        animateBookmark ? 'animate-pulse scale-110' : ''
+                      }`}
+                    >
+                      <BookmarkCheck className="h-[1.2rem] w-[1.2rem]" />
+                      {totalBookmarks > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                          {totalBookmarks > 99 ? '99+' : totalBookmarks}
+                        </span>
+                      )}
+                      <span className="sr-only">Bookmarks</span>
+                    </Button>
+                  </Link>
+                )}
                 <Link to="/profile" id="navbar-profile-link">
-                  <Button 
+                  <Button
                     variant="ghost"
                     className="rounded-xl"
                     id="navbar-profile-button"
@@ -246,25 +248,27 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             <div className="pt-4 space-y-3 border-t border-gray-100 dark:border-gray-800">
               {user ? (
                 <div className="space-y-3">
-                  <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-bookmarks-link" className="block">
-                    <Button
-                      variant="outline"
-                      className={`w-full justify-start rounded-xl transition-transform duration-300 ${
-                        animateBookmark ? 'animate-pulse scale-105' : ''
-                      }`}
-                      id="navbar-mobile-bookmarks-button"
-                    >
-                      <div className="relative flex items-center">
-                        <BookmarkCheck className="w-4 h-4 mr-2" />
-                        {language === 'ar' ? 'المحفوظات' : 'Bookmarks'}
-                        {totalBookmarks > 0 && (
-                          <span className="ml-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                            {totalBookmarks > 99 ? '99+' : totalBookmarks}
-                          </span>
-                        )}
-                      </div>
-                    </Button>
-                  </Link>
+                  {!user.is_admin && (
+                    <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-bookmarks-link" className="block">
+                      <Button
+                        variant="outline"
+                        className={`w-full justify-start rounded-xl transition-transform duration-300 ${
+                          animateBookmark ? 'animate-pulse scale-105' : ''
+                        }`}
+                        id="navbar-mobile-bookmarks-button"
+                      >
+                        <div className="relative flex items-center">
+                          <BookmarkCheck className="w-4 h-4 mr-2" />
+                          {language === 'ar' ? 'المحفوظات' : 'Bookmarks'}
+                          {totalBookmarks > 0 && (
+                            <span className="ml-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                              {totalBookmarks > 99 ? '99+' : totalBookmarks}
+                            </span>
+                          )}
+                        </div>
+                      </Button>
+                    </Link>
+                  )}
                   <Link to="/profile" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-profile-link" className="block">
                     <Button
                       variant="outline"

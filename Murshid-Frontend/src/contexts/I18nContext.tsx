@@ -349,7 +349,7 @@ const translations = {
     'auth.fields.newPassword': 'كلمة المرور الجديدة',
     'auth.fields.confirmNewPassword': 'تأكيد كلمة المرور الجديدة',
     'auth.fields.institution': 'المؤسسة التعليمية',
-    'auth.fields.gender': 'الجنس',
+    'auth.fields.gender': 'النوع',
     'auth.fields.role': 'الدور',
     'auth.fields.studentType': 'نوع الطالب',
     'auth.fields.academicLevel': 'المرحلة الدراسية',
