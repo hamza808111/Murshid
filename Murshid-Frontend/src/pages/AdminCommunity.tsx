@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { formatTimeAgo } from '@/lib/timeUtils';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +41,7 @@ const AdminCommunity = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"posts" | "answers" | "comments" | "reports">("posts");
   const [reportFilter, setReportFilter] = useState<ReportStatus | "all">("pending");
+  const [timeRefresh, setTimeRefresh] = useState(0);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; type: "post" | "answer" | "comment"; title?: string } | null>(null);
@@ -67,6 +69,13 @@ const AdminCommunity = () => {
 
     fetchData();
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRefresh(prev => prev + 1);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -155,17 +164,6 @@ const AdminCommunity = () => {
     } catch (error) {
       console.error("Error fetching reports:", error);
     }
-  };
-
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-
-    if (diffInHours < 1) return language === "ar" ? "منذ قليل" : "Just now";
-    if (diffInHours < 24) return language === "ar" ? `منذ ${diffInHours} ساعة` : `${diffInHours}h ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    return language === "ar" ? `منذ ${diffInDays} يوم` : `${diffInDays}d ago`;
   };
 
   const handleDeleteClick = (id: string, type: "post" | "answer" | "comment", title?: string) => {
@@ -446,7 +444,7 @@ const AdminCommunity = () => {
                                   <Eye className="w-4 h-4" />
                                   <span>{post.views_count || 0}</span>
                                 </div>
-                                <span>{formatTimeAgo(post.created_at)}</span>
+                                <span>{formatTimeAgo(post.created_at, language)}</span>
                               </div>
                             </div>
 
@@ -516,7 +514,7 @@ const AdminCommunity = () => {
                                   <Heart className="w-4 h-4" />
                                   <span>{answer.likes_count || 0}</span>
                                 </div>
-                                <span>{formatTimeAgo(answer.created_at)}</span>
+                                <span>{formatTimeAgo(answer.created_at, language)}</span>
                               </div>
                             </div>
 
@@ -587,7 +585,7 @@ const AdminCommunity = () => {
                                   <Heart className="w-4 h-4" />
                                   <span>{comment.likes_count || 0}</span>
                                 </div>
-                                <span>{formatTimeAgo(comment.created_at)}</span>
+                                <span>{formatTimeAgo(comment.created_at, language)}</span>
                               </div>
                             </div>
 
@@ -666,7 +664,7 @@ const AdminCommunity = () => {
                                   {language === "ar" ? "بلاغ من: " : "Reported by: "}
                                   <span className="font-medium">{report.reporter_name || "Anonymous"}</span>
                                   {" • "}
-                                  {formatTimeAgo(report.created_at)}
+                                  {formatTimeAgo(report.created_at, language)}
                                 </p>
                                 {report.description && (
                                   <p className="text-gray-700 dark:text-gray-300 text-sm mb-3 italic" dir={language}>

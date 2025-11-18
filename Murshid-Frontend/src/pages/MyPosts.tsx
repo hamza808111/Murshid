@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
+import { formatTimeAgo } from '@/lib/timeUtils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +22,7 @@ import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Post } from '@/types/community';
 import { toast } from 'sonner';
+import { translateTagSync } from '@/lib/tagTranslation';
 import {
   getCommunityPostsByAuthor,
   deleteCommunityPost
@@ -33,6 +35,7 @@ export default function MyPosts() {
   const [loading, setLoading] = useState(true);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
+  const [timeRefresh, setTimeRefresh] = useState(0);
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -40,6 +43,13 @@ export default function MyPosts() {
   useEffect(() => {
     fetchUserContent();
   }, [user]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRefresh(prev => prev + 1);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchUserContent = async () => {
     if (!user) {
@@ -56,17 +66,6 @@ export default function MyPosts() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return language === 'ar' ? 'منذ قليل' : 'Just now';
-    if (diffInHours < 24) return language === 'ar' ? `منذ ${diffInHours} ساعة` : `${diffInHours}h ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    return language === 'ar' ? `منذ ${diffInDays} يوم` : `${diffInDays}d ago`;
   };
 
   const deletePost = (postId: string) => {
@@ -158,7 +157,7 @@ export default function MyPosts() {
                                 </p>
                                 {post.deleted_at && (
                                   <p className="text-xs text-red-600 dark:text-red-500 mt-1">
-                                    {language === 'ar' ? 'تم الحذف ' : 'Deleted '}{formatTimeAgo(post.deleted_at)}
+                                    {language === 'ar' ? 'تم الحذف ' : 'Deleted '}{formatTimeAgo(post.deleted_at, language)}
                                   </p>
                                 )}
                               </div>
@@ -170,7 +169,7 @@ export default function MyPosts() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <span className="text-sm text-gray-500">
-                                {formatTimeAgo(post.created_at)}
+                                {formatTimeAgo(post.created_at, language)}
                               </span>
                               {post.is_solved && (
                                 <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
@@ -194,12 +193,12 @@ export default function MyPosts() {
                             <div className="flex flex-wrap gap-2 mb-4">
                               {post.major_tags?.map((tag) => (
                                 <Badge key={tag} variant="outline" className="text-xs">
-                                  📚 {tag}
+                                  📚 {translateTagSync(tag, language)}
                                 </Badge>
                               ))}
                               {post.university_tags?.map((tag) => (
                                 <Badge key={tag} variant="outline" className="text-xs">
-                                  🏛️ {tag}
+                                  🏛️ {translateTagSync(tag, language)}
                                 </Badge>
                               ))}
                               {post.tags.map((tag) => (

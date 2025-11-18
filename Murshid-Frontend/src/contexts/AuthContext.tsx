@@ -171,20 +171,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Load session and subscribe to auth state changes
   useEffect(() => {
     let isMounted = true;
+    
     const init = async () => {
       try {
-        // Add timeout to getSession call
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Session fetch timeout")), 8000)
-        );
-        
-        const { data } = await Promise.race([sessionPromise, timeoutPromise]) as any;
-        const session = data?.session;
+        // Get session synchronously first (faster)
+        const { data: { session } } = await supabase.auth.getSession();
         
         if (!isMounted) return;
+        
         if (session?.user) {
-          // Use cache on initial load to speed up and prevent timeout issues
+          // Use cache on initial load to speed up
           const mapped = await mapUserWithProfile(session.user, true);
           if (!isMounted) return;
           setUser(mapped);
@@ -193,7 +189,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (error) {
         console.error("Error initializing session:", error);
-        // If session restoration fails, just set user to null and stop loading
         setUser(null);
       } finally {
         if (isMounted) {
@@ -201,6 +196,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     };
+    
     init();
 
     const { data: authSub } = supabase.auth.onAuthStateChange(async (_event, session) => {

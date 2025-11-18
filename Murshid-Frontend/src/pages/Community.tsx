@@ -31,6 +31,8 @@ import type { Post } from '@/types/community';
 import { toast } from 'sonner';
 import { getCommunityPosts, getUserPostLike, likePost, unlikePost } from '@/lib/communityApi';
 import { LikeButton } from '@/components/community/LikeButton';
+import { formatTimeAgo } from '@/lib/timeUtils';
+import { translateTagSync } from '@/lib/tagTranslation';
 
 export default function Community() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -38,6 +40,7 @@ export default function Community() {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'student' | 'specialist'>('all');
   const [loading, setLoading] = useState(true);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [timeRefresh, setTimeRefresh] = useState(0);
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -109,16 +112,14 @@ export default function Community() {
     navigate('/community/create');
   };
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return language === 'ar' ? 'منذ قليل' : 'Just now';
-    if (diffInHours < 24) return language === 'ar' ? `منذ ${diffInHours} ساعة` : `${diffInHours}h ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    return language === 'ar' ? `منذ ${diffInDays} يوم` : `${diffInDays}d ago`;
-  };
+  // Auto-refresh time display every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRefresh(prev => prev + 1);
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <PageAnimation>
@@ -308,7 +309,7 @@ export default function Community() {
                              (language === 'ar' ? 'مدير' : 'Admin')}
                           </Badge>
                           <span className="text-sm text-gray-500">
-                            {formatTimeAgo(post.created_at)}
+                            {formatTimeAgo(post.created_at, language)}
                           </span>
                         </div>
                         {post.author_academic_level && (
@@ -331,12 +332,12 @@ export default function Community() {
                           <div className="flex flex-wrap gap-2 mb-4">
                             {post.major_tags?.map((tag) => (
                               <Badge key={tag} variant="outline" className="text-xs">
-                                📚 {tag}
+                                📚 {translateTagSync(tag, language)}
                               </Badge>
                             ))}
                             {post.university_tags?.map((tag) => (
                               <Badge key={tag} variant="outline" className="text-xs">
-                                🏛️ {tag}
+                                🏛️ {translateTagSync(tag, language)}
                               </Badge>
                             ))}
                             {post.tags.map((tag) => (

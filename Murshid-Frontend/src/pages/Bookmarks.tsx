@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
-  BookmarkCheck, 
+  Bookmark, 
   Building2, 
   BookOpen, 
   Trash2,
@@ -36,7 +36,7 @@ export default function Bookmarks() {
         <Navbar />
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-20">
           <div className="text-center">
-            <BookmarkCheck className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <Bookmark className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {language === 'ar' ? 'قم بتسجيل الدخول لرؤية العناصر المحفوظة' : 'Login to See Your Bookmarks'}
             </h2>
@@ -71,7 +71,7 @@ export default function Bookmarks() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full mb-4">
-            <BookmarkCheck className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            <Bookmark className="w-8 h-8 text-blue-600 dark:text-blue-400" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
             {language === 'ar' ? 'العناصر المحفوظة' : 'My Bookmarks'}
@@ -248,7 +248,7 @@ export default function Bookmarks() {
             {/* Empty State - All */}
             {bookmarkedUniversities.length === 0 && bookmarkedMajors.length === 0 && !loading && (
               <div className="text-center py-20">
-                <BookmarkCheck className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <Bookmark className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2" dir={language}>
                   {language === 'ar' ? 'لا توجد عناصر محفوظة بعد' : 'No Bookmarks Yet'}
                 </h3>

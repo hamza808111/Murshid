@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
+import { formatTimeAgo } from '@/lib/timeUtils';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getUserLikedPosts, getUserLikedAnswers, getUserLikedComments } from '@/lib/communityApi';
 import type { Post, Answer, Comment } from '@/types/community';
 import { toast } from 'sonner';
+import { translateTagSync } from '@/lib/tagTranslation';
 
 export default function MyLikes() {
   const [likedPosts, setLikedPosts] = useState<Post[]>([]);
@@ -19,6 +21,7 @@ export default function MyLikes() {
   const [likedComments, setLikedComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'posts' | 'answers' | 'comments'>('posts');
+  const [timeRefresh, setTimeRefresh] = useState(0);
 
   const { language } = useI18n();
   const { user } = useAuth();
@@ -31,6 +34,13 @@ export default function MyLikes() {
     }
     fetchLikedItems();
   }, [user]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRefresh(prev => prev + 1);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchLikedItems = async () => {
     if (!user) return;
@@ -51,17 +61,6 @@ export default function MyLikes() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-
-    if (diffInHours < 1) return language === 'ar' ? 'منذ قليل' : 'Just now';
-    if (diffInHours < 24) return language === 'ar' ? `منذ ${diffInHours} ساعة` : `${diffInHours}h ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    return language === 'ar' ? `منذ ${diffInDays} يوم` : `${diffInDays}d ago`;
   };
 
   if (loading) {
@@ -151,12 +150,12 @@ export default function MyLikes() {
                         <div className="flex flex-wrap gap-2 mb-4">
                           {post.major_tags?.map((tag) => (
                             <Badge key={tag} variant="outline" className="text-xs">
-                              📚 {tag}
+                              📚 {translateTagSync(tag, language)}
                             </Badge>
                           ))}
                           {post.university_tags?.map((tag) => (
                             <Badge key={tag} variant="outline" className="text-xs">
-                              🏛️ {tag}
+                              🏛️ {translateTagSync(tag, language)}
                             </Badge>
                           ))}
                         </div>
@@ -177,7 +176,7 @@ export default function MyLikes() {
                             </div>
                           </div>
                           <span className="text-sm text-gray-500">
-                            {formatTimeAgo(post.created_at)}
+                            {formatTimeAgo(post.created_at, language)}
                           </span>
                         </div>
                       </Card>
@@ -237,7 +236,7 @@ export default function MyLikes() {
                             <span>{answer.likes_count || 0}</span>
                           </div>
                           <span className="text-sm text-gray-500">
-                            {formatTimeAgo(answer.created_at)}
+                            {formatTimeAgo(answer.created_at, language)}
                           </span>
                         </div>
                       </Card>
@@ -312,7 +311,7 @@ export default function MyLikes() {
                             <span>{comment.likes_count || 0}</span>
                           </div>
                           <span className="text-sm text-gray-500">
-                            {formatTimeAgo(comment.created_at)}
+                            {formatTimeAgo(comment.created_at, language)}
                           </span>
                         </div>
                       </Card>

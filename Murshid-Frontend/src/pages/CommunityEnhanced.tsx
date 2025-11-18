@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
+import { formatTimeAgo } from '@/lib/timeUtils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +41,7 @@ export default function CommunityEnhanced() {
   const [bookmarkedPosts, setBookmarkedPosts] = useState<Set<string>>(new Set());
   const [quickReplyPost, setQuickReplyPost] = useState<Post | null>(null);
   const [quickReplyContent, setQuickReplyContent] = useState('');
+  const [timeRefresh, setTimeRefresh] = useState(0);
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -55,6 +57,13 @@ export default function CommunityEnhanced() {
     };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRefresh(prev => prev + 1);
+    }, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadUserInteractions = () => {
@@ -176,17 +185,6 @@ export default function CommunityEnhanced() {
       e.preventDefault();
       submitQuickReply(e as any);
     }
-  };
-
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return language === 'ar' ? 'منذ قليل' : 'Just now';
-    if (diffInHours < 24) return language === 'ar' ? `منذ ${diffInHours} ساعة` : `${diffInHours}h ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    return language === 'ar' ? `منذ ${diffInDays} يوم` : `${diffInDays}d ago`;
   };
 
   const extractHashtags = (text: string) => {
@@ -464,7 +462,7 @@ export default function CommunityEnhanced() {
                                    (language === 'ar' ? 'مدير' : 'Admin')}
                                 </Badge>
                                 <span className="text-sm text-gray-500">
-                                  {formatTimeAgo(post.created_at)}
+                                  {formatTimeAgo(post.created_at, language)}
                                 </span>
                               </div>
                               

@@ -48,6 +48,8 @@ import {
 import { LikeButton } from '@/components/community/LikeButton';
 import { CommentSection } from '@/components/community/CommentSection';
 import { EditPostModal } from '@/components/community/EditPostModal';
+import { formatTimeAgo, formatFullDate } from '@/lib/timeUtils';
+import { translateTagSync } from '@/lib/tagTranslation';
 import { EditAnswerModal } from '@/components/community/EditAnswerModal';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import ReportButton from '@/components/community/ReportButton';
@@ -65,12 +67,22 @@ export default function PostDetail() {
   const [editingAnswer, setEditingAnswer] = useState<Answer | null>(null);
   const [showAnswerFormInline, setShowAnswerFormInline] = useState(false);
   const [deleteAnswerId, setDeleteAnswerId] = useState<string | null>(null);
+  const [timeRefresh, setTimeRefresh] = useState(0);
   const answerFormRef = useRef<HTMLDivElement>(null);
   const answerTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Auto-refresh time display every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRefresh(prev => prev + 1);
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   const isProfileComplete = user && (user.is_admin || (user.role && user.gender));
   const isPostAuthor = user && post && post.author_id === user.id;
@@ -248,17 +260,6 @@ export default function PostDetail() {
     }
   };
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-
-    if (diffInHours < 1) return language === 'ar' ? 'منذ قليل' : 'Just now';
-    if (diffInHours < 24) return language === 'ar' ? `منذ ${diffInHours} ساعة` : `${diffInHours}h ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    return language === 'ar' ? `منذ ${diffInDays} يوم` : `${diffInDays}d ago`;
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
@@ -336,7 +337,7 @@ export default function PostDetail() {
                          (language === 'ar' ? 'مشرف' : 'Admin')}
                       </Badge>
                       <span className="text-sm text-gray-500">
-                        {formatTimeAgo(post.created_at)}
+                        {formatTimeAgo(post.created_at, language)}
                       </span>
                       {post.is_solved && (
                         <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
@@ -377,20 +378,26 @@ export default function PostDetail() {
                     {post.title}
                   </h1>
 
-                  <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed whitespace-pre-wrap" dir={language}>
+                  <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed whitespace-pre-wrap" dir={language}>
                     {post.content}
                   </p>
+
+                  {/* Posted on - Full date */}
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-6 border-l-2 border-gray-300 dark:border-gray-600 pl-3">
+                    {language === 'ar' ? 'نُشر في: ' : 'Posted on: '}
+                    {formatFullDate(post.created_at, language)}
+                  </div>
 
                   {((post.major_tags && post.major_tags.length > 0) || (post.university_tags && post.university_tags.length > 0) || (post.tags && post.tags.length > 0)) && (
                     <div className="flex flex-wrap gap-2 mb-6">
                       {post.major_tags?.map((tag) => (
                         <Badge key={tag} variant="outline" className="text-xs">
-                          📚 {tag}
+                          📚 {translateTagSync(tag, language)}
                         </Badge>
                       ))}
                       {post.university_tags?.map((tag) => (
                         <Badge key={tag} variant="outline" className="text-xs">
-                          🏛️ {tag}
+                          🏛️ {translateTagSync(tag, language)}
                         </Badge>
                       ))}
                       {post.tags.map((tag) => (
@@ -572,7 +579,7 @@ export default function PostDetail() {
                                  (language === 'ar' ? 'مشرف' : 'Admin')}
                               </Badge>
                               <span className="text-sm text-gray-500">
-                                {formatTimeAgo(answer.created_at)}
+                                {formatTimeAgo(answer.created_at, language)}
                               </span>
                               {answer.is_accepted && (
                                 <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">

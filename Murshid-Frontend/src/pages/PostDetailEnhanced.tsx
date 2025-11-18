@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
+import { formatTimeAgo } from '@/lib/timeUtils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +49,7 @@ export default function PostDetailEnhanced() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [reportingId, setReportingId] = useState<string | null>(null);
+  const [timeRefresh, setTimeRefresh] = useState(0);
   const [likedPost, setLikedPost] = useState(false);
   const [bookmarkedPost, setBookmarkedPost] = useState(false);
   const [likedAnswers, setLikedAnswers] = useState<Set<string>>(new Set());
@@ -75,6 +77,13 @@ export default function PostDetailEnhanced() {
   useEffect(() => {
     loadUserInteractions();
   }, [post, answers]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRefresh(prev => prev + 1);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const loadUserInteractions = () => {
     if (user && id) {
@@ -364,17 +373,6 @@ export default function PostDetailEnhanced() {
     setReplyingTo(null);
   };
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return language === 'ar' ? 'منذ قليل' : 'Just now';
-    if (diffInHours < 24) return language === 'ar' ? `منذ ${diffInHours} ساعة` : `${diffInHours}h ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    return language === 'ar' ? `منذ ${diffInDays} يوم` : `${diffInDays}d ago`;
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
@@ -508,7 +506,7 @@ export default function PostDetailEnhanced() {
                       </Badge>
                     )}
                     <span className="text-sm text-gray-500">
-                      {formatTimeAgo(post.created_at)}
+                      {formatTimeAgo(post.created_at, language)}
                     </span>
                   </div>
                   
@@ -695,7 +693,7 @@ export default function PostDetailEnhanced() {
                               </Badge>
                             )}
                             <span className="text-sm text-gray-500">
-                              {formatTimeAgo(answer.created_at)}
+                              {formatTimeAgo(answer.created_at, language)}
                             </span>
                           </div>
                           
@@ -765,7 +763,7 @@ export default function PostDetailEnhanced() {
                                              (language === 'ar' ? 'مدير' : 'Admin')}
                                           </Badge>
                                           <span className="text-xs text-gray-500">
-                                            {formatTimeAgo(reply.created_at)}
+                                            {formatTimeAgo(reply.created_at, language)}
                                           </span>
                                         </div>
                                         <p className="text-sm text-gray-700 dark:text-gray-300 mb-2" dir={language}>

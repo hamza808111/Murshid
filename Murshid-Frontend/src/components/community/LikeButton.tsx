@@ -110,7 +110,7 @@ export const LikeButton = ({
         isLiked
           ? "text-red-500 hover:text-red-600"
           : "text-gray-500 hover:text-red-500"
-      } transition-colors`}
+      } transition-all duration-200`}
       aria-label={
         isLiked
           ? language === "ar"
@@ -122,7 +122,9 @@ export const LikeButton = ({
       }
     >
       <Heart
-        className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`}
+        className={`w-4 h-4 transition-all duration-200 ${
+          isLiked ? "fill-current scale-110" : "scale-100"
+        }`}
         strokeWidth={isLiked ? 0 : 2}
       />
       <span className="text-sm font-medium">{likesCount}</span>

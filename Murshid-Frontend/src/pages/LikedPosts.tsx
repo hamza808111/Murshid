@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
+import { formatTimeAgo } from '@/lib/timeUtils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,11 +18,13 @@ import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Post } from '@/types/community';
 import { toast } from 'sonner';
+import { translateTagSync } from '@/lib/tagTranslation';
 import { getUserLikedPosts } from '@/lib/communityApi';
 
 export default function LikedPosts() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [timeRefresh, setTimeRefresh] = useState(0);
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -33,6 +36,13 @@ export default function LikedPosts() {
       navigate('/login');
     }
   }, [user]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRefresh(prev => prev + 1);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchLikedPosts = async () => {
     if (!user) return;
@@ -47,24 +57,6 @@ export default function LikedPosts() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (seconds < 60) return language === 'ar' ? 'الآن' : 'just now';
-    if (seconds < 3600) {
-      const minutes = Math.floor(seconds / 60);
-      return language === 'ar' ? `منذ ${minutes} دقيقة` : `${minutes}m ago`;
-    }
-    if (seconds < 86400) {
-      const hours = Math.floor(seconds / 3600);
-      return language === 'ar' ? `منذ ${hours} ساعة` : `${hours}h ago`;
-    }
-    const days = Math.floor(seconds / 86400);
-    return language === 'ar' ? `منذ ${days} يوم` : `${days}d ago`;
   };
 
   if (loading) {
@@ -171,7 +163,7 @@ export default function LikedPosts() {
                               </Badge>
                             )}
                             <span className="text-sm text-gray-500">
-                              {formatTimeAgo(post.created_at)}
+                              {formatTimeAgo(post.created_at, language)}
                             </span>
                           </div>
                           
@@ -186,12 +178,12 @@ export default function LikedPosts() {
                           <div className="flex flex-wrap gap-2 mb-4">
                             {post.major_tags?.map((tag) => (
                               <Badge key={tag} variant="outline" className="text-xs">
-                                📚 {tag}
+                                📚 {translateTagSync(tag, language)}
                               </Badge>
                             ))}
                             {post.university_tags?.map((tag) => (
                               <Badge key={tag} variant="outline" className="text-xs">
-                                🏛️ {tag}
+                                🏛️ {translateTagSync(tag, language)}
                               </Badge>
                             ))}
                             {post.tags?.map((tag) => (

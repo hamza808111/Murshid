@@ -22,9 +22,9 @@ const teamMembers = [
     name: 'Mohammed Albilaly',
     role: 'Software Tester & Full-Stack Developer',
     image: '/public/bilali.jpg',
-    email: 'sarah@team3n3.com',
-    github: 'https://github.com/abdulazizabdullh',
-    linkedin: 'https://www.linkedin.com/in/abdulaziz-alamro-015552273?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app',
+    email: 'm.ay.albilaly@gmail.com',
+    github: 'https://github.com/MAB-SWE',
+    linkedin: 'https://www.linkedin.com/in/mohammed-albilaly-9867ab271/',
     color: 'from-pink-400 to-red-600'
   },
   {
@@ -33,8 +33,8 @@ const teamMembers = [
     role: 'Product Owner & Backend Developer',
     image: '/public/aziz.jpg',
     email: 'aasaabd1998@gmail.com',
-    github: 'https://github.com/mohammed',
-    linkedin: 'https://linkedin.com/in/mohammed',
+    github: 'https://github.com/abdulazizabdullh',
+    linkedin: 'https://www.linkedin.com/in/abdulaziz-alamro-015552273?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app',
     color: 'from-green-400 to-teal-600'
   },
   {
@@ -44,7 +44,7 @@ const teamMembers = [
     image: '/public/raouf.jpg',
     email: 'Abderraoufbendjedia@gmail.com',
     github: 'https://github.com/Abderraouf17',
-    linkedin: 'https://www.linkedin.com/public-profile/settings',
+    linkedin: 'https://www.linkedin.com/in/abderraouf-bendjedia-885b5422b/',
     color: 'from-yellow-400 to-orange-600'
   },
   {

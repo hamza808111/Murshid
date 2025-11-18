@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
+import { formatTimeAgo } from '@/lib/timeUtils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,7 @@ export default function MyAnswers() {
   const [userComments, setUserComments] = useState<Comment[]>([]);
   const [activeTab, setActiveTab] = useState<'answers' | 'comments'>('answers');
   const [loading, setLoading] = useState(true);
+  const [timeRefresh, setTimeRefresh] = useState(0);
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -34,6 +36,13 @@ export default function MyAnswers() {
   useEffect(() => {
     fetchUserContent();
   }, [user]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRefresh(prev => prev + 1);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchUserContent = async () => {
     if (!user) {
@@ -55,17 +64,6 @@ export default function MyAnswers() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return language === 'ar' ? 'منذ قليل' : 'Just now';
-    if (diffInHours < 24) return language === 'ar' ? `منذ ${diffInHours} ساعة` : `${diffInHours}h ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    return language === 'ar' ? `منذ ${diffInDays} يوم` : `${diffInDays}d ago`;
   };
 
   if (loading) {
@@ -156,7 +154,7 @@ export default function MyAnswers() {
                                 </p>
                                 {answer.deleted_at && (
                                   <p className="text-xs text-red-600 dark:text-red-500 mt-1">
-                                    {language === 'ar' ? 'تم الحذف ' : 'Deleted '}{formatTimeAgo(answer.deleted_at)}
+                                    {language === 'ar' ? 'تم الحذف ' : 'Deleted '}{formatTimeAgo(answer.deleted_at, language)}
                                   </p>
                                 )}
                               </div>
@@ -171,7 +169,7 @@ export default function MyAnswers() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <span className="text-sm text-gray-500">
-                                {language === 'ar' ? 'أجبت منذ' : 'Answered'} {formatTimeAgo(answer.created_at)}
+                                {language === 'ar' ? 'أجبت منذ' : 'Answered'} {formatTimeAgo(answer.created_at, language)}
                               </span>
                               {answer.is_accepted && (
                                 <Badge variant="outline" className="text-xs text-green-600">
@@ -243,7 +241,7 @@ export default function MyAnswers() {
                                 </p>
                                 {comment.deleted_at && (
                                   <p className="text-xs text-red-600 dark:text-red-500 mt-1">
-                                    {language === 'ar' ? 'تم الحذف ' : 'Deleted '}{formatTimeAgo(comment.deleted_at)}
+                                    {language === 'ar' ? 'تم الحذف ' : 'Deleted '}{formatTimeAgo(comment.deleted_at, language)}
                                   </p>
                                 )}
                               </div>
@@ -258,7 +256,7 @@ export default function MyAnswers() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <span className="text-sm text-gray-500">
-                                {language === 'ar' ? 'علقت منذ' : 'Commented'} {formatTimeAgo(comment.created_at)}
+                                {language === 'ar' ? 'علقت منذ' : 'Commented'} {formatTimeAgo(comment.created_at, language)}
                               </span>
                               {comment.parent_comment_id && (
                                 <Badge variant="outline" className="text-xs">
