@@ -139,10 +139,10 @@ export default function Community() {
                     ? 'شارك الأسئلة والخبرات مع الطلاب والمختصين'
                     : 'Share questions and experiences with students and specialists'}
                 </p>
-                <div className="flex gap-4 justify-center flex-wrap">
+                <div className="grid grid-cols-2 xl:flex xl:flex-row gap-4 justify-center max-w-4xl mx-auto">
                   <Button
                     onClick={handleCreatePost}
-                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 w-full xl:w-auto"
                   >
                     <Plus className={`w-5 h-5 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
                     {language === 'ar' ? 'إنشاء منشور' : 'Create Post'}
@@ -152,7 +152,7 @@ export default function Community() {
                       <Button
                         onClick={() => navigate('/community/my-posts')}
                         variant="outline"
-                        className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                        className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 w-full xl:w-auto"
                       >
                         <FileText className={`w-5 h-5 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
                         {language === 'ar' ? 'منشوراتي' : 'My Posts'}
@@ -160,7 +160,7 @@ export default function Community() {
                       <Button
                         onClick={() => navigate('/community/my-answers')}
                         variant="outline"
-                        className="rounded-2xl px-8 py-6 border-2 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                        className="rounded-2xl px-8 py-6 border-2 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 w-full xl:w-auto"
                       >
                         <MessageCircle className={`w-5 h-5 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
                         {language === 'ar' ? 'إجاباتي' : 'My Answers'}
@@ -168,7 +168,7 @@ export default function Community() {
                       <Button
                         onClick={() => navigate('/community/my-likes')}
                         variant="outline"
-                        className="rounded-2xl px-8 py-6 border-2 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                        className="rounded-2xl px-8 py-6 border-2 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 w-full xl:w-auto"
                       >
                         <Heart className={`w-5 h-5 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
                         {language === 'ar' ? 'إعجاباتي' : 'My Likes'}
