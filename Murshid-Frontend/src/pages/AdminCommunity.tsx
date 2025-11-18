@@ -319,8 +319,8 @@ const AdminCommunity = () => {
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            {/* Stats - 2x2 grid on mobile, 4 columns on larger screens */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -376,17 +376,17 @@ const AdminCommunity = () => {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "posts" | "answers" | "comments" | "reports")}>
-                <TabsList className="mb-6">
-                  <TabsTrigger value="posts">
+                <TabsList className="mb-6 grid grid-cols-2 xl:inline-flex w-full xl:w-auto h-auto">
+                  <TabsTrigger value="posts" className="whitespace-nowrap">
                     {language === "ar" ? `المنشورات (${posts.length})` : `Posts (${posts.length})`}
                   </TabsTrigger>
-                  <TabsTrigger value="answers">
+                  <TabsTrigger value="answers" className="whitespace-nowrap">
                     {language === "ar" ? `الإجابات (${answers.length})` : `Answers (${answers.length})`}
                   </TabsTrigger>
-                  <TabsTrigger value="comments">
+                  <TabsTrigger value="comments" className="whitespace-nowrap">
                     {language === "ar" ? `التعليقات (${comments.length})` : `Comments (${comments.length})`}
                   </TabsTrigger>
-                  <TabsTrigger value="reports" className="relative">
+                  <TabsTrigger value="reports" className="relative whitespace-nowrap">
                     <Flag className="w-4 h-4 mr-2" />
                     {language === "ar" ? `البلاغات (${reports.length})` : `Reports (${reports.length})`}
                     {pendingReportsCount > 0 && (

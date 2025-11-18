@@ -211,8 +211,8 @@ export default function ManageCommunity() {
               </p>
             </div>
 
-            {/* Tabs */}
-            <div className="flex gap-4 mb-6">
+            {/* Tabs - 2x2 grid on mobile, flex on larger screens */}
+            <div className="grid grid-cols-2 xl:flex gap-4 mb-6">
               {[
                 { id: 'pending', label: language === 'ar' ? 'قيد الانتظار' : 'Pending', count: reports.filter(r => r.status === 'pending').length },
                 { id: 'resolved', label: language === 'ar' ? 'محلول' : 'Resolved', count: reports.filter(r => r.status === 'resolved').length },
@@ -222,7 +222,7 @@ export default function ManageCommunity() {
                   key={tab.id}
                   variant={activeTab === tab.id ? 'default' : 'outline'}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`rounded-2xl px-6 py-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                  className={`rounded-2xl px-6 py-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 w-full xl:w-auto ${
                     activeTab === tab.id 
                       ? 'bg-blue-500 hover:bg-blue-600 text-white' 
                       : 'border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'

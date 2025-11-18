@@ -354,7 +354,7 @@ const ProfileSection = ({ onClose }: ProfileSectionProps = {}) => {
                   </div>
                 </div>
 
-                {(formData.role === "Specialist" || (formData.role === "Student" && formData.student_type === "University")) && (
+                {!user.is_admin && (formData.role === "Specialist" || (formData.role === "Student" && formData.student_type === "University")) && (
                   <div className="space-y-2">
                     <Label htmlFor="profile-establishment-name">{t("auth.fields.institution")}</Label>
                     <Input
@@ -388,28 +388,31 @@ const ProfileSection = ({ onClose }: ProfileSectionProps = {}) => {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="profile-role">{t("auth.fields.role")}</Label>
-                  <Select 
-                    value={formData.role} 
-                    onValueChange={(value) => setFormData({ ...formData, role: value })}
-                    disabled={loading}
-                  >
-                    <SelectTrigger id="profile-role">
-                      <div className="flex items-center">
-                        <UserCheck className="w-4 h-4 mr-2 text-muted-foreground" />
-                        <SelectValue placeholder={t("auth.placeholders.role")} />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Student">{t("auth.role.student")}</SelectItem>
-                      <SelectItem value="Specialist">{t("auth.role.specialist")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Hide role selector for admins - they cannot change their role */}
+                {!user.is_admin && (
+                  <div className="space-y-2">
+                    <Label htmlFor="profile-role">{t("auth.fields.role")}</Label>
+                    <Select 
+                      value={formData.role} 
+                      onValueChange={(value) => setFormData({ ...formData, role: value })}
+                      disabled={loading}
+                    >
+                      <SelectTrigger id="profile-role">
+                        <div className="flex items-center">
+                          <UserCheck className="w-4 h-4 mr-2 text-muted-foreground" />
+                          <SelectValue placeholder={t("auth.placeholders.role")} />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Student">{t("auth.role.student")}</SelectItem>
+                        <SelectItem value="Specialist">{t("auth.role.specialist")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
-                {/* Conditional fields based on role */}
-                {formData.role === "Student" && (
+                {/* Conditional fields based on role - hide for admins */}
+                {!user.is_admin && formData.role === "Student" && (
                   <>
                     <div className="space-y-2">
                       <Label htmlFor="profile-student-type">{t("auth.fields.studentType")}</Label>
@@ -480,7 +483,7 @@ const ProfileSection = ({ onClose }: ProfileSectionProps = {}) => {
                   </>
                 )}
 
-                {formData.role === "Specialist" && (
+                {!user.is_admin && formData.role === "Specialist" && (
                   <div className="space-y-2">
                     <Label htmlFor="profile-level-specialist">{t("auth.fields.academicLevel")}</Label>
                     <Select 
@@ -584,68 +587,70 @@ const ProfileSection = ({ onClose }: ProfileSectionProps = {}) => {
                   </div>
                 </div>
 
-                {/* Academic Information Section */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-accent" />
-                    {t("profile.sections.academic")}
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {!(user.role === "Student" && user.student_type === "High School") && (
-                      <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-accent/10">
-                            <Building2 className="w-4 h-4 text-accent" />
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground mb-1">{t("profile.details.institution")}</p>
-                            <p className="font-semibold text-foreground">{translateInstitution(user.establishment_name)}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-accent/5 to-transparent hover:border-accent/30 transition-all duration-200">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-accent/10">
-                          <BookOpen className="w-4 h-4 text-accent" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">{t("profile.details.level")}</p>
-                          <p className="font-semibold text-foreground">{translateAcademicLevel(user.level)}</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {user.role === "Student" && user.student_type && (
-                      <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/10">
-                            <BookOpen className="w-4 h-4 text-primary" />
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground mb-1">{t("profile.details.studentType")}</p>
-                            <p className="font-semibold text-foreground">{translateStudentType(user.student_type)}</p>
+                {/* Academic Information Section - Hidden for admins */}
+                {!user.is_admin && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <BookOpen className="w-5 h-5 text-accent" />
+                      {t("profile.sections.academic")}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {!(user.role === "Student" && user.student_type === "High School") && (
+                        <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-accent/10">
+                              <Building2 className="w-4 h-4 text-accent" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">{t("profile.details.institution")}</p>
+                              <p className="font-semibold text-foreground">{translateInstitution(user.establishment_name)}</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                    
-                    {user.role === "Student" && user.student_type === "University" && user.track && (
+                      )}
+                      
                       <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-accent/5 to-transparent hover:border-accent/30 transition-all duration-200">
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-lg bg-accent/10">
-                            <Award className="w-4 h-4 text-accent" />
+                            <BookOpen className="w-4 h-4 text-accent" />
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground mb-1">{t("profile.details.track")}</p>
-                            <p className="font-semibold text-foreground">{translateTrack(user.track)}</p>
+                            <p className="text-xs text-muted-foreground mb-1">{t("profile.details.level")}</p>
+                            <p className="font-semibold text-foreground">{translateAcademicLevel(user.level)}</p>
                           </div>
                         </div>
                       </div>
-                    )}
+                      
+                      {user.role === "Student" && user.student_type && (
+                        <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/30 transition-all duration-200">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10">
+                              <BookOpen className="w-4 h-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">{t("profile.details.studentType")}</p>
+                              <p className="font-semibold text-foreground">{translateStudentType(user.student_type)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {user.role === "Student" && user.student_type === "University" && user.track && (
+                        <div className="group p-4 rounded-lg border border-border/50 bg-gradient-to-br from-accent/5 to-transparent hover:border-accent/30 transition-all duration-200">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-accent/10">
+                              <Award className="w-4 h-4 text-accent" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">{t("profile.details.track")}</p>
+                              <p className="font-semibold text-foreground">{translateTrack(user.track)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </CardContent>

@@ -594,7 +594,7 @@ const AdminDashboard = () => {
       <Navbar />
       
         <ScrollAnimation>
-          <div className="container mx-auto px-4 py-8">
+          <div className="max-w-screen-2xl mx-auto px-2 sm:px-6 lg:px-10 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -621,7 +621,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Card */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">{t("admin.dashboard.stats.totalUsers")}</CardTitle>
@@ -657,7 +657,7 @@ const AdminDashboard = () => {
         {/* Quick Actions */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-4">{t("admin.dashboard.tools.title")}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <Link to="/admin/universities" id="admin-dashboard-universities-link">
               <Card id="admin-dashboard-universities-card" className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <CardContent className="pt-6 h-full">
@@ -727,12 +727,12 @@ const AdminDashboard = () => {
         {/* Users Table */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 {t("admin.dashboard.table.title")}
               </CardTitle>
-              <div className="relative w-64">
+              <div className="relative w-full sm:w-64">
                 <Search className={`absolute ${language === "ar" ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
                 <Input
                   id="admin-dashboard-search-input"
@@ -754,32 +754,210 @@ const AdminDashboard = () => {
                 {searchTerm ? t("admin.dashboard.table.noSearchResults") : t("admin.dashboard.table.noResults")}
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <>
+                {/* Mobile Card View */}
+                <div className="block lg:hidden space-y-4">
+                  {filteredUsers.map((userData) => (
+                    <Card key={userData.id} className="p-4 bg-gradient-to-br from-background to-muted/20">
+                      <div className="space-y-3">
+                        {/* Name and Role */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg mb-1">
+                              {userData.name || t("profile.display.notSet")}
+                            </h3>
+                            {userData.role ? (
+                              <Badge variant="outline" className="text-xs">
+                                {userData.role === "Student" ? t("auth.role.student") : userData.role === "Specialist" ? t("auth.role.specialist") : userData.role}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">{t("profile.display.notSet")}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* User Details Grid */}
+                        <div className="grid grid-cols-1 gap-2 text-sm pt-2 border-t">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">{t("admin.dashboard.table.headers.email")}:</span>
+                            <span className="font-medium text-right break-all max-w-[60%]">{userData.email || t("profile.display.notSet")}</span>
+                          </div>
+                          
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">{t("admin.dashboard.table.headers.institution")}:</span>
+                            <span className="font-medium text-right">{userData.establishment_name || t("profile.display.notSet")}</span>
+                          </div>
+                          
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">{t("admin.dashboard.table.headers.level")}:</span>
+                            <span className="font-medium text-right">{userData.level || t("profile.display.notSet")}</span>
+                          </div>
+                          
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">{t("admin.dashboard.table.headers.gender")}:</span>
+                            <span className="font-medium text-right">
+                              {userData.gender === "Male"
+                                ? t("auth.gender.male")
+                                : userData.gender === "Female"
+                                ? t("auth.gender.female")
+                                : userData.gender || t("profile.display.notSet")}
+                            </span>
+                          </div>
+                          
+                          {(userData.role === 'Specialist' || userData.role === 'specialist') && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Proof:</span>
+                              <span className="font-medium text-right">
+                                {userData.specialist_proof_url ? (
+                                  <button
+                                    onClick={() => handleViewProof(userData)}
+                                    className="text-blue-600 hover:underline dark:text-blue-400"
+                                    id={`admin-dashboard-proof-link-${userData.id}`}
+                                  >
+                                    View
+                                  </button>
+                                ) : (
+                                  t("profile.display.notSet")
+                                )}
+                              </span>
+                            </div>
+                          )}
+                          
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">{t("admin.dashboard.table.headers.joined")}:</span>
+                            <span className="font-medium text-right text-xs">{formatDate(userData.created_at)}</span>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-wrap items-center gap-2 pt-3 border-t">
+                          {isPendingSpecialist(userData) ? (
+                            <>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    id={`admin-dashboard-action-specialist-${userData.id}`}
+                                    disabled={processing}
+                                    className="rounded-xl border-2 text-blue-600 border-blue-200 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-300 hover:shadow-lg gap-1 flex-1"
+                                  >
+                                    Take Action
+                                    <ChevronDown className="w-3 h-3 ml-1" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => handleApproveClick(userData)}
+                                    className="text-green-600 focus:text-green-600 focus:bg-green-50 dark:focus:bg-green-950/20 cursor-pointer"
+                                  >
+                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                    Approve
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleRefuseClick(userData)}
+                                    className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20 cursor-pointer"
+                                  >
+                                    <XCircle className="w-4 h-4 mr-2" />
+                                    Refuse
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={true}
+                                className="rounded-xl border-2 text-gray-400 border-gray-200 bg-gray-50 dark:bg-gray-900/20 cursor-not-allowed opacity-50"
+                                title="Approve specialist first to enable suspension"
+                              >
+                                <Ban className="w-4 h-4" />
+                              </Button>
+                            </>
+                          ) : isApprovedSpecialist(userData) ? (
+                            <>
+                              <Badge variant="outline" className="rounded-xl bg-green-50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-800 px-3 py-1">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Approved
+                              </Badge>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                id={`admin-dashboard-suspend-user-${userData.id}`}
+                                onClick={() => handleSuspendClick(userData)}
+                                disabled={suspending || userData.id === user?.id || !!userData.is_admin}
+                                className="rounded-xl border-2 text-amber-600 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-950/20 transition-all duration-300 hover:shadow-lg gap-1"
+                              >
+                                <Ban className="w-4 h-4" />
+                              </Button>
+                            </>
+                          ) : userData.is_suspended ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              id={`admin-dashboard-unsuspend-user-${userData.id}`}
+                              onClick={() => handleUnsuspend(userData)}
+                              disabled={suspending}
+                              className="rounded-xl border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-lg gap-1 flex-1"
+                            >
+                              <Undo2 className="w-4 h-4 mr-2" />
+                              Unsuspend
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              id={`admin-dashboard-suspend-user-${userData.id}`}
+                              onClick={() => handleSuspendClick(userData)}
+                              disabled={suspending || userData.id === user?.id || !!userData.is_admin}
+                              className="rounded-xl border-2 text-amber-600 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-950/20 transition-all duration-300 hover:shadow-lg gap-1 flex-1"
+                            >
+                              <Ban className="w-4 h-4 mr-2" />
+                              Suspend
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            id={`admin-dashboard-delete-user-${userData.id}`}
+                            onClick={() => handleDeleteClick(userData)}
+                            disabled={userData.id === user?.id}
+                            className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-300 hover:shadow-lg"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden lg:block overflow-x-auto">
                 <Table>
           <TableHeader>
             <TableRow>
                       <TableHead className={language === "ar" ? "text-right" : "text-left"}>
                         {t("admin.dashboard.table.headers.name")}
                       </TableHead>
-                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                      <TableHead className={`${language === "ar" ? "text-right" : "text-left"} hidden sm:table-cell`}>
                         {t("admin.dashboard.table.headers.email")}
                       </TableHead>
                       <TableHead className={language === "ar" ? "text-right" : "text-left"}>
                         {t("admin.dashboard.table.headers.role")}
                       </TableHead>
-                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                      <TableHead className={`${language === "ar" ? "text-right" : "text-left"} hidden md:table-cell`}>
                         {t("admin.dashboard.table.headers.institution")}
                       </TableHead>
-                      <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+                      <TableHead className={`${language === "ar" ? "text-right" : "text-left"} hidden lg:table-cell`}>
                         {t("admin.dashboard.table.headers.level")}
                       </TableHead>
-              <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+              <TableHead className={`${language === "ar" ? "text-right" : "text-left"} hidden lg:table-cell`}>
                 {t("admin.dashboard.table.headers.gender")}
               </TableHead>
-              <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+              <TableHead className={`${language === "ar" ? "text-right" : "text-left"} hidden xl:table-cell`}>
                 Proof
               </TableHead>
-              <TableHead className={language === "ar" ? "text-right" : "text-left"}>
+              <TableHead className={`${language === "ar" ? "text-right" : "text-left"} hidden xl:table-cell`}>
                 {t("admin.dashboard.table.headers.joined")}
               </TableHead>
             <TableHead className="text-center">
@@ -793,7 +971,7 @@ const AdminDashboard = () => {
                         <TableCell className={`font-medium ${language === "ar" ? "text-right" : "text-left"}`}>
                           {userData.name || t("profile.display.notSet")}
                         </TableCell>
-                        <TableCell className={`text-sm text-muted-foreground ${language === "ar" ? "text-right" : "text-left"}`}>
+                        <TableCell className={`text-sm text-muted-foreground ${language === "ar" ? "text-right" : "text-left"} hidden sm:table-cell`}>
                           {userData.email || t("profile.display.notSet")}
                         </TableCell>
                         <TableCell className={language === "ar" ? "text-right" : "text-left"}>
@@ -803,20 +981,20 @@ const AdminDashboard = () => {
                             <span className="text-muted-foreground text-sm">{t("profile.display.notSet")}</span>
                           )}
                         </TableCell>
-                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
+                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"} hidden md:table-cell`}>
                           {userData.establishment_name || t("profile.display.notSet")}
                         </TableCell>
-                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
+                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"} hidden lg:table-cell`}>
                           {userData.level || t("profile.display.notSet")}
                         </TableCell>
-                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
+                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"} hidden lg:table-cell`}>
                           {userData.gender === "Male"
                             ? t("auth.gender.male")
                             : userData.gender === "Female"
                             ? t("auth.gender.female")
                             : userData.gender || t("profile.display.notSet")}
                         </TableCell>
-                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
+                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"} hidden xl:table-cell`}>
                           {userData.role === 'Specialist' || userData.role === 'specialist' ? (
                             userData.specialist_proof_url ? (
                               <button
@@ -833,13 +1011,12 @@ const AdminDashboard = () => {
                             <span className="text-muted-foreground text-sm">-</span>
                           )}
                         </TableCell>
-                        <TableCell className={`text-sm text-muted-foreground ${language === "ar" ? "text-right" : "text-left"}`}>
+                        <TableCell className={`text-sm text-muted-foreground ${language === "ar" ? "text-right" : "text-left"} hidden xl:table-cell`}>
                           {formatDate(userData.created_at)}
                         </TableCell>
                         <TableCell className={language === "ar" ? "text-left" : "text-right"}>
                           <div className={`flex items-center gap-1 ${language === "ar" ? "justify-start" : "justify-end"}`}>
                             {isPendingSpecialist(userData) ? (
-                              // Show Take Action dropdown for pending specialists
                               <>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
@@ -871,7 +1048,6 @@ const AdminDashboard = () => {
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
-                                {/* Show grayed-out Suspend button for pending specialists */}
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -883,7 +1059,6 @@ const AdminDashboard = () => {
                                 </Button>
                               </>
                             ) : isApprovedSpecialist(userData) ? (
-                              // Show Approved badge and Suspend button for approved specialists
                               <>
                                 <Badge variant="outline" className="rounded-xl bg-green-50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-800 px-3 py-1">
                                   <CheckCircle className="w-3 h-3 mr-1" />
@@ -901,7 +1076,6 @@ const AdminDashboard = () => {
                                 </Button>
                               </>
                             ) : userData.is_suspended ? (
-                              // Show Unsuspend for suspended (non-pending) users
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -913,7 +1087,6 @@ const AdminDashboard = () => {
                                 <Undo2 className="w-4 h-4" />
                               </Button>
                             ) : (
-                              // Show Suspend for other active users
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -941,7 +1114,8 @@ const AdminDashboard = () => {
                     ))}
                   </TableBody>
                 </Table>
-              </div>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
