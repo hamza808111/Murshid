@@ -47,6 +47,7 @@ const ProfileSection = ({ onClose }: ProfileSectionProps = {}) => {
     student_type: user?.student_type || "",
     track: user?.track || "",
   });
+  const isRoleLocked = Boolean(user?.role);
 
   const profileSchema = useMemo(
     () =>
@@ -109,6 +110,7 @@ const ProfileSection = ({ onClose }: ProfileSectionProps = {}) => {
     try {
       profileSchema.parse(formData);
       setLoading(true);
+      const roleToSave = user?.role || formData.role;
 
       await updateProfile(
         formData.name, 
@@ -116,7 +118,7 @@ const ProfileSection = ({ onClose }: ProfileSectionProps = {}) => {
         formData.establishment_name, 
         formData.level, 
         formData.gender, 
-        formData.role, 
+        roleToSave, 
         formData.student_type, 
         formData.track
       );
@@ -393,7 +395,7 @@ const ProfileSection = ({ onClose }: ProfileSectionProps = {}) => {
                   <Select 
                     value={formData.role} 
                     onValueChange={(value) => setFormData({ ...formData, role: value })}
-                    disabled={loading}
+                    disabled={loading || isRoleLocked}
                   >
                     <SelectTrigger id="profile-role">
                       <div className="flex items-center">

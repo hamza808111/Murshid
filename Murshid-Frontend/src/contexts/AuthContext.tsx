@@ -499,13 +499,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       console.log("💾 Upserting to profiles table...");
+      const finalRole = user?.role || role || null;
       const profilePayload = { 
         id: user.id, 
         name: name || null, 
         establishment_name: establishment_name || null, 
         level: level || null,
         gender: gender || null,
-        role: role || null,
+        role: finalRole,
         student_type: student_type || null,
         track: track || null
       };
@@ -555,7 +556,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         establishment_name,
         level,
         gender,
-        role,
+        role: finalRole,
         student_type,
         track,
         avatar_url: (user as AppUser)?.avatar_url,
