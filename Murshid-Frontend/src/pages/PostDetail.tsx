@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -77,6 +77,8 @@ export default function PostDetail() {
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as { from?: string; tab?: string } | null;
 
   // Auto-refresh time display every minute
   useEffect(() => {
@@ -311,7 +313,19 @@ export default function PostDetail() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-10">
             {/* Back Button */}
             <Button
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                if (locationState?.from === 'manage-community') {
+                  navigate('/admin/manage-community', { 
+                    state: { activeTab: locationState.tab } 
+                  });
+                } else if (locationState?.from === 'admin-community') {
+                  navigate('/admin/community', { 
+                    state: { activeTab: locationState.tab } 
+                  });
+                } else {
+                  navigate(-1);
+                }
+              }}
               variant="ghost"
               className="mb-6"
             >

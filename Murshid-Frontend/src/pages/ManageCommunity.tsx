@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -39,6 +39,15 @@ export default function ManageCommunity() {
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Restore active tab from location state if available
+  useEffect(() => {
+    const locationState = location.state as { activeTab?: 'pending' | 'resolved' | 'dismissed' } | null;
+    if (locationState?.activeTab) {
+      setActiveTab(locationState.activeTab);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (!user?.is_admin) {
@@ -308,7 +317,9 @@ export default function ManageCommunity() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => navigate(`/community/post/${report.target_type === 'post' ? report.target_id : report.target_id}`)}
+                        onClick={() => navigate(`/community/post/${report.target_type === 'post' ? report.target_id : report.target_id}`, {
+                          state: { from: 'manage-community', tab: activeTab }
+                        })}
                         className="gap-2"
                       >
                         <Eye className="w-4 h-4" />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { formatTimeAgo } from '@/lib/timeUtils';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import { supabase } from "@/lib/supabase";
 const AdminCommunity = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { language } = useI18n();
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -40,6 +41,14 @@ const AdminCommunity = () => {
   const [reports, setReports] = useState<ReportWithContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"posts" | "answers" | "comments" | "reports">("posts");
+
+  // Restore active tab from location state if available
+  useEffect(() => {
+    const locationState = location.state as { activeTab?: "posts" | "answers" | "comments" | "reports" } | null;
+    if (locationState?.activeTab) {
+      setActiveTab(locationState.activeTab);
+    }
+  }, [location.state]);
   const [reportFilter, setReportFilter] = useState<ReportStatus | "all">("pending");
   const [timeRefresh, setTimeRefresh] = useState(0);
 
@@ -403,7 +412,9 @@ const AdminCommunity = () => {
                         <Card 
                           key={post.id} 
                           className="p-6 cursor-pointer hover:shadow-lg transition-shadow"
-                          onClick={() => navigate(`/community/post/${post.id}`)}
+                          onClick={() => navigate(`/community/post/${post.id}`, {
+                            state: { from: 'admin-community', tab: activeTab }
+                          })}
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
@@ -481,7 +492,9 @@ const AdminCommunity = () => {
                         <Card 
                           key={answer.id} 
                           className="p-6 cursor-pointer hover:shadow-lg transition-shadow"
-                          onClick={() => navigate(`/community/post/${answer.post_id}`)}
+                          onClick={() => navigate(`/community/post/${answer.post_id}`, {
+                            state: { from: 'admin-community', tab: activeTab }
+                          })}
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
@@ -554,7 +567,9 @@ const AdminCommunity = () => {
                           onClick={() => {
                             const postId = (comment as any).post_id;
                             if (postId) {
-                              navigate(`/community/post/${postId}`);
+                              navigate(`/community/post/${postId}`, {
+                                state: { from: 'admin-community', tab: activeTab }
+                              });
                             }
                           }}
                         >
@@ -698,7 +713,9 @@ const AdminCommunity = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => navigate(`/community/post/${report.reported_content_type === "post" ? report.reported_content_id : ""}`)}
+                                  onClick={() => navigate(`/community/post/${report.reported_content_type === "post" ? report.reported_content_id : ""}`, {
+                                    state: { from: 'admin-community', tab: activeTab }
+                                  })}
                                   className="gap-1"
                                 >
                                   <Eye className="w-4 h-4" />
