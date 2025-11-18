@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useBlocker } from "react-router-dom";
 
 const Suspended = () => {
   const { user, logout } = useAuth();
@@ -13,6 +13,21 @@ const Suspended = () => {
       navigate("/login");
     }
   }, [user, navigate]);
+
+  // Block navigation and logout when user tries to go back
+  useEffect(() => {
+    const handlePopState = async (e: PopStateEvent) => {
+      e.preventDefault();
+      await logout();
+      navigate("/login", { replace: true });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [logout, navigate]);
 
   const handleLogout = async () => {
     await logout();

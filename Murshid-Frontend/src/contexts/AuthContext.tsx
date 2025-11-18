@@ -232,14 +232,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (data.user && data.session) {
         const mapped = await mapUserWithProfile(data.user);
         setUser(mapped);
-        // If the account is suspended, redirect to the suspended page
-        {
-          const lang = localStorage.getItem('language') || 'en';
-          if ((mapped as any)?.is_suspended) {
-            toast.error(lang === 'ar' ? 'تم تعليق حسابك من قبل المشرف.' : 'Your account has been suspended by an administrator.');
-            navigate('/suspended');
-            return;
-          }
+        // If the account is suspended, redirect to the suspended page (no error toast - let Suspended page handle messaging)
+        if ((mapped as any)?.is_suspended) {
+          navigate('/suspended');
+          return;
         }
         localStorage.setItem("murshid_token", data.session.access_token);
 
@@ -397,14 +393,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         localStorage.setItem("murshid_token", data.session.access_token);
-        toast.success("Account created successfully!");
-        // If suspended (e.g., Specialist pending), redirect to suspended page
+        // If suspended (e.g., Specialist pending), redirect to suspended page (no toast - let Suspended page handle messaging)
         const mapped = await mapUserWithProfile(data.user);
         setUser(mapped);
         if ((mapped as any)?.is_suspended) {
-          toast.error('Your account is pending verification by an administrator.');
           navigate('/suspended');
         } else {
+          toast.success("Account created successfully!");
           navigate("/");
         }
       } else {
@@ -578,7 +573,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error("Error refreshing user:", authError);
         return;
       }
-      const mapped = await mapAuthUserToAppUser(authUser);
+      const mapped = await mapUserWithProfile(authUser);
       setUser(mapped);
     } catch (error) {
       console.error("Error in refreshUser:", error);
