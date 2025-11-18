@@ -18,6 +18,7 @@ import {
   MessageCircle,
   Eye,
   CheckCircle,
+  Heart,
   Send,
   Edit2,
   Trash2,
@@ -67,6 +68,8 @@ export default function PostDetail() {
   const navigate = useNavigate();
 
   const isProfileComplete = user && user.role && user.gender;
+  const isAdminUser = !!user?.is_admin;
+  const isReadOnly = isAdminUser;
   const isPostAuthor = user && post && post.author_id === user.id;
 
   useEffect(() => {
@@ -273,9 +276,11 @@ export default function PostDetail() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             {language === 'ar' ? 'المنشور غير موجود' : 'Post not found'}
           </h2>
-          <Button onClick={() => navigate('/community')}>
-            {language === 'ar' ? 'العودة إلى المجتمع' : 'Back to Community'}
-          </Button>
+          {!isAdminUser && (
+            <Button onClick={() => navigate('/community')}>
+              {language === 'ar' ? 'العودة إلى المجتمع' : 'Back to Community'}
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -289,14 +294,16 @@ export default function PostDetail() {
         <div className="py-20">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-10">
             {/* Back Button */}
-            <Button
-              onClick={() => navigate('/community')}
-              variant="ghost"
-              className="mb-6"
-            >
-              <ArrowLeft className={`w-4 h-4 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
-              {language === 'ar' ? 'العودة إلى المجتمع' : 'Back to Community'}
-            </Button>
+            {!isAdminUser && (
+              <Button
+                onClick={() => navigate('/community')}
+                variant="ghost"
+                className="mb-6"
+              >
+                <ArrowLeft className={`w-4 h-4 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                {language === 'ar' ? 'العودة إلى المجتمع' : 'Back to Community'}
+              </Button>
+            )}
 
             {/* Post */}
             <Card className="p-8 mb-8 card-hover">
@@ -341,7 +348,7 @@ export default function PostDetail() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {isPostAuthor && (
+                      {isPostAuthor && !isReadOnly && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -350,7 +357,7 @@ export default function PostDetail() {
                           <Edit2 className="w-4 h-4" />
                         </Button>
                       )}
-                      {!isPostAuthor && user && (
+                      {!isPostAuthor && user && !isReadOnly && (
                         <ReportButton
                           contentType="post"
                           contentId={post.id}
@@ -394,18 +401,25 @@ export default function PostDetail() {
                   </div>
 
                   <div className="flex items-center gap-6 text-sm text-gray-500">
-                    <LikeButton
-                      itemId={post.id}
-                      itemType="post"
-                      initialLikesCount={post.likes_count || 0}
-                      initialIsLiked={isPostLiked}
-                      onLike={likePost}
-                      onUnlike={unlikePost}
-                      disabled={!isProfileComplete}
-                      onLikeChange={(_, newCount) => {
-                        setPost(prev => prev ? { ...prev, likes_count: newCount } : prev);
-                      }}
-                    />
+                    {isReadOnly ? (
+                      <div className="flex items-center gap-1">
+                        <Heart className="w-4 h-4" />
+                        <span>{post.likes_count || 0}</span>
+                      </div>
+                    ) : (
+                      <LikeButton
+                        itemId={post.id}
+                        itemType="post"
+                        initialLikesCount={post.likes_count || 0}
+                        initialIsLiked={isPostLiked}
+                        onLike={likePost}
+                        onUnlike={unlikePost}
+                        disabled={!isProfileComplete}
+                        onLikeChange={(_, newCount) => {
+                          setPost(prev => prev ? { ...prev, likes_count: newCount } : prev);
+                        }}
+                      />
+                    )}
                     <div className="flex items-center gap-1">
                       <MessageCircle className="w-4 h-4" />
                       <span>{answers.length}</span>
@@ -428,8 +442,8 @@ export default function PostDetail() {
               <div className="space-y-6">
                 {answers.map((answer) => {
                   const isAnswerAuthor = user && answer.author_id === user.id;
-                  const canAccept = isPostAuthor && !isAnswerAuthor;
-                  const canModify = isAnswerAuthor || user?.is_admin;
+                  const canAccept = isPostAuthor && !isAnswerAuthor && !isReadOnly;
+                  const canModify = !isReadOnly && (isAnswerAuthor || user?.is_admin);
 
                   return (
                     <Card key={answer.id} className="p-6 card-hover">
@@ -495,7 +509,7 @@ export default function PostDetail() {
                                       <Trash2 className="w-4 h-4 mr-2" />
                                       {language === 'ar' ? 'حذف' : 'Delete'}
                                     </DropdownMenuItem>
-                                    {!isAnswerAuthor && user && (
+                                    {!isAnswerAuthor && user && !isReadOnly && (
                                       <DropdownMenuItem asChild>
                                         <div>
                                           <ReportButton
@@ -509,7 +523,7 @@ export default function PostDetail() {
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               )}
-                              {!canModify && !isAnswerAuthor && user && (
+                              {!canModify && !isAnswerAuthor && user && !isReadOnly && (
                                 <ReportButton
                                   contentType="answer"
                                   contentId={answer.id}
@@ -530,20 +544,27 @@ export default function PostDetail() {
                           </p>
 
                           <div className="flex items-center gap-4">
-                            <LikeButton
-                              itemId={answer.id}
-                              itemType="answer"
-                              initialLikesCount={answer.likes_count || 0}
-                              initialIsLiked={answerLikes[answer.id] || false}
-                              onLike={likeAnswer}
-                              onUnlike={unlikeAnswer}
-                              disabled={!isProfileComplete}
-                              onLikeChange={(answerId, newCount) => {
-                                setAnswers(prev => prev.map(a =>
-                                  a.id === answerId ? { ...a, likes_count: newCount } : a
-                                ));
-                              }}
-                            />
+                            {isReadOnly ? (
+                              <div className="flex items-center gap-1 text-sm text-gray-500">
+                                <Heart className="w-4 h-4" />
+                                <span>{answer.likes_count || 0}</span>
+                              </div>
+                            ) : (
+                              <LikeButton
+                                itemId={answer.id}
+                                itemType="answer"
+                                initialLikesCount={answer.likes_count || 0}
+                                initialIsLiked={answerLikes[answer.id] || false}
+                                onLike={likeAnswer}
+                                onUnlike={unlikeAnswer}
+                                disabled={!isProfileComplete}
+                                onLikeChange={(answerId, newCount) => {
+                                  setAnswers(prev => prev.map(a =>
+                                    a.id === answerId ? { ...a, likes_count: newCount } : a
+                                  ));
+                                }}
+                              />
+                            )}
                             {canAccept && (
                               <Button
                                 variant={answer.is_accepted ? "default" : "outline"}
@@ -560,7 +581,7 @@ export default function PostDetail() {
                           </div>
 
                           {/* Comments Section */}
-                          <CommentSection answerId={answer.id} />
+                          <CommentSection answerId={answer.id} readOnly={isReadOnly} />
                         </div>
                       </div>
                     </Card>
@@ -570,7 +591,7 @@ export default function PostDetail() {
             </div>
 
             {/* Answer Form */}
-            {user && post && post.author_id !== user.id && (
+            {user && post && post.author_id !== user.id && !isReadOnly && (
               <Card className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
                   {language === 'ar' ? 'اكتب إجابتك' : 'Write Your Answer'}

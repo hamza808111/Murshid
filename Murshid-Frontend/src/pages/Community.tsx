@@ -33,6 +33,7 @@ export default function Community() {
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const isAdminUser = !!user?.is_admin;
 
   useEffect(() => {
     fetchPosts();
@@ -49,7 +50,7 @@ export default function Community() {
 
   // Load liked status for all posts
   useEffect(() => {
-    if (user && posts.length > 0) {
+    if (user && posts.length > 0 && !isAdminUser) {
       Promise.all(
         posts.map(post => getUserPostLike(post.id, user.id))
       ).then(likes => {
@@ -62,7 +63,7 @@ export default function Community() {
         setLikedPosts(likedSet);
       });
     }
-  }, [user, posts.length]);
+  }, [user, posts.length, isAdminUser]);
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -83,6 +84,10 @@ export default function Community() {
   const handleCreatePost = () => {
     if (!user) {
       navigate('/login');
+      return;
+    }
+    if (isAdminUser) {
+      toast.error(language === 'ar' ? 'حسابات المشرفين لا يمكنها إنشاء منشورات المجتمع' : 'Admins cannot create community posts');
       return;
     }
     navigate('/community/create');
@@ -118,14 +123,16 @@ export default function Community() {
                     : 'Share questions and experiences with students and specialists'}
                 </p>
                 <div className="flex gap-4 justify-center flex-wrap">
-                  <Button
-                    onClick={handleCreatePost}
-                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                  >
-                    <Plus className="w-5 h-5 mr-2" />
-                    {language === 'ar' ? 'إنشاء منشور' : 'Create Post'}
-                  </Button>
-                  {user && (
+                  {!isAdminUser && (
+                    <Button
+                      onClick={handleCreatePost}
+                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                    >
+                      <Plus className="w-5 h-5 mr-2" />
+                      {language === 'ar' ? 'إنشاء منشور' : 'Create Post'}
+                    </Button>
+                  )}
+                  {user && !isAdminUser && (
                     <>
                       <Button
                         onClick={() => navigate('/community/my-posts')}
@@ -258,29 +265,36 @@ export default function Community() {
                         </div>
                         
                         <div className="flex items-center gap-6 text-sm text-gray-500">
-                          <LikeButton
-                            itemId={post.id}
-                            itemType="post"
-                            initialLikesCount={post.likes_count || 0}
-                            initialIsLiked={likedPosts.has(post.id)}
-                            onLike={likePost}
-                            onUnlike={unlikePost}
-                            disabled={!user || !user.role || !user.gender}
-                            onLikeChange={(postId, newCount, isLiked) => {
-                              setPosts(prev => prev.map(p =>
-                                p.id === postId ? { ...p, likes_count: newCount } : p
-                              ));
-                              setLikedPosts(prev => {
-                                const newSet = new Set(prev);
-                                if (isLiked) {
-                                  newSet.add(postId);
-                                } else {
-                                  newSet.delete(postId);
-                                }
-                                return newSet;
-                              });
-                            }}
-                          />
+                          {isAdminUser ? (
+                            <div className="flex items-center gap-1">
+                              <Heart className="w-4 h-4" />
+                              <span>{post.likes_count || 0}</span>
+                            </div>
+                          ) : (
+                            <LikeButton
+                              itemId={post.id}
+                              itemType="post"
+                              initialLikesCount={post.likes_count || 0}
+                              initialIsLiked={likedPosts.has(post.id)}
+                              onLike={likePost}
+                              onUnlike={unlikePost}
+                              disabled={!user || !user.role || !user.gender}
+                              onLikeChange={(postId, newCount, isLiked) => {
+                                setPosts(prev => prev.map(p =>
+                                  p.id === postId ? { ...p, likes_count: newCount } : p
+                                ));
+                                setLikedPosts(prev => {
+                                  const newSet = new Set(prev);
+                                  if (isLiked) {
+                                    newSet.add(postId);
+                                  } else {
+                                    newSet.delete(postId);
+                                  }
+                                  return newSet;
+                                });
+                              }}
+                            />
+                          )}
                           <div className="flex items-center gap-1">
                             <MessageCircle className="w-4 h-4" />
                             <span>{post.answers_count || 0}</span>

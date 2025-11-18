@@ -10,9 +10,10 @@ import type { Comment } from "@/types/community";
 
 interface CommentSectionProps {
   answerId: string;
+  readOnly?: boolean;
 }
 
-export const CommentSection = ({ answerId }: CommentSectionProps) => {
+export const CommentSection = ({ answerId, readOnly = false }: CommentSectionProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +21,7 @@ export const CommentSection = ({ answerId }: CommentSectionProps) => {
 
   const { language } = useI18n();
   const { user } = useAuth();
+  const canInteract = !readOnly && user && user.role && user.gender;
 
   const loadComments = async () => {
     setIsLoading(true);
@@ -82,7 +84,7 @@ export const CommentSection = ({ answerId }: CommentSectionProps) => {
           )}
         </Button>
 
-        {isExpanded && user && user.role && user.gender && (
+        {isExpanded && canInteract && (
           <Button
             variant="ghost"
             size="sm"
@@ -102,7 +104,7 @@ export const CommentSection = ({ answerId }: CommentSectionProps) => {
 
       {isExpanded && (
         <div className="space-y-2">
-          {showCommentForm && (
+          {showCommentForm && canInteract && (
             <div className="mb-4">
               <CommentForm
                 answerId={answerId}
@@ -129,6 +131,7 @@ export const CommentSection = ({ answerId }: CommentSectionProps) => {
                   key={comment.id}
                   comment={comment}
                   answerId={answerId}
+                  readOnly={readOnly}
                   onCommentAdded={loadComments}
                   onDelete={handleCommentDeleted}
                 />

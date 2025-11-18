@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { enUS, ar as arLocale } from "date-fns/locale";
-import { MessageCircle, Edit2, Trash2, MoreVertical } from "lucide-react";
+import { MessageCircle, Edit2, Trash2, MoreVertical, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -31,6 +31,7 @@ interface CommentCardProps {
   onDelete?: (commentId: string) => void;
   onCommentAdded?: () => void;
   level?: number;
+  readOnly?: boolean;
 }
 
 export const CommentCard = ({
@@ -40,6 +41,7 @@ export const CommentCard = ({
   onDelete,
   onCommentAdded,
   level = 0,
+  readOnly = false,
 }: CommentCardProps) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -50,9 +52,9 @@ export const CommentCard = ({
 
   const isAuthor = user?.id === comment.author_id;
   const isAdmin = user?.is_admin;
-  const canModify = isAuthor || isAdmin;
+  const isReadOnly = readOnly;
+  const canModify = !isReadOnly && (isAuthor || isAdmin);
 
-  // Load like status
   useEffect(() => {
     if (user) {
       getUserCommentLike(comment.id, user.id).then(setIsLiked);
@@ -60,7 +62,8 @@ export const CommentCard = ({
   }, [user, comment.id]);
 
   const handleDelete = async () => {
-    if (!confirm(language === "ar" ? "هل تريد حذف هذا التعليق؟" : "Delete this comment?")) {
+    if (isReadOnly) return;
+    if (!confirm(language === "ar" ? "حذف هذا التعليق؟" : "Delete this comment?")) {
       return;
     }
 
@@ -174,17 +177,24 @@ export const CommentCard = ({
           </p>
 
           <div className="flex items-center gap-2 mt-2">
-            <LikeButton
-              itemId={comment.id}
-              itemType="comment"
-              initialLikesCount={comment.likes_count}
-              initialIsLiked={isLiked}
-              onLike={likeComment}
-              onUnlike={unlikeComment}
-              disabled={!user || !user.role || !user.gender}
-            />
+            {isReadOnly ? (
+              <div className="flex items-center gap-1 text-sm text-gray-500">
+                <Heart className="w-4 h-4" />
+                <span>{comment.likes_count}</span>
+              </div>
+            ) : (
+              <LikeButton
+                itemId={comment.id}
+                itemType="comment"
+                initialLikesCount={comment.likes_count}
+                initialIsLiked={isLiked}
+                onLike={likeComment}
+                onUnlike={unlikeComment}
+                disabled={!user || !user.role || !user.gender}
+              />
+            )}
 
-            {level < maxNestingLevel && (
+            {level < maxNestingLevel && !isReadOnly && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -199,7 +209,7 @@ export const CommentCard = ({
             )}
           </div>
 
-          {showReplyForm && (
+          {showReplyForm && !isReadOnly && (
             <div className="mt-3">
               <CommentForm
                 answerId={answerId}
@@ -208,14 +218,13 @@ export const CommentCard = ({
                 onCancel={() => setShowReplyForm(false)}
                 placeholder={
                   language === "ar"
-                    ? `الرد على ${comment.author_name}...`
+                    ? `رد على ${comment.author_name}...`
                     : `Reply to ${comment.author_name}...`
                 }
               />
             </div>
           )}
 
-          {/* Render nested replies */}
           {comment.replies && comment.replies.length > 0 && (
             <div className="mt-2">
               {comment.replies.map((reply) => (
@@ -227,6 +236,7 @@ export const CommentCard = ({
                   onDelete={onDelete}
                   onCommentAdded={onCommentAdded}
                   level={level + 1}
+                  readOnly={isReadOnly}
                 />
               ))}
             </div>

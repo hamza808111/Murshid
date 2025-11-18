@@ -38,6 +38,7 @@ export default function CreatePost() {
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const isAdminUser = !!user?.is_admin;
 
   // Check if profile is complete
   const isProfileComplete = user && user.role && user.gender;
@@ -52,6 +53,12 @@ export default function CreatePost() {
     : [{ id: 'question', label: language === 'ar' ? 'سؤال' : 'Question' }];
 
   useEffect(() => {
+    if (isAdminUser) {
+      toast.error(language === 'ar' ? 'حسابات المشرفين لا يمكنها إنشاء منشورات المجتمع' : 'Admins cannot create community posts');
+      navigate('/community');
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const [universitiesData, majorsData] = await Promise.all([
@@ -72,6 +79,11 @@ export default function CreatePost() {
     e.preventDefault();
     if (!user) {
       navigate('/login');
+      return;
+    }
+    if (isAdminUser) {
+      toast.error(language === 'ar' ? 'حسابات المشرفين لا يمكنها إنشاء منشورات المجتمع' : 'Admins cannot create community posts');
+      navigate('/community');
       return;
     }
 
