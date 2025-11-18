@@ -32,7 +32,9 @@ import Community from "./pages/Community";
 import CreatePost from "./pages/CreatePost";
 import PostDetail from "./pages/PostDetail";
 import MyPosts from "./pages/MyPosts";
+import MyAnswers from "./pages/MyAnswers";
 import MyLikes from "./pages/MyLikes";
+import UserProfile from "./pages/UserProfile";
 import Contact from "./pages/Contact";
 import AuthCallback from "./pages/AuthCallback";
 import ProfileSetup from "./pages/ProfileSetup";
@@ -51,6 +53,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/user/:userId" element={<UserProfile />} />
               <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
               <Route path="/assessment" element={<Assessment />} />
               <Route path="/majors" element={<Majors />} />
@@ -61,6 +64,7 @@ const App = () => (
               <Route path="/community/create" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
               <Route path="/community/post/:id" element={<PostDetail />} />
               <Route path="/community/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
+              <Route path="/community/my-answers" element={<ProtectedRoute><MyAnswers /></ProtectedRoute>} />
               <Route path="/community/my-likes" element={<ProtectedRoute><MyLikes /></ProtectedRoute>} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />

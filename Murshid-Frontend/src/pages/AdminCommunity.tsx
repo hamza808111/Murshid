@@ -23,6 +23,7 @@ import Navbar from "@/components/Navbar";
 import { useI18n } from "@/contexts/I18nContext";
 import { PageAnimation } from "@/components/animations/PageAnimation";
 import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
+import { DeletionReasonDialog } from "@/components/DeletionReasonDialog";
 import { getCommunityPosts, deleteCommunityPost, deleteCommunityAnswer, deleteComment, getAnswers, getComments, getReports, updateReportStatus, getCommunityPostById } from "@/lib/communityApi";
 import type { Post, Answer, Comment, ReportWithContent, ReportStatus } from "@/types/community";
 import { supabase } from "@/lib/supabase";
@@ -41,7 +42,7 @@ const AdminCommunity = () => {
   const [reportFilter, setReportFilter] = useState<ReportStatus | "all">("pending");
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<{ id: string; type: string; title?: string } | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; type: "post" | "answer" | "comment"; title?: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
@@ -172,26 +173,26 @@ const AdminCommunity = () => {
     setDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!itemToDelete) return;
+  const handleDeleteConfirm = async (reason: string) => {
+    if (!itemToDelete || !user) return;
 
     try {
       setDeleting(true);
 
       if (itemToDelete.type === "post") {
-        await deleteCommunityPost(itemToDelete.id);
-        setPosts(posts.filter(p => p.id !== itemToDelete.id));
+        await deleteCommunityPost(itemToDelete.id, user.id, reason);
         toast.success(language === "ar" ? "تم حذف المنشور" : "Post deleted");
       } else if (itemToDelete.type === "answer") {
-        await deleteCommunityAnswer(itemToDelete.id);
-        setAnswers(answers.filter(a => a.id !== itemToDelete.id));
+        await deleteCommunityAnswer(itemToDelete.id, user.id, reason);
         toast.success(language === "ar" ? "تم حذف الإجابة" : "Answer deleted");
       } else if (itemToDelete.type === "comment") {
-        await deleteComment(itemToDelete.id);
-        setComments(comments.filter(c => c.id !== itemToDelete.id));
+        await deleteComment(itemToDelete.id, user.id, reason);
         toast.success(language === "ar" ? "تم حذف التعليق" : "Comment deleted");
       }
 
+      // Refetch data to get updated state
+      await fetchData();
+      
       setDeleteDialogOpen(false);
       setItemToDelete(null);
     } catch (error) {
@@ -225,20 +226,21 @@ const AdminCommunity = () => {
         toast.success(language === "ar" ? "تم رفض البلاغ" : "Report dismissed");
       } else if (actionType === "delete") {
         // Delete the reported content and mark report as actioned
+        const reason = actionNotes || "Content removed by admin due to report";
+        
         if (reportToAction.reported_content_type === "post") {
-          await deleteCommunityPost(reportToAction.reported_content_id);
-          setPosts(posts.filter(p => p.id !== reportToAction.reported_content_id));
+          await deleteCommunityPost(reportToAction.reported_content_id, user.id, reason);
         } else if (reportToAction.reported_content_type === "answer") {
-          await deleteCommunityAnswer(reportToAction.reported_content_id);
-          setAnswers(answers.filter(a => a.id !== reportToAction.reported_content_id));
+          await deleteCommunityAnswer(reportToAction.reported_content_id, user.id, reason);
         } else if (reportToAction.reported_content_type === "comment") {
-          await deleteComment(reportToAction.reported_content_id);
-          setComments(comments.filter(c => c.id !== reportToAction.reported_content_id));
+          await deleteComment(reportToAction.reported_content_id, user.id, reason);
         }
         await updateReportStatus(reportToAction.id, "actioned", user.id, actionNotes || "Content deleted");
         toast.success(language === "ar" ? "تم حذف المحتوى وإغلاق البلاغ" : "Content deleted and report closed");
       }
 
+      // Refresh data to get updated state
+      await fetchData();
       // Refresh reports
       await fetchReports();
       setActionDialogOpen(false);
@@ -399,14 +401,17 @@ const AdminCommunity = () => {
                     </Card>
                   ) : (
                     <div className="space-y-4">
-                      {posts.map((post) => (
-                        <Card key={post.id} className="p-6">
+                      {posts.filter(post => !post.is_deleted).map((post) => (
+                        <Card 
+                          key={post.id} 
+                          className="p-6 cursor-pointer hover:shadow-lg transition-shadow"
+                          onClick={() => navigate(`/community/post/${post.id}`)}
+                        >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <h3
-                                  className="text-xl font-semibold text-gray-900 dark:text-gray-100 cursor-pointer hover:text-blue-600"
-                                  onClick={() => navigate(`/community/post/${post.id}`)}
+                                  className="text-xl font-semibold text-gray-900 dark:text-gray-100"
                                   dir={language}
                                 >
                                   {post.title}
@@ -448,7 +453,10 @@ const AdminCommunity = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDeleteClick(post.id, "post", post.title)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteClick(post.id, "post", post.title);
+                              }}
                               className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -471,8 +479,12 @@ const AdminCommunity = () => {
                     </Card>
                   ) : (
                     <div className="space-y-4">
-                      {answers.map((answer) => (
-                        <Card key={answer.id} className="p-6">
+                      {answers.filter(answer => !answer.is_deleted).map((answer) => (
+                        <Card 
+                          key={answer.id} 
+                          className="p-6 cursor-pointer hover:shadow-lg transition-shadow"
+                          onClick={() => navigate(`/community/post/${answer.post_id}`)}
+                        >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-3">
@@ -493,8 +505,7 @@ const AdminCommunity = () => {
                               </div>
 
                               <p
-                                className="text-gray-700 dark:text-gray-300 mb-3 line-clamp-3 cursor-pointer hover:text-blue-600"
-                                onClick={() => navigate(`/community/post/${answer.post_id}`)}
+                                className="text-gray-700 dark:text-gray-300 mb-3 line-clamp-3"
                                 dir={language}
                               >
                                 {answer.content}
@@ -512,7 +523,10 @@ const AdminCommunity = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDeleteClick(answer.id, "answer")}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteClick(answer.id, "answer");
+                              }}
                               className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -535,8 +549,17 @@ const AdminCommunity = () => {
                     </Card>
                   ) : (
                     <div className="space-y-4">
-                      {comments.map((comment) => (
-                        <Card key={comment.id} className="p-6">
+                      {comments.filter(comment => !comment.is_deleted).map((comment) => (
+                        <Card 
+                          key={comment.id} 
+                          className="p-6 cursor-pointer hover:shadow-lg transition-shadow"
+                          onClick={() => {
+                            const postId = (comment as any).post_id;
+                            if (postId) {
+                              navigate(`/community/post/${postId}`);
+                            }
+                          }}
+                        >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-3">
@@ -571,7 +594,10 @@ const AdminCommunity = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDeleteClick(comment.id, "comment")}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteClick(comment.id, "comment");
+                              }}
                               className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -722,48 +748,14 @@ const AdminCommunity = () => {
         </ScrollAnimation>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {language === "ar" ? "تأكيد الحذف" : "Confirm Deletion"}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {language === "ar"
-                  ? `هل أنت متأكد من حذف هذا ${
-                      itemToDelete?.type === "post" ? "المنشور" :
-                      itemToDelete?.type === "answer" ? "الإجابة" :
-                      "التعليق"
-                    }؟ لا يمكن التراجع عن هذا الإجراء.`
-                  : `Are you sure you want to delete this ${itemToDelete?.type}? This action cannot be undone.`}
-                {itemToDelete?.title && (
-                  <span className="block mt-2 font-semibold">
-                    "{itemToDelete.title}"
-                  </span>
-                )}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={handleDeleteCancel} disabled={deleting}>
-                {language === "ar" ? "إلغاء" : "Cancel"}
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteConfirm}
-                disabled={deleting}
-                className="bg-destructive hover:bg-destructive/90"
-              >
-                {deleting ? (
-                  <>
-                    <Loader2 className={`w-4 h-4 ${language === "ar" ? "ml-2" : "mr-2"} animate-spin`} />
-                    {language === "ar" ? "جاري الحذف..." : "Deleting..."}
-                  </>
-                ) : (
-                  language === "ar" ? "حذف" : "Delete"
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <DeletionReasonDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={handleDeleteConfirm}
+          itemType={itemToDelete?.type || "post"}
+          itemTitle={itemToDelete?.title}
+          deleting={deleting}
+        />
 
         {/* Report Action Dialog */}
         <AlertDialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>

@@ -19,6 +19,10 @@ export interface Post {
   is_solved: boolean;
   created_at: string;
   updated_at: string;
+  is_deleted?: boolean;
+  deleted_at?: string;
+  deleted_by?: string;
+  deletion_reason?: string;
 }
 
 export interface Answer {
@@ -36,6 +40,10 @@ export interface Answer {
   is_accepted: boolean;
   created_at: string;
   updated_at: string;
+  is_deleted?: boolean;
+  deleted_at?: string;
+  deleted_by?: string;
+  deletion_reason?: string;
 }
 
 export interface CreatePostRequest {
@@ -67,6 +75,10 @@ export interface Comment {
   likes_count: number;
   created_at: string;
   updated_at: string;
+  is_deleted?: boolean;
+  deleted_at?: string;
+  deleted_by?: string;
+  deletion_reason?: string;
   // Nested replies (for threaded display)
   replies?: Comment[];
 }

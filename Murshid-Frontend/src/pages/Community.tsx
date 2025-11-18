@@ -5,6 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { PageAnimation } from "@/components/animations/PageAnimation";
 import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
 import { 
@@ -15,7 +22,8 @@ import {
   Eye, 
   CheckCircle,
   Filter,
-  TrendingUp
+  TrendingUp,
+  FileText
 } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,7 +35,7 @@ import { LikeButton } from '@/components/community/LikeButton';
 export default function Community() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'questions' | 'discussions'>('all');
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'student' | 'specialist'>('all');
   const [loading, setLoading] = useState(true);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const { language } = useI18n();
@@ -67,10 +75,23 @@ export default function Community() {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      const fetchedPosts = await getCommunityPosts({
-        type: selectedFilter,
+      let fetchedPosts = await getCommunityPosts({
         search: searchQuery.trim() || undefined,
       });
+      
+      console.log('Fetched posts:', fetchedPosts.length);
+      console.log('Sample post roles:', fetchedPosts.slice(0, 5).map(p => ({ id: p.id, role: p.author_role })));
+      
+      // Filter by author role
+      if (selectedFilter !== 'all') {
+        console.log('Filtering by:', selectedFilter);
+        fetchedPosts = fetchedPosts.filter(post => {
+          console.log(`Post ${post.id}: author_role="${post.author_role}", matches: ${post.author_role === selectedFilter}`);
+          return post.author_role === selectedFilter;
+        });
+        console.log('After filter:', fetchedPosts.length);
+      }
+      
       setPosts(fetchedPosts);
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -122,7 +143,7 @@ export default function Community() {
                     onClick={handleCreatePost}
                     className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
                   >
-                    <Plus className="w-5 h-5 mr-2" />
+                    <Plus className={`w-5 h-5 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
                     {language === 'ar' ? 'إنشاء منشور' : 'Create Post'}
                   </Button>
                   {user && (
@@ -132,7 +153,16 @@ export default function Community() {
                         variant="outline"
                         className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
                       >
+                        <FileText className={`w-5 h-5 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
                         {language === 'ar' ? 'منشوراتي' : 'My Posts'}
+                      </Button>
+                      <Button
+                        onClick={() => navigate('/community/my-answers')}
+                        variant="outline"
+                        className="rounded-2xl px-8 py-6 border-2 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                      >
+                        <MessageCircle className={`w-5 h-5 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                        {language === 'ar' ? 'إجاباتي' : 'My Answers'}
                       </Button>
                       <Button
                         onClick={() => navigate('/community/my-likes')}
@@ -165,8 +195,8 @@ export default function Community() {
               <div className="flex gap-4 justify-center">
                 {[
                   { id: 'all', label: language === 'ar' ? 'الكل' : 'All' },
-                  { id: 'questions', label: language === 'ar' ? 'الأسئلة' : 'Questions' },
-                  { id: 'discussions', label: language === 'ar' ? 'النقاشات' : 'Discussions' }
+                  { id: 'student', label: language === 'ar' ? 'الطلاب' : 'Students' },
+                  { id: 'specialist', label: language === 'ar' ? 'المختصين' : 'Specialists' }
                 ].map((filter) => (
                   <Button
                     key={filter.id}
@@ -185,23 +215,91 @@ export default function Community() {
             </div>
 
             {/* Posts List */}
-            <div className="max-w-4xl mx-auto space-y-6">
-              {posts.map((post) => (
-                <ScrollAnimation key={post.id}>
-                  <Card 
-                    className="p-6 card-hover cursor-pointer animate-pulse-glow"
-                    onClick={() => navigate(`/community/post/${post.id}`)}
-                  >
+            <TooltipProvider>
+              <div className="max-w-4xl mx-auto space-y-6">
+                {loading ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">{language === 'ar' ? 'جاري التحميل...' : 'Loading...'}</p>
+                  </div>
+                ) : posts.length === 0 ? (
+                  <Card className="p-12 text-center">
+                    <div className="max-w-md mx-auto">
+                      <FileText className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                        {selectedFilter === 'all' ? (
+                          language === 'ar' ? 'لا توجد منشورات حتى الآن' : 'No posts yet'
+                        ) : selectedFilter === 'student' ? (
+                          language === 'ar' ? 'لا توجد منشورات من الطلاب' : 'No posts from students'
+                        ) : (
+                          language === 'ar' ? 'لا توجد منشورات من المختصين' : 'No posts from specialists'
+                        )}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 mb-6">
+                        {selectedFilter === 'student' && user?.role === 'student' ? (
+                          language === 'ar' 
+                            ? 'كن أول من يطرح سؤالاً أو يبدأ نقاشاً!' 
+                            : 'Be the first to ask a question or start a discussion!'
+                        ) : selectedFilter === 'specialist' && user?.role === 'specialist' ? (
+                          language === 'ar'
+                            ? 'كن أول من يشارك خبرته مع المجتمع!'
+                            : 'Be the first to share your expertise with the community!'
+                        ) : selectedFilter === 'all' ? (
+                          language === 'ar'
+                            ? 'كن أول من ينشئ منشوراً في المجتمع!'
+                            : 'Be the first to create a post in the community!'
+                        ) : (
+                          language === 'ar'
+                            ? 'لا توجد منشورات متاحة لهذا الفلتر'
+                            : 'No posts available for this filter'
+                        )}
+                      </p>
+                      {((selectedFilter === 'student' && user?.role === 'student') || 
+                        (selectedFilter === 'specialist' && user?.role === 'specialist') ||
+                        selectedFilter === 'all') && (
+                        <Button 
+                          onClick={handleCreatePost}
+                          className="rounded-xl bg-blue-500 hover:bg-blue-600"
+                        >
+                          <Plus className={`w-4 h-4 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                          {language === 'ar' ? 'إنشاء منشور' : 'Create Post'}
+                        </Button>
+                      )}
+                    </div>
+                  </Card>
+                ) : (
+                  posts.map((post) => (
+                  <ScrollAnimation key={post.id}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Card 
+                          className={`p-6 card-hover cursor-pointer animate-pulse-glow ${
+                            user && post.author_id === user.id ? '!border-2 !border-blue-500 dark:!border-blue-400' : ''
+                          }`}
+                          onClick={() => navigate(`/community/post/${post.id}`)}
+                        >
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                        <span className="text-blue-600 dark:text-blue-400 font-semibold">
-                          {post.author_name.charAt(0)}
-                        </span>
-                      </div>
+                      <Avatar 
+                        className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/user/${post.author_id}`);
+                        }}
+                      >
+                        <AvatarImage src={post.author_avatar} alt={post.author_name} />
+                        <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-semibold">
+                          {post.author_name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                       
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="font-medium text-gray-900 dark:text-gray-100">
+                          <span 
+                            className="font-medium text-gray-900 dark:text-gray-100 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/user/${post.author_id}`);
+                            }}
+                          >
                             {post.author_name}
                           </span>
                           <Badge variant="secondary" className="text-xs">
@@ -209,16 +307,6 @@ export default function Community() {
                              post.author_role === 'student' ? (language === 'ar' ? 'طالب' : 'Student') : 
                              (language === 'ar' ? 'مدير' : 'Admin')}
                           </Badge>
-                          {post.author_university && (
-                            <Badge variant="outline" className="text-xs">
-                              🏛️ {post.author_university}
-                            </Badge>
-                          )}
-                          {post.author_major && (
-                            <Badge variant="outline" className="text-xs">
-                              📚 {post.author_major}
-                            </Badge>
-                          )}
                           <span className="text-sm text-gray-500">
                             {formatTimeAgo(post.created_at)}
                           </span>
@@ -239,25 +327,27 @@ export default function Community() {
                           {post.content}
                         </p>
                         
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {post.major_tags?.map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              📚 {tag}
-                            </Badge>
-                          ))}
-                          {post.university_tags?.map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              🏛️ {tag}
-                            </Badge>
-                          ))}
-                          {post.tags.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
+                        {((post.major_tags && post.major_tags.length > 0) || (post.university_tags && post.university_tags.length > 0) || (post.tags && post.tags.length > 0)) && (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {post.major_tags?.map((tag) => (
+                              <Badge key={tag} variant="outline" className="text-xs">
+                                📚 {tag}
+                              </Badge>
+                            ))}
+                            {post.university_tags?.map((tag) => (
+                              <Badge key={tag} variant="outline" className="text-xs">
+                                🏛️ {tag}
+                              </Badge>
+                            ))}
+                            {post.tags.map((tag) => (
+                              <Badge key={tag} variant="secondary" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                         
-                        <div className="flex items-center gap-6 text-sm text-gray-500">
+                        <div className="flex items-center gap-6 text-sm text-gray-500" onClick={(e) => e.stopPropagation()}>
                           <LikeButton
                             itemId={post.id}
                             itemType="post"
@@ -299,9 +389,15 @@ export default function Community() {
                       </div>
                     </div>
                   </Card>
-                </ScrollAnimation>
-              ))}
-            </div>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={5}>
+                  <p>{language === 'ar' ? 'اضغط لعرض تفاصيل المنشور' : 'Click to view post details'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </ScrollAnimation>
+          )))}
+        </div>
+      </TooltipProvider>
           </div>
         </div>
       </div>

@@ -42,6 +42,7 @@ interface AuthContextType {
   ) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (name: string, email: string, establishment_name?: string, level?: string, gender?: string, role?: string, student_type?: string, track?: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -574,8 +575,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      if (authError || !authUser) {
+        console.error("Error refreshing user:", authError);
+        return;
+      }
+      const mapped = await mapAuthUserToAppUser(authUser);
+      setUser(mapped);
+    } catch (error) {
+      console.error("Error in refreshUser:", error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, signup, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, signup, logout, updateProfile, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -23,8 +23,8 @@ const teamMembers = [
     role: 'Software Tester & Full-Stack Developer',
     image: '/public/bilali.jpg',
     email: 'sarah@team3n3.com',
-    github: 'https://github.com/sarah',
-    linkedin: 'https://linkedin.com/in/sarah',
+    github: 'https://github.com/abdulazizabdullh',
+    linkedin: 'https://www.linkedin.com/in/abdulaziz-alamro-015552273?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app',
     color: 'from-pink-400 to-red-600'
   },
   {
@@ -32,7 +32,7 @@ const teamMembers = [
     name: 'Abdulaziz Alamro',
     role: 'Product Owner & Backend Developer',
     image: '/public/aziz.jpg',
-    email: 'mohammed@team3n3.com',
+    email: 'aasaabd1998@gmail.com',
     github: 'https://github.com/mohammed',
     linkedin: 'https://linkedin.com/in/mohammed',
     color: 'from-green-400 to-teal-600'
@@ -42,9 +42,9 @@ const teamMembers = [
     name: 'Abderraouf bendjedia',
     role: 'UI/UX Designer & Frontend Developer',
     image: '/public/raouf.jpg',
-    email: 'fatima@team3n3.com',
-    github: 'https://github.com/fatima',
-    linkedin: 'https://linkedin.com/in/fatima',
+    email: 'Abderraoufbendjedia@gmail.com',
+    github: 'https://github.com/Abderraouf17',
+    linkedin: 'https://www.linkedin.com/public-profile/settings',
     color: 'from-yellow-400 to-orange-600'
   },
   {
@@ -52,9 +52,9 @@ const teamMembers = [
     name: 'Muhannad Aldawsari',
     role: 'Software Tester & Frontend Developer',
     image: '/public/hnd.jpg',
-    email: 'omar@team3n3.com',
-    github: 'https://github.com/omar',
-    linkedin: 'https://linkedin.com/in/omar',
+    email: 'muhanad1214@hotmail.com',
+    github: 'https://github.com/MuhannadAldawsari',
+    linkedin: 'https://www.linkedin.com/in/muhannad-aldawsari-0a065a383?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app',
     color: 'from-indigo-400 to-blue-600'
   },
   {

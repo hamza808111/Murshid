@@ -43,7 +43,9 @@ export const LikeButton = ({
     setLikesCount(initialLikesCount);
   }, [initialLikesCount]);
 
-  const handleToggleLike = async () => {
+  const handleToggleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event from bubbling to parent card
+    
     if (!user) {
       toast.error(language === "ar" ? "يجب تسجيل الدخول أولاً" : "Please log in first");
       return;

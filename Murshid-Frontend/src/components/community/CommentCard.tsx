@@ -22,6 +22,7 @@ import {
   deleteComment,
 } from "@/lib/communityApi";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 interface CommentCardProps {
   comment: Comment;
@@ -44,6 +45,7 @@ export const CommentCard = ({
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const { user } = useAuth();
   const { language } = useI18n();
@@ -60,13 +62,10 @@ export const CommentCard = ({
   }, [user, comment.id]);
 
   const handleDelete = async () => {
-    if (!confirm(language === "ar" ? "هل تريد حذف هذا التعليق؟" : "Delete this comment?")) {
-      return;
-    }
-
     setIsDeleting(true);
     try {
-      await deleteComment(comment.id);
+      if (!user) return;
+      await deleteComment(comment.id, user.id, "User deleted");
       toast.success(language === "ar" ? "تم حذف التعليق" : "Comment deleted");
       onDelete?.(comment.id);
     } catch (error) {
@@ -74,6 +73,7 @@ export const CommentCard = ({
       toast.error(language === "ar" ? "فشل حذف التعليق" : "Failed to delete comment");
     } finally {
       setIsDeleting(false);
+      setDeleteConfirmOpen(false);
     }
   };
 
@@ -93,7 +93,10 @@ export const CommentCard = ({
   return (
     <div className={`${indentClass} ${level > 0 ? "border-l-2 border-gray-200 dark:border-gray-700 pl-4" : ""}`}>
       <div className="flex gap-3 py-3">
-        <Avatar className="w-8 h-8">
+        <Avatar 
+          className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+          onClick={() => window.location.href = `/user/${comment.author_id}`}
+        >
           <AvatarImage src={comment.author_avatar} alt={comment.author_name} />
           <AvatarFallback className="text-xs">
             {comment.author_name?.charAt(0).toUpperCase()}
@@ -103,7 +106,10 @@ export const CommentCard = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              <span 
+                className="text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                onClick={() => window.location.href = `/user/${comment.author_id}`}
+              >
                 {comment.author_name}
               </span>
 
@@ -157,7 +163,7 @@ export const CommentCard = ({
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem
-                    onClick={handleDelete}
+                    onClick={() => setDeleteConfirmOpen(true)}
                     disabled={isDeleting}
                     className="text-red-600 dark:text-red-400"
                   >
@@ -184,7 +190,7 @@ export const CommentCard = ({
               disabled={!user || !user.role || !user.gender}
             />
 
-            {level < maxNestingLevel && (
+            {level < maxNestingLevel && user && !user.is_admin && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -233,6 +239,17 @@ export const CommentCard = ({
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={handleDelete}
+        title={language === "ar" ? "حذف التعليق" : "Delete Comment"}
+        description={language === "ar" ? "هل أنت متأكد من حذف هذا التعليق؟ لا يمكن التراجع عن هذا الإجراء." : "Are you sure you want to delete this comment? This action cannot be undone."}
+        confirmText={language === "ar" ? "حذف" : "Delete"}
+        destructive={true}
+      />
     </div>
   );
 };

@@ -12,28 +12,27 @@ import {
   Heart,
   Eye,
   CheckCircle,
-  Edit,
-  Trash2
+  Edit2,
+  Trash2,
+  AlertTriangle,
+  Ban
 } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Post, Answer, Comment } from '@/types/community';
+import type { Post } from '@/types/community';
 import { toast } from 'sonner';
 import {
   getCommunityPostsByAuthor,
-  getCommunityAnswersByAuthor,
-  getCommentsByAuthor,
   deleteCommunityPost
 } from '@/lib/communityApi';
 import { EditPostModal } from '@/components/community/EditPostModal';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 export default function MyPosts() {
   const [userPosts, setUserPosts] = useState<Post[]>([]);
-  const [userAnswers, setUserAnswers] = useState<Answer[]>([]);
-  const [userComments, setUserComments] = useState<Comment[]>([]);
-  const [activeTab, setActiveTab] = useState<'posts' | 'answers' | 'comments'>('posts');
   const [loading, setLoading] = useState(true);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -49,18 +48,11 @@ export default function MyPosts() {
     }
     setLoading(true);
     try {
-      const [postsData, answersData, commentsData] = await Promise.all([
-        getCommunityPostsByAuthor(user.id),
-        getCommunityAnswersByAuthor(user.id),
-        getCommentsByAuthor(user.id)
-      ]);
-
+      const postsData = await getCommunityPostsByAuthor(user.id);
       setUserPosts(postsData);
-      setUserAnswers(answersData);
-      setUserComments(commentsData);
     } catch (error) {
       console.error('Error loading user content:', error);
-      toast.error(language === 'ar' ? 'فشل تحميل نشاطك المجتمعي' : 'Failed to load your community activity');
+      toast.error(language === 'ar' ? 'فشل تحميل منشوراتك' : 'Failed to load your posts');
     } finally {
       setLoading(false);
     }
@@ -78,15 +70,26 @@ export default function MyPosts() {
   };
 
   const deletePost = (postId: string) => {
-    deleteCommunityPost(postId)
-      .then(() => {
-        setUserPosts(prev => prev.filter(post => post.id !== postId));
-        toast.success(language === 'ar' ? 'Post deleted' : 'Post deleted');
-      })
-      .catch((error) => {
-        console.error('Error deleting post:', error);
-        toast.error(language === 'ar' ? 'Failed to delete post' : 'Failed to delete post');
-      });
+    setDeletePostId(postId);
+  };
+
+  const confirmDeletePost = async () => {
+    if (!deletePostId || !user) return;
+
+    try {
+      await deleteCommunityPost(deletePostId, user.id, "User deleted");
+      setUserPosts(prev => prev.map(post => 
+        post.id === deletePostId 
+          ? { ...post, is_deleted: true, deletion_reason: "User deleted", deleted_at: new Date().toISOString() }
+          : post
+      ));
+      toast.success(language === 'ar' ? 'تم حذف المنشور' : 'Post deleted');
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast.error(language === 'ar' ? 'فشل حذف المنشور' : 'Failed to delete post');
+    } finally {
+      setDeletePostId(null);
+    }
   };
 
   if (loading) {
@@ -122,70 +125,64 @@ export default function MyPosts() {
                 </Button>
                 
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
-                  {language === 'ar' ? 'منشوراتي وإجاباتي' : 'My Posts & Answers'}
+                  {language === 'ar' ? 'منشوراتي' : 'My Posts'}
                 </h1>
-                
-              
-                <div className="flex gap-4  " >
-                  <Button
-                    variant={activeTab === 'posts' ? 'default' : 'outline'}
-                    onClick={() => setActiveTab('posts')}
-                    className={`rounded-2xl px-6 py-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-                      activeTab === 'posts'
-                        ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                        : 'border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
-                    }`}
-                  >
-                    {language === 'ar' ? `منشوراتي (${userPosts.length})` : `My Posts (${userPosts.length})`}
-                  </Button>
-                  <Button
-                    variant={activeTab === 'answers' ? 'default' : 'outline'}
-                    onClick={() => setActiveTab('answers')}
-                    className={`rounded-2xl px-6 py-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-                      activeTab === 'answers'
-                        ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                        : 'border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
-                    }`}
-                  >
-                    {language === 'ar' ? `إجاباتي (${userAnswers.length})` : `My Answers (${userAnswers.length})`}
-                  </Button>
-                  <Button
-                    variant={activeTab === 'comments' ? 'default' : 'outline'}
-                    onClick={() => setActiveTab('comments')}
-                    className={`rounded-2xl px-6 py-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-                      activeTab === 'comments'
-                        ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                        : 'border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
-                    }`}
-                  >
-                    {language === 'ar' ? `تعليقاتي (${userComments.length})` : `My Comments (${userComments.length})`}
-                  </Button>
-                </div>
               </div>
             </ScrollAnimation>
 
-            {/* Posts Tab */}
-            {activeTab === 'posts' && (
-              <div className="space-y-6">
+            {/* Posts */}
+            <div className="space-y-6">
                 {userPosts.length > 0 ? (
                   userPosts.map((post) => (
                     <ScrollAnimation key={post.id}>
-                      <Card className="p-6 hover:shadow-lg transition-shadow">
+                      <Card 
+                        className={`p-6 transition-shadow !border-2 ${
+                          post.is_deleted 
+                            ? '!border-red-500 dark:!border-red-400 bg-red-50 dark:bg-red-900/10 opacity-75' 
+                            : '!border-blue-500 dark:!border-blue-400 hover:shadow-lg cursor-pointer'
+                        }`}
+                        onClick={post.is_deleted ? undefined : () => navigate(`/community/post/${post.id}`)}
+                      >
+                        {/* Deleted Banner */}
+                        {post.is_deleted && (
+                          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg">
+                            <div className="flex items-start gap-2">
+                              <Ban className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1">
+                                <p className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1" dir={language}>
+                                  {language === 'ar' ? 'تم حذف هذا المنشور من قبل المشرف' : 'This post was removed by admin'}
+                                </p>
+                                <p className="text-sm text-red-700 dark:text-red-400" dir={language}>
+                                  <span className="font-medium">{language === 'ar' ? 'السبب: ' : 'Reason: '}</span>
+                                  {post.deletion_reason || (language === 'ar' ? 'لم يتم تحديد السبب' : 'No reason provided')}
+                                </p>
+                                {post.deleted_at && (
+                                  <p className="text-xs text-red-600 dark:text-red-500 mt-1">
+                                    {language === 'ar' ? 'تم الحذف ' : 'Deleted '}{formatTimeAgo(post.deleted_at)}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="secondary" className="text-xs">
-                                {post.post_type === 'question' ? (language === 'ar' ? 'سؤال' : 'Question') : (language === 'ar' ? 'نقاش' : 'Discussion')}
-                              </Badge>
                               <span className="text-sm text-gray-500">
                                 {formatTimeAgo(post.created_at)}
                               </span>
+                              {post.is_solved && (
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  {language === 'ar' ? 'محلولة' : 'Solved'}
+                                </Badge>
+                              )}
                             </div>
                             
                             <h3 
-                              className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 cursor-pointer hover:text-blue-600" 
+                              className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2" 
                               dir={language}
-                              onClick={() => navigate(`/community/post/${post.id}`)}
                             >
                               {post.title}
                             </h3>
@@ -203,6 +200,11 @@ export default function MyPosts() {
                               {post.university_tags?.map((tag) => (
                                 <Badge key={tag} variant="outline" className="text-xs">
                                   🏛️ {tag}
+                                </Badge>
+                              ))}
+                              {post.tags.map((tag) => (
+                                <Badge key={tag} variant="secondary" className="text-xs">
+                                  {tag}
                                 </Badge>
                               ))}
                             </div>
@@ -229,30 +231,31 @@ export default function MyPosts() {
                             </div>
                           </div>
                           
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingPost(post);
-                              }}
-                              className="text-blue-500 hover:text-blue-700 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deletePost(post.id);
-                              }}
-                              className="text-red-500 hover:text-red-700 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                          {!post.is_deleted && (
+                            <div className="flex gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingPost(post);
+                                }}
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deletePost(post.id);
+                                }}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </Card>
                     </ScrollAnimation>
@@ -275,135 +278,6 @@ export default function MyPosts() {
                   </div>
                 )}
               </div>
-            )}
-
-            {/* Answers Tab */}
-            {activeTab === 'answers' && (
-              <div className="space-y-6">
-                {userAnswers.length > 0 ? (
-                  userAnswers.map((answer) => (
-                    <ScrollAnimation key={answer.id}>
-                      <Card className="p-6 hover:shadow-lg transition-shadow">
-                        <div className="flex items-start gap-4">
-                          <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                            <MessageCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-                          </div>
-
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm text-gray-500">
-                                {language === 'ar' ? 'أجبت منذ' : 'Answered'} {formatTimeAgo(answer.created_at)}
-                              </span>
-                              {answer.is_accepted && (
-                                <Badge variant="outline" className="text-xs text-green-600">
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                  {language === 'ar' ? 'مقبولة' : 'Accepted'}
-                                </Badge>
-                              )}
-                            </div>
-
-                            <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed" dir={language}>
-                              {answer.content}
-                            </p>
-
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-1 text-sm text-gray-500">
-                                <Heart className="w-4 h-4" />
-                                <span>{answer.likes_count}</span>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => navigate(`/community/post/${answer.post_id}`)}
-                                className="text-blue-600 hover:text-blue-800 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-                              >
-                                {language === 'ar' ? 'عرض المنشور' : 'View Post'}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    </ScrollAnimation>
-                  ))
-                ) : (
-                  <div className="text-center py-12">
-                    <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2" dir={language}>
-                      {language === 'ar' ? 'لا توجد إجابات' : 'No Answers Yet'}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300" dir={language}>
-                      {language === 'ar' ? 'ابدأ بالإجابة على أسئلة المجتمع' : 'Start by answering community questions'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Comments Tab */}
-            {activeTab === 'comments' && (
-              <div className="space-y-6">
-                {userComments.length > 0 ? (
-                  userComments.map((comment) => (
-                    <ScrollAnimation key={comment.id}>
-                      <Card className="p-6 hover:shadow-lg transition-shadow">
-                        <div className="flex items-start gap-4">
-                          <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                            <MessageCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                          </div>
-
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm text-gray-500">
-                                {language === 'ar' ? 'علقت منذ' : 'Commented'} {formatTimeAgo(comment.created_at)}
-                              </span>
-                              {comment.parent_comment_id && (
-                                <Badge variant="outline" className="text-xs">
-                                  {language === 'ar' ? 'رد' : 'Reply'}
-                                </Badge>
-                              )}
-                            </div>
-
-                            <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed" dir={language}>
-                              {comment.content}
-                            </p>
-
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-1 text-sm text-gray-500">
-                                <Heart className="w-4 h-4" />
-                                <span>{comment.likes_count}</span>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  // Navigate to the post containing this comment
-                                  // We need to get the post_id from the answer
-                                  // For now, just show a message
-                                  toast.info(language === 'ar' ? 'انتقل إلى المنشور لعرض السياق' : 'Navigate to the post to view context');
-                                }}
-                                className="text-blue-600 hover:text-blue-800 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-                              >
-                                {language === 'ar' ? 'عرض السياق' : 'View Context'}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    </ScrollAnimation>
-                  ))
-                ) : (
-                  <div className="text-center py-12">
-                    <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2" dir={language}>
-                      {language === 'ar' ? 'لا توجد تعليقات' : 'No Comments Yet'}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300" dir={language}>
-                      {language === 'ar' ? 'ابدأ بالتعليق على الإجابات' : 'Start by commenting on answers'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -420,6 +294,17 @@ export default function MyPosts() {
           }}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={!!deletePostId}
+        onOpenChange={(open) => !open && setDeletePostId(null)}
+        onConfirm={confirmDeletePost}
+        title={language === 'ar' ? 'حذف المنشور' : 'Delete Post'}
+        description={language === 'ar' ? 'هل أنت متأكد من حذف هذا المنشور؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to delete this post? This action cannot be undone.'}
+        confirmText={language === 'ar' ? 'حذف' : 'Delete'}
+        destructive={true}
+      />
     </PageAnimation>
   );
 }

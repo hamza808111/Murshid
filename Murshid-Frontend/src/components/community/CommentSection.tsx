@@ -33,11 +33,10 @@ export const CommentSection = ({ answerId }: CommentSectionProps) => {
     }
   };
 
+  // Load comments on mount to get accurate count
   useEffect(() => {
-    if (isExpanded) {
-      loadComments();
-    }
-  }, [isExpanded, answerId]);
+    loadComments();
+  }, [answerId]);
 
   const handleCommentAdded = () => {
     setShowCommentForm(false);
@@ -82,7 +81,7 @@ export const CommentSection = ({ answerId }: CommentSectionProps) => {
           )}
         </Button>
 
-        {isExpanded && user && user.role && user.gender && (
+        {isExpanded && user && user.role && user.gender && !user.is_admin && (
           <Button
             variant="ghost"
             size="sm"

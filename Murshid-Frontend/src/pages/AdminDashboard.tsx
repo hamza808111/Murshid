@@ -17,7 +17,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Shield, Search, Users, Loader2, Trash2, RefreshCw, Building2, BookOpen, Link as LinkIcon, Ban, Undo2, MessageSquare } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Shield, Search, Users, Loader2, Trash2, RefreshCw, Building2, BookOpen, Link as LinkIcon, Ban, Undo2, MessageSquare, CheckCircle, XCircle, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { Link } from "react-router-dom";
@@ -59,7 +72,14 @@ const AdminDashboard = () => {
   const [userToSuspend, setUserToSuspend] = useState<UserData | null>(null);
   const [suspendReason, setSuspendReason] = useState("");
   const [suspendUntil, setSuspendUntil] = useState("");
+  const [suspendDurationType, setSuspendDurationType] = useState<"date" | "period">("date");
+  const [suspendPeriod, setSuspendPeriod] = useState<"week" | "month" | "permanent">("permanent");
   const [suspending, setSuspending] = useState(false);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [refuseDialogOpen, setRefuseDialogOpen] = useState(false);
+  const [userToApprove, setUserToApprove] = useState<UserData | null>(null);
+  const [refusalReason, setRefusalReason] = useState("");
+  const [processing, setProcessing] = useState(false);
 
   // Open specialist proof with a signed URL (works even if bucket is private)
   const handleViewProof = async (userData: UserData) => {
@@ -236,18 +256,39 @@ const AdminDashboard = () => {
     try {
       setDeleting(true);
 
-      // Delete from Supabase Auth (this will cascade delete from profiles table)
-      const { error } = await supabase.auth.admin.deleteUser(userToDelete.id);
+      // Try Method 1: Call the database function to delete user from auth.users
+      try {
+        const { error: rpcError } = await supabase.rpc('delete_user_by_id', {
+          user_id: userToDelete.id
+        });
 
-      if (error) {
-        // If admin API fails, try deleting from profiles table directly
-        // This will work if RLS policies allow it
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .delete()
-          .eq("id", userToDelete.id);
+        if (rpcError) {
+          console.warn("RPC delete function error (function may not exist):", rpcError);
+          throw rpcError;
+        }
 
-        if (profileError) throw profileError;
+        // If RPC succeeded, update UI and return
+        setUsers(users.filter((u) => u.id !== userToDelete.id));
+        setFilteredUsers(filteredUsers.filter((u) => u.id !== userToDelete.id));
+        toast.success(t("admin.dashboard.toast.deleteSuccess", { name: userToDelete.name || userToDelete.email }));
+        setDeleteDialogOpen(false);
+        setUserToDelete(null);
+        return;
+      } catch (rpcError) {
+        // RPC failed, try fallback method
+        console.log("Trying fallback deletion method...");
+      }
+
+      // Method 2 (Fallback): Delete from profiles table
+      // This won't free up the email but at least removes the user from your app
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("id", userToDelete.id);
+
+      if (profileError) {
+        console.error("Profile deletion error:", profileError);
+        throw new Error("Failed to delete user. Please make sure the delete_user_by_id function is created in Supabase.");
       }
 
       // Update local state
@@ -257,9 +298,10 @@ const AdminDashboard = () => {
       toast.success(t("admin.dashboard.toast.deleteSuccess", { name: userToDelete.name || userToDelete.email }));
       setDeleteDialogOpen(false);
       setUserToDelete(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting user:", error);
-      toast.error(t("admin.dashboard.toast.deleteError"));
+      const errorMessage = error?.message || "Unknown error occurred";
+      toast.error(`Failed to delete user: ${errorMessage}`);
     } finally {
       setDeleting(false);
     }
@@ -282,6 +324,8 @@ const AdminDashboard = () => {
     }
     setUserToSuspend(userData);
     setSuspendReason(userData.suspended_reason || "");
+    setSuspendDurationType("date");
+    setSuspendPeriod("permanent");
     // Format suspended_until for datetime-local input if it exists
     if (userData.suspended_until) {
       const date = new Date(userData.suspended_until);
@@ -295,12 +339,35 @@ const AdminDashboard = () => {
   const handleSuspendConfirm = async () => {
     if (!userToSuspend) return;
 
+    // Require reason for suspension
+    if (!suspendReason.trim()) {
+      toast.error("Please provide a reason for suspension");
+      return;
+    }
+
     try {
       setSuspending(true);
+      
+      let calculatedSuspendUntil = null;
+      
+      if (suspendDurationType === "date" && suspendUntil) {
+        calculatedSuspendUntil = new Date(suspendUntil).toISOString();
+      } else if (suspendDurationType === "period" && suspendPeriod !== "permanent") {
+        const now = new Date();
+        if (suspendPeriod === "week") {
+          now.setDate(now.getDate() + 7);
+          calculatedSuspendUntil = now.toISOString();
+        } else if (suspendPeriod === "month") {
+          now.setMonth(now.getMonth() + 1);
+          calculatedSuspendUntil = now.toISOString();
+        }
+      }
+      // If period is "permanent", calculatedSuspendUntil remains null
+
       const payload: any = {
         is_suspended: true,
-        suspended_reason: suspendReason || null,
-        suspended_until: suspendUntil ? new Date(suspendUntil).toISOString() : null,
+        suspended_reason: suspendReason,
+        suspended_until: calculatedSuspendUntil,
       };
 
       const { error } = await supabase
@@ -322,6 +389,8 @@ const AdminDashboard = () => {
       setUserToSuspend(null);
       setSuspendReason("");
       setSuspendUntil("");
+      setSuspendDurationType("date");
+      setSuspendPeriod("permanent");
     } catch (error) {
       console.error("Error suspending user:", error);
       toast.error("Failed to suspend user. Please try again.");
@@ -365,6 +434,153 @@ const AdminDashboard = () => {
     setUserToSuspend(null);
     setSuspendReason("");
     setSuspendUntil("");
+    setSuspendDurationType("date");
+    setSuspendPeriod("permanent");
+  };
+
+  // Helper function to check if user is pending specialist verification
+  const isPendingSpecialist = (userData: UserData) => {
+    return userData.is_suspended === true && 
+           userData.suspended_reason === 'Pending specialist verification' &&
+           (userData.role === 'Specialist' || userData.role === 'specialist');
+  };
+
+  // Helper function to check if specialist is approved (not suspended, is specialist, has proof)
+  const isApprovedSpecialist = (userData: UserData) => {
+    return userData.is_suspended === false && 
+           (userData.role === 'Specialist' || userData.role === 'specialist') &&
+           userData.specialist_proof_url;
+  };
+
+  // Approve specialist
+  const handleApproveClick = (userData: UserData) => {
+    setUserToApprove(userData);
+    setApproveDialogOpen(true);
+  };
+
+  const handleApproveConfirm = async () => {
+    if (!userToApprove) return;
+
+    try {
+      setProcessing(true);
+
+      // Update profile to unsuspend
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          is_suspended: false,
+          suspended_reason: null,
+          suspended_until: null,
+        })
+        .eq("id", userToApprove.id);
+
+      if (updateError) throw updateError;
+
+      // Send approval email
+      try {
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-specialist-approval-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          },
+          body: JSON.stringify({
+            to: userToApprove.email,
+            name: userToApprove.name || userToApprove.email,
+            approved: true
+          })
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Don't fail the whole operation if email fails
+      }
+
+      // Update local state
+      const updated = users.map((u) =>
+        u.id === userToApprove.id
+          ? { ...u, is_suspended: false, suspended_reason: null, suspended_until: null }
+          : u
+      );
+      setUsers(updated);
+      setFilteredUsers(updated);
+
+      toast.success(`Specialist ${userToApprove.name || userToApprove.email} has been approved`);
+      setApproveDialogOpen(false);
+      setUserToApprove(null);
+    } catch (error) {
+      console.error("Error approving specialist:", error);
+      toast.error("Failed to approve specialist. Please try again.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // Refuse specialist
+  const handleRefuseClick = (userData: UserData) => {
+    setUserToApprove(userData);
+    setRefusalReason("");
+    setRefuseDialogOpen(true);
+  };
+
+  const handleRefuseConfirm = async () => {
+    if (!userToApprove || !refusalReason.trim()) {
+      toast.error("Please provide a reason for refusal");
+      return;
+    }
+
+    try {
+      setProcessing(true);
+
+      // Update profile with refusal reason
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          is_suspended: true,
+          suspended_reason: `Application refused: ${refusalReason}`,
+          suspended_until: null,
+        })
+        .eq("id", userToApprove.id);
+
+      if (updateError) throw updateError;
+
+      // Send refusal email
+      try {
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-specialist-approval-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          },
+          body: JSON.stringify({
+            to: userToApprove.email,
+            name: userToApprove.name || userToApprove.email,
+            approved: false,
+            reason: refusalReason
+          })
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+      }
+
+      // Update local state
+      const updated = users.map((u) =>
+        u.id === userToApprove.id
+          ? { ...u, suspended_reason: `Application refused: ${refusalReason}` }
+          : u
+      );
+      setUsers(updated);
+      setFilteredUsers(updated);
+
+      toast.success(`Specialist application for ${userToApprove.name || userToApprove.email} has been refused`);
+      setRefuseDialogOpen(false);
+      setUserToApprove(null);
+      setRefusalReason("");
+    } catch (error) {
+      console.error("Error refusing specialist:", error);
+      toast.error("Failed to refuse specialist. Please try again.");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   // Don't render if user is not loaded yet or not an admin
@@ -443,8 +659,8 @@ const AdminDashboard = () => {
           <h2 className="text-2xl font-bold mb-4">{t("admin.dashboard.tools.title")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link to="/admin/universities" id="admin-dashboard-universities-link">
-              <Card id="admin-dashboard-universities-card" className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent className="pt-6">
+              <Card id="admin-dashboard-universities-card" className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <CardContent className="pt-6 h-full">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
                       <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -459,8 +675,8 @@ const AdminDashboard = () => {
             </Link>
 
             <Link to="/admin/majors" id="admin-dashboard-majors-link">
-              <Card id="admin-dashboard-majors-card" className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent className="pt-6">
+              <Card id="admin-dashboard-majors-card" className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <CardContent className="pt-6 h-full">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
                       <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -475,8 +691,8 @@ const AdminDashboard = () => {
             </Link>
 
             <Link to="/admin/university-majors" id="admin-dashboard-university-majors-link">
-              <Card id="admin-dashboard-university-majors-card" className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent className="pt-6">
+              <Card id="admin-dashboard-university-majors-card" className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <CardContent className="pt-6 h-full">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
                       <LinkIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -491,8 +707,8 @@ const AdminDashboard = () => {
             </Link>
 
             <Link to="/admin/community" id="admin-dashboard-community-link">
-              <Card id="admin-dashboard-community-card" className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent className="pt-6">
+              <Card id="admin-dashboard-community-card" className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <CardContent className="pt-6 h-full">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
                       <MessageSquare className="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -566,7 +782,7 @@ const AdminDashboard = () => {
               <TableHead className={language === "ar" ? "text-right" : "text-left"}>
                 {t("admin.dashboard.table.headers.joined")}
               </TableHead>
-            <TableHead className={language === "ar" ? "text-left" : "text-right"}>
+            <TableHead className="text-center">
               {t("admin.dashboard.table.headers.actions")}
             </TableHead>
           </TableRow>
@@ -601,23 +817,20 @@ const AdminDashboard = () => {
                             : userData.gender || t("profile.display.notSet")}
                         </TableCell>
                         <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
-                          {userData.gender === "Male"
-                            ? t("auth.gender.male")
-                            : userData.gender === "Female"
-                            ? t("auth.gender.female")
-                            : userData.gender || t("profile.display.notSet")}
-                        </TableCell>
-                        <TableCell className={`text-sm ${language === "ar" ? "text-right" : "text-left"}`}>
-                          {userData.role === 'Specialist' && userData.specialist_proof_url ? (
-                            <button
-                              onClick={() => handleViewProof(userData)}
-                              className="text-blue-600 hover:underline dark:text-blue-400"
-                              id={`admin-dashboard-proof-link-${userData.id}`}
-                            >
-                              View
-                            </button>
+                          {userData.role === 'Specialist' || userData.role === 'specialist' ? (
+                            userData.specialist_proof_url ? (
+                              <button
+                                onClick={() => handleViewProof(userData)}
+                                className="text-blue-600 hover:underline dark:text-blue-400"
+                                id={`admin-dashboard-proof-link-${userData.id}`}
+                              >
+                                View
+                              </button>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">{t("profile.display.notSet")}</span>
+                            )
                           ) : (
-                            <span className="text-muted-foreground text-sm">{t("profile.display.notSet")}</span>
+                            <span className="text-muted-foreground text-sm">-</span>
                           )}
                         </TableCell>
                         <TableCell className={`text-sm text-muted-foreground ${language === "ar" ? "text-right" : "text-left"}`}>
@@ -625,7 +838,70 @@ const AdminDashboard = () => {
                         </TableCell>
                         <TableCell className={language === "ar" ? "text-left" : "text-right"}>
                           <div className={`flex items-center gap-1 ${language === "ar" ? "justify-start" : "justify-end"}`}>
-                            {userData.is_suspended ? (
+                            {isPendingSpecialist(userData) ? (
+                              // Show Take Action dropdown for pending specialists
+                              <>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      id={`admin-dashboard-action-specialist-${userData.id}`}
+                                      disabled={processing}
+                                      className="rounded-xl border-2 text-blue-600 border-blue-200 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-300 hover:shadow-lg gap-1"
+                                    >
+                                      Take Action
+                                      <ChevronDown className="w-3 h-3 ml-1" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      onClick={() => handleApproveClick(userData)}
+                                      className="text-green-600 focus:text-green-600 focus:bg-green-50 dark:focus:bg-green-950/20 cursor-pointer"
+                                    >
+                                      <CheckCircle className="w-4 h-4 mr-2" />
+                                      Approve
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => handleRefuseClick(userData)}
+                                      className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20 cursor-pointer"
+                                    >
+                                      <XCircle className="w-4 h-4 mr-2" />
+                                      Refuse
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                                {/* Show grayed-out Suspend button for pending specialists */}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={true}
+                                  className="rounded-xl border-2 text-gray-400 border-gray-200 bg-gray-50 dark:bg-gray-900/20 cursor-not-allowed opacity-50"
+                                  title="Approve specialist first to enable suspension"
+                                >
+                                  <Ban className="w-4 h-4" />
+                                </Button>
+                              </>
+                            ) : isApprovedSpecialist(userData) ? (
+                              // Show Approved badge and Suspend button for approved specialists
+                              <>
+                                <Badge variant="outline" className="rounded-xl bg-green-50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-800 px-3 py-1">
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Approved
+                                </Badge>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  id={`admin-dashboard-suspend-user-${userData.id}`}
+                                  onClick={() => handleSuspendClick(userData)}
+                                  disabled={suspending || userData.id === user?.id || !!userData.is_admin}
+                                  className="rounded-xl border-2 text-amber-600 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-950/20 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 gap-1"
+                                >
+                                  <Ban className="w-4 h-4" />
+                                </Button>
+                              </>
+                            ) : userData.is_suspended ? (
+                              // Show Unsuspend for suspended (non-pending) users
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -637,6 +913,7 @@ const AdminDashboard = () => {
                                 <Undo2 className="w-4 h-4" />
                               </Button>
                             ) : (
+                              // Show Suspend for other active users
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -707,7 +984,7 @@ const AdminDashboard = () => {
 
       {/* Suspend Dialog */}
       <AlertDialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>Suspend User</AlertDialogTitle>
             <AlertDialogDescription>
@@ -715,34 +992,93 @@ const AdminDashboard = () => {
               <span className="font-semibold text-foreground">
                 {userToSuspend?.name || userToSuspend?.email}
               </span>
-              . You can provide an optional reason and expiration date. The user will be blocked from logging in.
+              . The user will be blocked from logging in and will see the suspension reason.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-4 py-4">
             <div>
               <label className="block text-sm font-medium mb-1">
-                Reason (optional)
+                Reason <span className="text-red-500">*</span>
               </label>
               <Input
-                placeholder="e.g., Policy violation, Terms of service breach"
+                placeholder="e.g., Policy violation, Terms of service breach, Inappropriate behavior"
                 value={suspendReason}
                 onChange={(e) => setSuspendReason(e.target.value)}
                 className="w-full"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Suspend Until (optional)
-              </label>
-              <Input
-                type="datetime-local"
-                value={suspendUntil}
-                onChange={(e) => setSuspendUntil(e.target.value)}
-                className="w-full"
-              />
               <p className="text-xs text-muted-foreground mt-1">
-                Leave empty for indefinite suspension
+                This reason will be shown to the user when they try to login
               </p>
+            </div>
+            
+            <div className="space-y-3">
+              <label className="block text-sm font-medium">
+                Duration
+              </label>
+              
+              {/* Duration Type Selection */}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={suspendDurationType === "date" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSuspendDurationType("date")}
+                  className="flex-1"
+                >
+                  Specific Date
+                </Button>
+                <Button
+                  type="button"
+                  variant={suspendDurationType === "period" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSuspendDurationType("period")}
+                  className="flex-1"
+                >
+                  By Period
+                </Button>
+              </div>
+
+              {/* Specific Date Option */}
+              {suspendDurationType === "date" && (
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-1">
+                    Suspend Until
+                  </label>
+                  <Input
+                    type="datetime-local"
+                    value={suspendUntil}
+                    onChange={(e) => setSuspendUntil(e.target.value)}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Leave empty for permanent suspension
+                  </p>
+                </div>
+              )}
+
+              {/* Period Selection Option */}
+              {suspendDurationType === "period" && (
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-1">
+                    Suspension Period
+                  </label>
+                  <Select value={suspendPeriod} onValueChange={(value: "week" | "month" | "permanent") => setSuspendPeriod(value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="week">1 Week</SelectItem>
+                      <SelectItem value="month">1 Month</SelectItem>
+                      <SelectItem value="permanent">Permanent (Until Removed)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {suspendPeriod === "week" && "User will be suspended for 7 days"}
+                    {suspendPeriod === "month" && "User will be suspended for 30 days"}
+                    {suspendPeriod === "permanent" && "User will remain suspended until manually unsuspended"}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
           <AlertDialogFooter>
@@ -751,7 +1087,7 @@ const AdminDashboard = () => {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleSuspendConfirm}
-              disabled={suspending}
+              disabled={suspending || !suspendReason.trim()}
               className="bg-amber-600 hover:bg-amber-700"
             >
               {suspending ? (
@@ -760,7 +1096,88 @@ const AdminDashboard = () => {
                   Suspending...
                 </>
               ) : (
-                "Suspend"
+                "Suspend User"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Approve Specialist Dialog */}
+      <AlertDialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Approve Specialist</AlertDialogTitle>
+            <AlertDialogDescription>
+              Approve specialist application for{" "}
+              <span className="font-semibold text-foreground">
+                {userToApprove?.name || userToApprove?.email}
+              </span>
+              . The user will be able to access the platform and an approval email will be sent.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setApproveDialogOpen(false); setUserToApprove(null); }} disabled={processing}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleApproveConfirm}
+              disabled={processing}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {processing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Approving...
+                </>
+              ) : (
+                "Approve"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Refuse Specialist Dialog */}
+      <AlertDialog open={refuseDialogOpen} onOpenChange={setRefuseDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Refuse Specialist Application</AlertDialogTitle>
+            <AlertDialogDescription>
+              Refuse specialist application for{" "}
+              <span className="font-semibold text-foreground">
+                {userToApprove?.name || userToApprove?.email}
+              </span>
+              . Please provide a reason that will be sent to the applicant.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <label className="block text-sm font-medium mb-1">
+              Refusal Reason <span className="text-red-500">*</span>
+            </label>
+            <Input
+              placeholder="e.g., Insufficient credentials, incomplete documentation"
+              value={refusalReason}
+              onChange={(e) => setRefusalReason(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setRefuseDialogOpen(false); setUserToApprove(null); setRefusalReason(""); }} disabled={processing}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRefuseConfirm}
+              disabled={processing || !refusalReason.trim()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {processing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Refusing...
+                </>
+              ) : (
+                "Refuse"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

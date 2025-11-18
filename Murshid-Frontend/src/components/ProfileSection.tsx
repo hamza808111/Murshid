@@ -226,7 +226,7 @@ const ProfileSection = ({ onClose }: ProfileSectionProps = {}) => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={onClose || (() => navigate(user?.role === 'admin' ? '/dashboard' : '/'))}
+              onClick={onClose || (() => navigate(-1))}
               className={`absolute top-4 w-8 h-8 text-white/80 hover:text-white hover:bg-white/20 ${language === "ar" ? "left-4" : "right-4"}`}
             >
               <X className="w-5 h-5" />

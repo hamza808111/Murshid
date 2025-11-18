@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,8 @@ import {
   Edit2,
   Trash2,
   MoreVertical,
-  Check
+  Check,
+  Heart
 } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,6 +49,7 @@ import { LikeButton } from '@/components/community/LikeButton';
 import { CommentSection } from '@/components/community/CommentSection';
 import { EditPostModal } from '@/components/community/EditPostModal';
 import { EditAnswerModal } from '@/components/community/EditAnswerModal';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import ReportButton from '@/components/community/ReportButton';
 
 export default function PostDetail() {
@@ -61,12 +63,16 @@ export default function PostDetail() {
   const [answerLikes, setAnswerLikes] = useState<Record<string, boolean>>({});
   const [editingPost, setEditingPost] = useState(false);
   const [editingAnswer, setEditingAnswer] = useState<Answer | null>(null);
+  const [showAnswerFormInline, setShowAnswerFormInline] = useState(false);
+  const [deleteAnswerId, setDeleteAnswerId] = useState<string | null>(null);
+  const answerFormRef = useRef<HTMLDivElement>(null);
+  const answerTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const isProfileComplete = user && user.role && user.gender;
+  const isProfileComplete = user && (user.is_admin || (user.role && user.gender));
   const isPostAuthor = user && post && post.author_id === user.id;
 
   useEffect(() => {
@@ -223,18 +229,22 @@ export default function PostDetail() {
   };
 
   const handleDeleteAnswer = async (answerId: string) => {
-    if (!confirm(language === 'ar' ? 'هل تريد حذف هذه الإجابة؟' : 'Delete this answer?')) {
-      return;
-    }
+    setDeleteAnswerId(answerId);
+  };
+
+  const confirmDeleteAnswer = async () => {
+    if (!deleteAnswerId || !user) return;
 
     try {
-      await deleteCommunityAnswer(answerId);
+      await deleteCommunityAnswer(deleteAnswerId, user.id, "User deleted");
       toast.success(language === 'ar' ? 'تم حذف الإجابة' : 'Answer deleted');
-      setAnswers(prev => prev.filter(a => a.id !== answerId));
+      setAnswers(prev => prev.filter(a => a.id !== deleteAnswerId));
       setPost(prev => prev ? { ...prev, answers_count: Math.max(0, (prev.answers_count || 0) - 1) } : prev);
     } catch (error) {
       console.error('Error deleting answer:', error);
       toast.error(language === 'ar' ? 'فشل حذف الإجابة' : 'Failed to delete answer');
+    } finally {
+      setDeleteAnswerId(null);
     }
   };
 
@@ -273,8 +283,8 @@ export default function PostDetail() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             {language === 'ar' ? 'المنشور غير موجود' : 'Post not found'}
           </h2>
-          <Button onClick={() => navigate('/community')}>
-            {language === 'ar' ? 'العودة إلى المجتمع' : 'Back to Community'}
+          <Button onClick={() => navigate(-1)}>
+            {language === 'ar' ? 'رجوع' : 'Back'}
           </Button>
         </div>
       </div>
@@ -290,18 +300,21 @@ export default function PostDetail() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-10">
             {/* Back Button */}
             <Button
-              onClick={() => navigate('/community')}
+              onClick={() => navigate(-1)}
               variant="ghost"
               className="mb-6"
             >
               <ArrowLeft className={`w-4 h-4 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
-              {language === 'ar' ? 'العودة إلى المجتمع' : 'Back to Community'}
+              {language === 'ar' ? 'رجوع' : 'Back'}
             </Button>
 
             {/* Post */}
-            <Card className="p-8 mb-8 card-hover">
+            <Card className={`p-8 mb-8 card-hover ${isPostAuthor ? '!border-2 !border-blue-500 dark:!border-blue-400' : ''}`}>
               <div className="flex items-start gap-4 mb-6">
-                <Avatar className="w-12 h-12">
+                <Avatar 
+                  className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                  onClick={() => navigate(`/user/${post.author_id}`)}
+                >
                   <AvatarImage src={post.author_avatar} alt={post.author_name} />
                   <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-semibold">
                     {post.author_name.charAt(0).toUpperCase()}
@@ -311,7 +324,10 @@ export default function PostDetail() {
                 <div className="flex-1">
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                      <span 
+                        className="font-medium text-gray-900 dark:text-gray-100 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        onClick={() => navigate(`/user/${post.author_id}`)}
+                      >
                         {post.author_name}
                       </span>
                       <Badge variant="secondary" className="text-xs">
@@ -319,16 +335,6 @@ export default function PostDetail() {
                          post.author_role === 'student' ? (language === 'ar' ? 'طالب' : 'Student') :
                          (language === 'ar' ? 'مشرف' : 'Admin')}
                       </Badge>
-                      {post.author_university && (
-                        <Badge variant="outline" className="text-xs">
-                          🏛️ {post.author_university}
-                        </Badge>
-                      )}
-                      {post.author_major && (
-                        <Badge variant="outline" className="text-xs">
-                          📚 {post.author_major}
-                        </Badge>
-                      )}
                       <span className="text-sm text-gray-500">
                         {formatTimeAgo(post.created_at)}
                       </span>
@@ -350,7 +356,7 @@ export default function PostDetail() {
                           <Edit2 className="w-4 h-4" />
                         </Button>
                       )}
-                      {!isPostAuthor && user && (
+                      {!isPostAuthor && user && !user.is_admin && (
                         <ReportButton
                           contentType="post"
                           contentId={post.id}
@@ -375,41 +381,87 @@ export default function PostDetail() {
                     {post.content}
                   </p>
 
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {post.major_tags?.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        📚 {tag}
-                      </Badge>
-                    ))}
-                    {post.university_tags?.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        🏛️ {tag}
-                      </Badge>
-                    ))}
-                    {post.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
+                  {((post.major_tags && post.major_tags.length > 0) || (post.university_tags && post.university_tags.length > 0) || (post.tags && post.tags.length > 0)) && (
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {post.major_tags?.map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          📚 {tag}
+                        </Badge>
+                      ))}
+                      {post.university_tags?.map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          🏛️ {tag}
+                        </Badge>
+                      ))}
+                      {post.tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-6 text-sm text-gray-500">
-                    <LikeButton
-                      itemId={post.id}
-                      itemType="post"
-                      initialLikesCount={post.likes_count || 0}
-                      initialIsLiked={isPostLiked}
-                      onLike={likePost}
-                      onUnlike={unlikePost}
-                      disabled={!isProfileComplete}
-                      onLikeChange={(_, newCount) => {
-                        setPost(prev => prev ? { ...prev, likes_count: newCount } : prev);
-                      }}
-                    />
-                    <div className="flex items-center gap-1">
-                      <MessageCircle className="w-4 h-4" />
-                      <span>{answers.length}</span>
-                    </div>
+                    {user && user.is_admin ? (
+                      <div className="flex items-center gap-1">
+                        <Heart className="w-4 h-4" />
+                        <span>{post.likes_count || 0}</span>
+                      </div>
+                    ) : (
+                      <LikeButton
+                        itemId={post.id}
+                        itemType="post"
+                        initialLikesCount={post.likes_count || 0}
+                        initialIsLiked={isPostLiked}
+                        onLike={likePost}
+                        onUnlike={unlikePost}
+                        disabled={!isProfileComplete}
+                        onLikeChange={(_, newCount) => {
+                          setPost(prev => prev ? { ...prev, likes_count: newCount } : prev);
+                        }}
+                      />
+                    )}
+                    {user && user.is_admin ? (
+                      <div className="flex items-center gap-1">
+                        <MessageCircle className="w-4 h-4" />
+                        <span>{answers.length}</span>
+                      </div>
+                    ) : (
+                      <>
+                        {user && !user.is_admin && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowAnswerFormInline(!showAnswerFormInline);
+                              if (!showAnswerFormInline) {
+                                setTimeout(() => answerTextareaRef.current?.focus(), 100);
+                              }
+                            }}
+                            className="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition-colors"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            <span className="text-sm font-medium">{answers.length}</span>
+                          </Button>
+                        )}
+                        {!user && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowAnswerFormInline(!showAnswerFormInline);
+                              if (!showAnswerFormInline) {
+                                setTimeout(() => answerTextareaRef.current?.focus(), 100);
+                              }
+                            }}
+                            className="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition-colors"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            <span className="text-sm font-medium">{answers.length}</span>
+                          </Button>
+                        )}
+                      </>
+                    )}
                     <div className="flex items-center gap-1">
                       <Eye className="w-4 h-4" />
                       <span>{post.views_count || 0}</span>
@@ -418,6 +470,65 @@ export default function PostDetail() {
                 </div>
               </div>
             </Card>
+
+            {/* Inline Answer Form (appears below post when comment button clicked) */}
+            {showAnswerFormInline && user && post && post.author_id !== user.id && !user.is_admin && (
+              <Card className="p-6 mt-4 border-2 border-blue-500">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100" dir={language}>
+                    {language === 'ar' ? 'اكتب إجابتك' : 'Write Your Answer'}
+                  </h3>
+                  
+                </div>
+
+                {!isProfileComplete ? (
+                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-center">
+                    <p className="text-amber-700 dark:text-amber-300 mb-3">
+                      {language === 'ar'
+                        ? 'الرجاء إكمال ملفك الشخصي قبل الإجابة'
+                        : 'Please complete your profile before answering'}
+                    </p>
+                    <Button onClick={() => navigate('/profile-setup')} size="sm">
+                      {language === 'ar' ? 'إكمال الملف الشخصي' : 'Complete Profile'}
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={(e) => {
+                    handleSubmitAnswer(e);
+                    setShowAnswerFormInline(false);
+                  }}>
+                    <Textarea
+                      ref={answerTextareaRef}
+                      value={newAnswer}
+                      onChange={(e) => setNewAnswer(e.target.value)}
+                      placeholder={language === 'ar' ? 'اكتب إجابتك هنا...' : 'Write your answer here...'}
+                      className="rounded-xl min-h-32 mb-4"
+                      dir={language}
+                      required
+                    />
+
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowAnswerFormInline(false)}
+                      >
+                        {language === 'ar' ? 'إلغاء' : 'Cancel'}
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={submitting}
+                        className="rounded-xl bg-blue-500 hover:bg-blue-600"
+                      >
+                        <Send className={`w-4 h-4 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                        {submitting ? (language === 'ar' ? 'جاري الإرسال...' : 'Submitting...') :
+                                     (language === 'ar' ? 'إرسال الإجابة' : 'Submit Answer')}
+                      </Button>
+                    </div>
+                  </form>
+                )}
+              </Card>
+            )}
 
             {/* Answers */}
             <div className="mb-8">
@@ -432,9 +543,14 @@ export default function PostDetail() {
                   const canModify = isAnswerAuthor || user?.is_admin;
 
                   return (
-                    <Card key={answer.id} className="p-6 card-hover">
+                    <Card key={answer.id} className={`p-6 card-hover ${
+                      isAnswerAuthor ? '!border-2 !border-blue-500 dark:!border-blue-400' : ''
+                    }`}>
                       <div className="flex items-start gap-4">
-                        <Avatar className="w-10 h-10">
+                        <Avatar 
+                          className="w-10 h-10 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                          onClick={() => navigate(`/user/${answer.author_id}`)}
+                        >
                           <AvatarImage src={answer.author_avatar} alt={answer.author_name} />
                           <AvatarFallback className="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 font-semibold text-sm">
                             {answer.author_name.charAt(0).toUpperCase()}
@@ -444,7 +560,10 @@ export default function PostDetail() {
                         <div className="flex-1">
                           <div className="flex items-center justify-between gap-2 mb-2">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-medium text-gray-900 dark:text-gray-100">
+                              <span 
+                                className="font-medium text-gray-900 dark:text-gray-100 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                onClick={() => navigate(`/user/${answer.author_id}`)}
+                              >
                                 {answer.author_name}
                               </span>
                               <Badge variant="secondary" className="text-xs">
@@ -452,16 +571,6 @@ export default function PostDetail() {
                                  answer.author_role === 'student' ? (language === 'ar' ? 'طالب' : 'Student') :
                                  (language === 'ar' ? 'مشرف' : 'Admin')}
                               </Badge>
-                              {answer.author_university && (
-                                <Badge variant="outline" className="text-xs">
-                                  🏛️ {answer.author_university}
-                                </Badge>
-                              )}
-                              {answer.author_major && (
-                                <Badge variant="outline" className="text-xs">
-                                  📚 {answer.author_major}
-                                </Badge>
-                              )}
                               <span className="text-sm text-gray-500">
                                 {formatTimeAgo(answer.created_at)}
                               </span>
@@ -495,7 +604,7 @@ export default function PostDetail() {
                                       <Trash2 className="w-4 h-4 mr-2" />
                                       {language === 'ar' ? 'حذف' : 'Delete'}
                                     </DropdownMenuItem>
-                                    {!isAnswerAuthor && user && (
+                                    {!isAnswerAuthor && user && !user.is_admin && (
                                       <DropdownMenuItem asChild>
                                         <div>
                                           <ReportButton
@@ -509,7 +618,7 @@ export default function PostDetail() {
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               )}
-                              {!canModify && !isAnswerAuthor && user && (
+                              {!canModify && !isAnswerAuthor && user && !user.is_admin && (
                                 <ReportButton
                                   contentType="answer"
                                   contentId={answer.id}
@@ -570,8 +679,8 @@ export default function PostDetail() {
             </div>
 
             {/* Answer Form */}
-            {user && post && post.author_id !== user.id && (
-              <Card className="p-6">
+            {user && post && post.author_id !== user.id && !user.is_admin && (
+              <Card ref={answerFormRef} className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
                   {language === 'ar' ? 'اكتب إجابتك' : 'Write Your Answer'}
                 </h3>
@@ -590,6 +699,7 @@ export default function PostDetail() {
                 ) : (
                   <form onSubmit={handleSubmitAnswer}>
                     <Textarea
+                      ref={answerTextareaRef}
                       value={newAnswer}
                       onChange={(e) => setNewAnswer(e.target.value)}
                       placeholder={language === 'ar' ? 'اكتب إجابتك هنا...' : 'Write your answer here...'}
@@ -641,6 +751,17 @@ export default function PostDetail() {
           }}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={!!deleteAnswerId}
+        onOpenChange={(open) => !open && setDeleteAnswerId(null)}
+        onConfirm={confirmDeleteAnswer}
+        title={language === 'ar' ? 'حذف الإجابة' : 'Delete Answer'}
+        description={language === 'ar' ? 'هل أنت متأكد من حذف هذه الإجابة؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to delete this answer? This action cannot be undone.'}
+        confirmText={language === 'ar' ? 'حذف' : 'Delete'}
+        destructive={true}
+      />
     </PageAnimation>
   );
 }

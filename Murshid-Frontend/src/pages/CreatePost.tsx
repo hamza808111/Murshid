@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,9 @@ export default function CreatePost() {
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
+  
+  const universityDropdownRef = useRef<HTMLDivElement>(null);
+  const majorDropdownRef = useRef<HTMLDivElement>(null);
 
   // Check if profile is complete
   const isProfileComplete = user && user.role && user.gender;
@@ -67,6 +70,40 @@ export default function CreatePost() {
     fetchData();
   }, []);
 
+  // Close university dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (universityDropdownRef.current && !universityDropdownRef.current.contains(event.target as Node)) {
+        setShowUniversityDropdown(false);
+      }
+    };
+
+    if (showUniversityDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUniversityDropdown]);
+
+  // Close major dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (majorDropdownRef.current && !majorDropdownRef.current.contains(event.target as Node)) {
+        setShowMajorDropdown(false);
+      }
+    };
+
+    if (showMajorDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMajorDropdown]);
+
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +114,25 @@ export default function CreatePost() {
 
     if (!formData.title.trim() || !formData.content.trim()) {
       toast.error(language === 'ar' ? 'Please fill all required fields' : 'Please fill all required fields');
+      return;
+    }
+
+    // Check minimum length
+    if (formData.title.trim().length < 10) {
+      toast.error(
+        language === 'ar'
+          ? 'العنوان قصير جداً (10 أحرف على الأقل)'
+          : 'Title is too short (minimum 10 characters)'
+      );
+      return;
+    }
+
+    if (formData.content.trim().length < 20) {
+      toast.error(
+        language === 'ar'
+          ? 'المحتوى قصير جداً (20 حرف على الأقل)'
+          : 'Content is too short (minimum 20 characters)'
+      );
       return;
     }
 
@@ -154,6 +210,13 @@ export default function CreatePost() {
 
   const addUniversity = (university: University) => {
     const universityName = language === 'ar' && university.name_ar ? university.name_ar : university.name;
+    
+    // Check if maximum limit reached
+    if ((formData.university_tags || []).length >= 3) {
+      toast.error(language === 'ar' ? 'يمكنك إضافة 3 جامعات كحد أقصى' : 'You can add maximum 3 universities');
+      return;
+    }
+    
     if (!formData.university_tags?.includes(universityName)) {
       setFormData(prev => ({
         ...prev,
@@ -166,6 +229,13 @@ export default function CreatePost() {
 
   const addMajor = (major: Major) => {
     const majorName = language === 'ar' && major.name_ar ? major.name_ar : major.name;
+    
+    // Check if maximum limit reached
+    if ((formData.major_tags || []).length >= 5) {
+      toast.error(language === 'ar' ? 'يمكنك إضافة 5 تخصصات كحد أقصى' : 'You can add maximum 5 majors');
+      return;
+    }
+    
     if (!formData.major_tags?.includes(majorName)) {
       setFormData(prev => ({
         ...prev,
@@ -176,25 +246,15 @@ export default function CreatePost() {
     setShowMajorDropdown(false);
   };
 
-  const filteredUniversities = searchWithFuzzy(
-    universities,
-    universitySearch,
-    (uni) => {
-      const name = language === 'ar' && uni.name_ar ? uni.name_ar : uni.name;
-      return name;
-    },
-    5
-  );
+  const filteredUniversities = universities.filter((uni) => {
+    const name = language === 'ar' && uni.name_ar ? uni.name_ar : uni.name;
+    return name.toLowerCase().includes(universitySearch.toLowerCase());
+  });
 
-  const filteredMajors = searchWithFuzzy(
-    majors,
-    majorSearch,
-    (major) => {
-      const name = language === 'ar' && major.name_ar ? major.name_ar : major.name;
-      return name;
-    },
-    5
-  );
+  const filteredMajors = majors.filter((major) => {
+    const name = language === 'ar' && major.name_ar ? major.name_ar : major.name;
+    return name.toLowerCase().includes(majorSearch.toLowerCase());
+  });
 
   return (
     <PageAnimation>
@@ -217,6 +277,9 @@ export default function CreatePost() {
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100" dir={language}>
                 {language === 'ar' ? 'إنشاء منشور جديد' : 'Create New Post'}
               </h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2" dir={language}>
+                {language === 'ar' ? 'اسأل سؤالاً أو ناقش ما يدور في ذهنك' : 'Ask a question or discuss what\'s on your mind'}
+              </p>
             </div>
 
             {/* Profile Completion Check */}
@@ -255,32 +318,6 @@ export default function CreatePost() {
               /* Form */
               <Card className="p-8 card-hover">
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Post Type */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" dir={language}>
-                    {language === 'ar' ? 'Post Type' : 'Post Type'}
-                  </label>
-                  <div className="flex gap-4">
-                    {postTypes.map((type) => (
-                      <Button
-                        key={type.id}
-                        type="button"
-                        variant={formData.post_type === type.id ? 'default' : 'outline'}
-                        onClick={() => setFormData(prev => ({ ...prev, post_type: type.id as any }))}
-                        disabled={!canSelectPostType && type.id !== 'question'}
-                        className="rounded-xl"
-                      >
-                        {type.label}
-                      </Button>
-                    ))}
-                  </div>
-                  {!canSelectPostType && (
-                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                      {language === 'ar' ? 'Students can post questions. Discussions are reserved for specialists and admins.' : 'Students can post questions. Discussions are reserved for specialists and admins.'}
-                    </p>
-                  )}
-                </div>
-
                 {/* Title */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" dir={language}>
@@ -316,7 +353,10 @@ export default function CreatePost() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" dir={language}>
                     {language === 'ar' ? 'الجامعات' : 'Universities'}
                   </label>
-                  <div className="relative">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2" dir={language}>
+                    {language === 'ar' ? 'إضافة علامات الجامعات تساعد منشورك في الوصول إلى الجمهور المناسب' : 'Adding university tags helps your post reach the right audience'}
+                  </p>
+                  <div className="relative" ref={universityDropdownRef}>
                     <div className="flex gap-2 mb-2">
                       <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -331,7 +371,7 @@ export default function CreatePost() {
                           className="rounded-xl pl-10"
                           dir={language}
                         />
-                        {showUniversityDropdown && universitySearch && filteredUniversities.length > 0 && (
+                        {showUniversityDropdown && filteredUniversities.length > 0 && (
                           <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-40 overflow-y-auto">
                             {filteredUniversities.map((university) => {
                               const universityName = language === 'ar' && university.name_ar ? university.name_ar : university.name;
@@ -369,7 +409,10 @@ export default function CreatePost() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" dir={language}>
                     {language === 'ar' ? 'التخصصات' : 'Majors'}
                   </label>
-                  <div className="relative">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2" dir={language}>
+                    {language === 'ar' ? 'إضافة علامات التخصصات تساعد منشورك في الوصول إلى الجمهور المناسب' : 'Adding major tags helps your post reach the right audience'}
+                  </p>
+                  <div className="relative" ref={majorDropdownRef}>
                     <div className="flex gap-2 mb-2">
                       <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -384,7 +427,7 @@ export default function CreatePost() {
                           className="rounded-xl pl-10"
                           dir={language}
                         />
-                        {showMajorDropdown && majorSearch && filteredMajors.length > 0 && (
+                        {showMajorDropdown && filteredMajors.length > 0 && (
                           <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-40 overflow-y-auto">
                             {filteredMajors.map((major) => {
                               const majorName = language === 'ar' && major.name_ar ? major.name_ar : major.name;

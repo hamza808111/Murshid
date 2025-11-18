@@ -216,7 +216,13 @@ export default function MyLikes() {
                               ? language === 'ar' ? 'طالب' : 'Student'
                               : language === 'ar' ? 'مشرف' : 'Admin'}
                           </Badge>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                          <span 
+                            className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/user/${answer.author_id}`);
+                            }}
+                          >
                             {answer.author_name}
                           </span>
                         </div>
@@ -280,7 +286,13 @@ export default function MyLikes() {
                               ? language === 'ar' ? 'طالب' : 'Student'
                               : language === 'ar' ? 'مشرف' : 'Admin'}
                           </Badge>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                          <span 
+                            className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/user/${comment.author_id}`);
+                            }}
+                          >
                             {comment.author_name}
                           </span>
                           {comment.parent_comment_id && (

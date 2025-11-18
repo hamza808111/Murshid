@@ -29,7 +29,7 @@ const ProfileSetup = () => {
   const [universities, setUniversities] = useState<University[]>([]);
   const [loadingUniversities, setLoadingUniversities] = useState(false);
 
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, refreshUser } = useAuth();
   const navigate = useNavigate();
   const { t, language } = useI18n();
 
@@ -154,6 +154,9 @@ const ProfileSetup = () => {
               specialist_proof_url: proofUrl
             } as any)
             .eq('id', user.id);
+
+          // Refresh user data to ensure Suspended page shows correct message
+          await refreshUser();
 
           toast.success(language === 'ar' ? 'تم إرسال طلبك للمراجعة' : 'Your application has been submitted for review');
           navigate('/suspended');
@@ -442,16 +445,6 @@ const ProfileSetup = () => {
                       ) : (
                         language === 'ar' ? 'إكمال الملف الشخصي' : 'Complete Profile'
                       )}
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full rounded-2xl px-8 py-6 border-2"
-                      onClick={handleCompleteLater}
-                      disabled={isLoading}
-                    >
-                      {language === 'ar' ? 'إكمال لاحقاً' : 'Complete Later'}
                     </Button>
                   </div>
                 </form>

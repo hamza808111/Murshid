@@ -68,7 +68,12 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
           }
           break;
         case 'community':
-          navigate('/community');
+          if (user) {
+            navigate('/community');
+          } else {
+            toast.error(language === 'ar' ? 'الرجاء تسجيل الدخول للانضمام إلى المجتمع' : 'Please login to join the community');
+            navigate('/login');
+          }
           break;
         case 'contact':
           navigate('/contact');

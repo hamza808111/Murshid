@@ -50,6 +50,10 @@ const mapPost = (row: any): Post => ({
   is_solved: row.is_solved ?? false,
   created_at: row.created_at,
   updated_at: row.updated_at,
+  is_deleted: row.is_deleted ?? false,
+  deleted_at: row.deleted_at ?? undefined,
+  deleted_by: row.deleted_by ?? undefined,
+  deletion_reason: row.deletion_reason ?? undefined,
 });
 
 const mapAnswer = (row: any): Answer => ({
@@ -67,6 +71,10 @@ const mapAnswer = (row: any): Answer => ({
   is_accepted: row.is_accepted ?? false,
   created_at: row.created_at,
   updated_at: row.updated_at,
+  is_deleted: row.is_deleted ?? false,
+  deleted_at: row.deleted_at ?? undefined,
+  deleted_by: row.deleted_by ?? undefined,
+  deletion_reason: row.deletion_reason ?? undefined,
 });
 
 const getNormalizedRole = (author: CommunityAuthor): Post["author_role"] => {
@@ -80,6 +88,7 @@ export async function getCommunityPosts(params?: { search?: string; type?: "all"
   let query = supabase
     .from("community_posts")
     .select("*")
+    .eq("is_deleted", false)
     .order("created_at", { ascending: false });
 
   if (params?.type && params.type !== "all") {
@@ -161,6 +170,7 @@ export async function getPostAnswers(postId: string): Promise<Answer[]> {
     .from("community_answers")
     .select("*")
     .eq("post_id", postId)
+    .eq("is_deleted", false)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -168,6 +178,7 @@ export async function getPostAnswers(postId: string): Promise<Answer[]> {
     throw error;
   }
 
+  console.log(`Fetched answers for post ${postId}:`, data?.length || 0, data);
   return (data ?? []).map(mapAnswer);
 }
 
@@ -187,6 +198,7 @@ export async function createCommunityAnswer(payload: CreateAnswerRequest, author
         author_major: author.track,
         author_academic_level: author.level,
         author_avatar: author.avatar_url,
+        is_deleted: false,
       },
     ])
     .select()
@@ -197,6 +209,7 @@ export async function createCommunityAnswer(payload: CreateAnswerRequest, author
     throw new Error(error.message || "Failed to create answer");
   }
 
+  console.log("Created answer data:", data);
   return mapAnswer(data);
 }
 
@@ -209,6 +222,21 @@ export async function getCommunityPostsByAuthor(authorId: string): Promise<Post[
 
   if (error) {
     console.error("Error fetching author posts:", error);
+    throw error;
+  }
+
+  return (data ?? []).map(mapPost);
+}
+
+// Admin function to get ALL posts including deleted ones
+export async function getAllCommunityPostsForAdmin(): Promise<Post[]> {
+  const { data, error } = await supabase
+    .from("community_posts")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching all posts:", error);
     throw error;
   }
 
@@ -230,10 +258,50 @@ export async function getCommunityAnswersByAuthor(authorId: string): Promise<Ans
   return (data ?? []).map(mapAnswer);
 }
 
-export async function deleteCommunityPost(postId: string): Promise<void> {
+export async function deleteCommunityPost(postId: string, deletedBy: string, deletionReason: string): Promise<void> {
+  const now = new Date().toISOString();
+
+  // First, soft-delete all comments on all answers of this post
+  const { data: answers } = await supabase
+    .from("community_answers")
+    .select("id")
+    .eq("post_id", postId);
+
+  if (answers && answers.length > 0) {
+    const answerIds = answers.map(a => a.id);
+    
+    // Soft-delete all comments for these answers with "Post deleted" reason
+    await supabase
+      .from("community_comments")
+      .update({
+        is_deleted: true,
+        deleted_at: now,
+        deleted_by: deletedBy,
+        deletion_reason: "Post deleted"
+      })
+      .in("answer_id", answerIds);
+
+    // Soft-delete all answers with "Post deleted" reason
+    await supabase
+      .from("community_answers")
+      .update({
+        is_deleted: true,
+        deleted_at: now,
+        deleted_by: deletedBy,
+        deletion_reason: "Post deleted"
+      })
+      .in("id", answerIds);
+  }
+
+  // Soft-delete the post with the admin's specified reason
   const { error } = await supabase
     .from("community_posts")
-    .delete()
+    .update({
+      is_deleted: true,
+      deleted_at: now,
+      deleted_by: deletedBy,
+      deletion_reason: deletionReason
+    })
     .eq("id", postId);
 
   if (error) {
@@ -418,6 +486,10 @@ const mapComment = (row: any): Comment => ({
   likes_count: row.likes_count ?? 0,
   created_at: row.created_at,
   updated_at: row.updated_at,
+  is_deleted: row.is_deleted ?? false,
+  deleted_at: row.deleted_at ?? undefined,
+  deleted_by: row.deleted_by ?? undefined,
+  deletion_reason: row.deletion_reason ?? undefined,
   replies: [],
 });
 
@@ -426,6 +498,7 @@ export async function getAnswerComments(answerId: string): Promise<Comment[]> {
     .from("community_comments")
     .select("*")
     .eq("answer_id", answerId)
+    .eq("is_deleted", false)
     .order("created_at", { ascending: true });
 
   if (error) {
@@ -504,10 +577,18 @@ export async function updateComment(commentId: string, payload: UpdateCommentReq
   return mapComment(data);
 }
 
-export async function deleteComment(commentId: string): Promise<void> {
+export async function deleteComment(commentId: string, deletedBy: string, deletionReason: string): Promise<void> {
+  const now = new Date().toISOString();
+
+  // Soft-delete the comment (replies will be handled by parent-child relationship)
   const { error } = await supabase
     .from("community_comments")
-    .delete()
+    .update({
+      is_deleted: true,
+      deleted_at: now,
+      deleted_by: deletedBy,
+      deletion_reason: deletionReason
+    })
     .eq("id", commentId);
 
   if (error) {
@@ -519,7 +600,10 @@ export async function deleteComment(commentId: string): Promise<void> {
 export async function getCommentsByAuthor(authorId: string): Promise<Comment[]> {
   const { data, error } = await supabase
     .from("community_comments")
-    .select("*")
+    .select(`
+      *,
+      community_answers!inner(post_id)
+    `)
     .eq("author_id", authorId)
     .order("created_at", { ascending: false });
 
@@ -528,7 +612,12 @@ export async function getCommentsByAuthor(authorId: string): Promise<Comment[]> 
     throw error;
   }
 
-  return (data ?? []).map(mapComment);
+  return (data ?? []).map((row: any) => {
+    const comment = mapComment(row);
+    // Add post_id from the joined answer
+    (comment as any).post_id = row.community_answers?.post_id;
+    return comment;
+  });
 }
 
 // ============================================================================
@@ -573,10 +662,29 @@ export async function updateCommunityAnswer(answerId: string, payload: UpdateAns
   return mapAnswer(data);
 }
 
-export async function deleteCommunityAnswer(answerId: string): Promise<void> {
+export async function deleteCommunityAnswer(answerId: string, deletedBy: string, deletionReason: string): Promise<void> {
+  const now = new Date().toISOString();
+
+  // First, soft-delete all comments on this answer with "Answer deleted" reason
+  await supabase
+    .from("community_comments")
+    .update({
+      is_deleted: true,
+      deleted_at: now,
+      deleted_by: deletedBy,
+      deletion_reason: "Answer deleted"
+    })
+    .eq("answer_id", answerId);
+
+  // Soft-delete the answer with the admin's specified reason
   const { error } = await supabase
     .from("community_answers")
-    .delete()
+    .update({
+      is_deleted: true,
+      deleted_at: now,
+      deleted_by: deletedBy,
+      deletion_reason: deletionReason
+    })
     .eq("id", answerId);
 
   if (error) {
@@ -750,7 +858,10 @@ export async function getAnswers(): Promise<Answer[]> {
 export async function getComments(): Promise<Comment[]> {
   const { data, error } = await supabase
     .from("community_comments")
-    .select("*")
+    .select(`
+      *,
+      community_answers!inner(post_id)
+    `)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -758,7 +869,10 @@ export async function getComments(): Promise<Comment[]> {
     throw error;
   }
 
-  return (data ?? []).map(mapComment);
+  return (data ?? []).map((row: any) => ({
+    ...mapComment(row),
+    post_id: row.community_answers?.post_id
+  }));
 }
 
 // ============================================================================
