@@ -23,7 +23,10 @@ import {
   Trash2,
   MoreVertical,
   Check,
-  Heart
+  Heart,
+  ChevronDown,
+  ChevronUp,
+  Ban
 } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -136,7 +139,8 @@ export default function PostDetail() {
       }
 
       setPost(fetchedPost);
-      setAnswers(fetchedAnswers);
+      // Filter out deleted answers
+      setAnswers(fetchedAnswers.filter(answer => !answer.is_deleted));
     } catch (error) {
       console.error('Error fetching post details:', error);
       toast.error(language === 'ar' ? 'فشل تحميل تفاصيل المنشور' : 'Failed to load post details');
@@ -227,13 +231,18 @@ export default function PostDetail() {
       if (currentlyAccepted) {
         await unacceptAnswer(post.id, answerId);
         toast.success(language === 'ar' ? 'تم إلغاء قبول الإجابة' : 'Answer unaccepted');
+        // Update state locally instead of refetching
+        setAnswers(prev => prev.map(a =>
+          a.id === answerId ? { ...a, is_accepted: false } : a
+        ));
       } else {
         await acceptAnswer(post.id, answerId);
         toast.success(language === 'ar' ? 'تم قبول الإجابة' : 'Answer accepted');
+        // Update state locally - unaccept all others and accept this one
+        setAnswers(prev => prev.map(a =>
+          a.id === answerId ? { ...a, is_accepted: true } : { ...a, is_accepted: false }
+        ));
       }
-
-      // Refresh post and answers
-      await fetchPostDetails();
     } catch (error) {
       console.error('Error accepting/unaccepting answer:', error);
       toast.error(language === 'ar' ? 'فشل تحديث حالة الإجابة' : 'Failed to update answer status');
@@ -293,6 +302,7 @@ export default function PostDetail() {
   }
 
   return (
+    <>
     <PageAnimation>
       <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
         <Navbar />
@@ -540,11 +550,12 @@ export default function PostDetail() {
             {/* Answers */}
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6" dir={language}>
-                {language === 'ar' ? `الإجابات (${answers.length})` : `Answers (${answers.length})`}
+                {language === 'ar' ? `الإجابات (${answers.filter(a => !a.is_deleted).length})` : `Answers (${answers.filter(a => !a.is_deleted).length})`}
               </h2>
 
               <div className="space-y-6">
-                {answers.map((answer) => {
+                {/* Active Answers */}
+                {answers.filter(a => !a.is_deleted).map((answer) => {
                   const isAnswerAuthor = user && answer.author_id === user.id;
                   const canAccept = isPostAuthor && !isAnswerAuthor;
                   const canModify = isAnswerAuthor || user?.is_admin;
@@ -682,12 +693,11 @@ export default function PostDetail() {
                     </Card>
                   );
                 })}
-              </div>
             </div>
 
             {/* Answer Form */}
             {user && post && post.author_id !== user.id && !user.is_admin && (
-              <Card ref={answerFormRef} className="p-6">
+              <Card ref={answerFormRef} className="p-6 mt-8">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
                   {language === 'ar' ? 'اكتب إجابتك' : 'Write Your Answer'}
                 </h3>
@@ -733,6 +743,8 @@ export default function PostDetail() {
           </div>
         </div>
       </div>
+      </div>
+    </PageAnimation>
 
       {/* Edit Modals */}
       {post && editingPost && (
@@ -769,6 +781,6 @@ export default function PostDetail() {
         confirmText={language === 'ar' ? 'حذف' : 'Delete'}
         destructive={true}
       />
-    </PageAnimation>
+    </>
   );
 }

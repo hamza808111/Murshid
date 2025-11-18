@@ -16,7 +16,9 @@ import {
   Edit2,
   Trash2,
   AlertTriangle,
-  Ban
+  Ban,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,6 +38,7 @@ export default function MyPosts() {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [timeRefresh, setTimeRefresh] = useState(0);
+  const [showDeleted, setShowDeleted] = useState(false);
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -105,8 +108,9 @@ export default function MyPosts() {
   }
 
   return (
-    <PageAnimation>
-      <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
+    <>
+      <PageAnimation>
+        <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
         <Navbar />
         
         <div className="py-20">
@@ -131,8 +135,9 @@ export default function MyPosts() {
 
             {/* Posts */}
             <div className="space-y-6">
-                {userPosts.length > 0 ? (
-                  userPosts.map((post) => (
+                {/* Active Posts */}
+                {userPosts.filter(p => !p.is_deleted).length > 0 ? (
+                  userPosts.filter(p => !p.is_deleted).map((post) => (
                     <ScrollAnimation key={post.id}>
                       <Card 
                         className={`p-6 transition-shadow !border-2 ${
@@ -277,9 +282,119 @@ export default function MyPosts() {
                   </div>
                 )}
               </div>
+
+              {/* Deleted Posts Section */}
+              <div className="mt-8">
+                <Button
+                  onClick={() => setShowDeleted(!showDeleted)}
+                  variant="outline"
+                  className="w-full mb-4 rounded-2xl py-6 transition-all duration-300 hover:shadow-lg"
+                >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-lg font-semibold" dir={language}>
+                        {language === 'ar' 
+                          ? `المنشورات المحذوفة (${userPosts.filter(p => p.is_deleted).length})`
+                          : `Deleted Posts (${userPosts.filter(p => p.is_deleted).length})`
+                        }
+                      </span>
+                      {showDeleted ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                    </div>
+                  </Button>
+
+                  {showDeleted && (
+                    <div className="space-y-6">
+                      {userPosts.filter(p => p.is_deleted).map((post) => (
+                        <ScrollAnimation key={post.id}>
+                          <Card className="p-6 transition-shadow !border-2 !border-red-300 dark:!border-red-800 hover:shadow-lg">
+                            <div className="cursor-pointer" onClick={() => navigate(`/community/post/${post.id}`)}>
+                              {/* Deleted Banner */}
+                              <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                <div className="flex items-start gap-3">
+                                  <Ban className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-1" />
+                                  <div className="flex-1">
+                                    <p className="text-red-800 dark:text-red-300 font-semibold mb-1" dir={language}>
+                                      {language === 'ar' 
+                                        ? 'تم حذف هذا المنشور من قبل المشرف'
+                                        : 'This post has been removed by an admin'
+                                      }
+                                    </p>
+                                    {post.deletion_reason && (
+                                      <p className="text-red-700 dark:text-red-400 text-sm" dir={language}>
+                                        <span className="font-medium">
+                                          {language === 'ar' ? 'السبب: ' : 'Reason: '}
+                                        </span>
+                                        {post.deletion_reason}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex-1">
+                                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2" dir={language}>
+                                    {post.title}
+                                  </h3>
+                                  
+                                  <p className="text-gray-700 dark:text-gray-200 mb-4 line-clamp-3" dir={language}>
+                                    {post.content}
+                                  </p>
+                                  
+                                  <div className="flex flex-wrap gap-2 mb-3">
+                                    {post.major_tags?.map((tag) => (
+                                      <Badge key={tag} variant="outline" className="text-xs">
+                                        📚 {translateTagSync(tag, language)}
+                                      </Badge>
+                                    ))}
+                                    {post.university_tags?.map((tag) => (
+                                      <Badge key={tag} variant="outline" className="text-xs">
+                                        🏛️ {translateTagSync(tag, language)}
+                                      </Badge>
+                                    ))}
+                                    {post.tags.map((tag) => (
+                                      <Badge key={tag} variant="secondary" className="text-xs">
+                                        {tag}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                  
+                                  <p className="text-sm text-gray-500" dir={language}>
+                                    {formatTimeAgo(post.created_at, language)}
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center gap-6 text-sm text-gray-500">
+                                <div className="flex items-center gap-1">
+                                  <Heart className="w-4 h-4" />
+                                  <span>{post.likes_count}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <MessageCircle className="w-4 h-4" />
+                                  <span>{post.answers_count}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Eye className="w-4 h-4" />
+                                  <span>{post.views_count}</span>
+                                </div>
+                                {post.is_solved && (
+                                  <div className="flex items-center gap-1 text-green-600">
+                                    <CheckCircle className="w-4 h-4" />
+                                    <span>{language === 'ar' ? 'محلول' : 'Solved'}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </Card>
+                        </ScrollAnimation>
+                      ))}
+                    </div>
+                  )}
+                </div>
+            </div>
           </div>
         </div>
-      </div>
+      </PageAnimation>
 
       {/* Edit Post Modal */}
       {editingPost && (
@@ -304,6 +419,6 @@ export default function MyPosts() {
         confirmText={language === 'ar' ? 'حذف' : 'Delete'}
         destructive={true}
       />
-    </PageAnimation>
+    </>
   );
 }

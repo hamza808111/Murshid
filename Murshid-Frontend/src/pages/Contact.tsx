@@ -221,7 +221,7 @@ export default function Contact() {
                         <Mail className="w-8 h-8 text-white" />
                       </div>
                       <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Email</h3>
-                      <p className="text-gray-600 dark:text-gray-400">team3n3@murshid.com</p>
+                      <p className="text-gray-600 dark:text-gray-400">team3n3@gmail.com</p>
                     </div>
                     
                     <div className="text-center transform hover:scale-110 hover:-rotate-3 transition-all duration-500">
@@ -229,7 +229,7 @@ export default function Contact() {
                         <Phone className="w-8 h-8 text-white" />
                       </div>
                       <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Phone</h3>
-                      <p className="text-gray-600 dark:text-gray-400">+966 50 123 4567</p>
+                      <p className="text-gray-600 dark:text-gray-400">+966 508550448</p>
                     </div>
                     
                     <div className="text-center transform hover:scale-110 hover:rotate-3 transition-all duration-500">

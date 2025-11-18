@@ -12,7 +12,9 @@ import {
   MessageCircle,
   Heart,
   CheckCircle,
-  Ban
+  Ban,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,6 +30,8 @@ export default function MyAnswers() {
   const [userComments, setUserComments] = useState<Comment[]>([]);
   const [activeTab, setActiveTab] = useState<'answers' | 'comments'>('answers');
   const [loading, setLoading] = useState(true);
+  const [showDeletedAnswers, setShowDeletedAnswers] = useState(false);
+  const [showDeletedComments, setShowDeletedComments] = useState(false);
   const [timeRefresh, setTimeRefresh] = useState(0);
   const { language } = useI18n();
   const { user } = useAuth();
@@ -132,35 +136,11 @@ export default function MyAnswers() {
             {/* Answers Tab */}
             {activeTab === 'answers' && (
               <div className="space-y-6">
-                {userAnswers.length > 0 ? (
-                  userAnswers.map((answer) => (
+                {/* Active Answers */}
+                {userAnswers.filter(a => !a.is_deleted).length > 0 ? (
+                  userAnswers.filter(a => !a.is_deleted).map((answer) => (
                     <ScrollAnimation key={answer.id}>
-                      <Card className={`p-6 transition-shadow !border-2 ${
-                        answer.is_deleted
-                          ? '!border-red-500 dark:!border-red-400 bg-red-50 dark:bg-red-900/10 opacity-75'
-                          : '!border-blue-500 dark:!border-blue-400 hover:shadow-lg'
-                      }`}>
-                        {answer.is_deleted && (
-                          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg">
-                            <div className="flex items-start gap-2">
-                              <Ban className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1">
-                                <p className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1" dir={language}>
-                                  {language === 'ar' ? 'تم حذف هذه الإجابة من قبل المشرف' : 'This answer was removed by admin'}
-                                </p>
-                                <p className="text-sm text-red-700 dark:text-red-400" dir={language}>
-                                  <span className="font-medium">{language === 'ar' ? 'السبب: ' : 'Reason: '}</span>
-                                  {answer.deletion_reason || (language === 'ar' ? 'لم يتم تحديد السبب' : 'No reason provided')}
-                                </p>
-                                {answer.deleted_at && (
-                                  <p className="text-xs text-red-600 dark:text-red-500 mt-1">
-                                    {language === 'ar' ? 'تم الحذف ' : 'Deleted '}{formatTimeAgo(answer.deleted_at, language)}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                      <Card className="p-6 transition-shadow !border-2 !border-blue-500 dark:!border-blue-400 hover:shadow-lg">
                         <div className="flex items-start gap-4">
                           <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
                             <MessageCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -213,41 +193,108 @@ export default function MyAnswers() {
                     </p>
                   </div>
                 )}
+
+                {/* Deleted Answers Section */}
+                <div className="mt-8">
+                  <Button
+                    onClick={() => setShowDeletedAnswers(!showDeletedAnswers)}
+                    variant="outline"
+                    className="w-full mb-4 rounded-2xl py-6 transition-all duration-300 hover:shadow-lg"
+                  >
+                      <div className="flex items-center justify-between w-full">
+                        <span className="text-lg font-semibold" dir={language}>
+                          {language === 'ar' 
+                            ? `الإجابات المحذوفة (${userAnswers.filter(a => a.is_deleted).length})`
+                            : `Deleted Answers (${userAnswers.filter(a => a.is_deleted).length})`
+                          }
+                        </span>
+                        {showDeletedAnswers ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                      </div>
+                    </Button>
+
+                    {showDeletedAnswers && (
+                      <div className="space-y-6">
+                        {userAnswers.filter(a => a.is_deleted).map((answer) => (
+                          <ScrollAnimation key={answer.id}>
+                            <Card className="p-6 transition-shadow !border-2 !border-red-300 dark:!border-red-800 hover:shadow-lg">
+                              {/* Deleted Banner */}
+                              <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                <div className="flex items-start gap-3">
+                                  <Ban className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-1" />
+                                  <div className="flex-1">
+                                    <p className="text-red-800 dark:text-red-300 font-semibold mb-1" dir={language}>
+                                      {language === 'ar' ? 'تم حذف هذه الإجابة من قبل المشرف' : 'This answer was removed by admin'}
+                                    </p>
+                                    {answer.deletion_reason && (
+                                      <p className="text-red-700 dark:text-red-400 text-sm" dir={language}>
+                                        <span className="font-medium">{language === 'ar' ? 'السبب: ' : 'Reason: '}</span>
+                                        {answer.deletion_reason}
+                                      </p>
+                                    )}
+                                    {answer.deleted_at && (
+                                      <p className="text-red-600 dark:text-red-500 text-xs mt-1">
+                                        {language === 'ar' ? 'تم الحذف ' : 'Deleted '}{formatTimeAgo(answer.deleted_at, language)}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                                  <MessageCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                                </div>
+
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-sm text-gray-500">
+                                      {language === 'ar' ? 'أجبت منذ' : 'Answered'} {formatTimeAgo(answer.created_at, language)}
+                                    </span>
+                                    {answer.is_accepted && (
+                                      <Badge variant="outline" className="text-xs text-green-600">
+                                        <CheckCircle className="w-3 h-3 mr-1" />
+                                        {language === 'ar' ? 'مقبولة' : 'Accepted'}
+                                      </Badge>
+                                    )}
+                                  </div>
+
+                                  <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed" dir={language}>
+                                    {answer.content}
+                                  </p>
+
+                                  <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                                      <Heart className="w-4 h-4" />
+                                      <span>{answer.likes_count}</span>
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => navigate(`/community/post/${answer.post_id}`)}
+                                      className="text-blue-600 hover:text-blue-800 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                                    >
+                                      {language === 'ar' ? 'عرض المنشور' : 'View Post'}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          </ScrollAnimation>
+                        ))}
+                      </div>
+                    )}
+                  </div>
               </div>
             )}
 
             {/* Comments Tab */}
             {activeTab === 'comments' && (
               <div className="space-y-6">
-                {userComments.length > 0 ? (
-                  userComments.map((comment) => (
+                {/* Active Comments */}
+                {userComments.filter(c => !c.is_deleted).length > 0 ? (
+                  userComments.filter(c => !c.is_deleted).map((comment) => (
                     <ScrollAnimation key={comment.id}>
-                      <Card className={`p-6 transition-shadow !border-2 ${
-                        comment.is_deleted
-                          ? '!border-red-500 dark:!border-red-400 bg-red-50 dark:bg-red-900/10 opacity-75'
-                          : '!border-blue-500 dark:!border-blue-400 hover:shadow-lg'
-                      }`}>
-                        {comment.is_deleted && (
-                          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg">
-                            <div className="flex items-start gap-2">
-                              <Ban className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1">
-                                <p className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1" dir={language}>
-                                  {language === 'ar' ? 'تم حذف هذا التعليق من قبل المشرف' : 'This comment was removed by admin'}
-                                </p>
-                                <p className="text-sm text-red-700 dark:text-red-400" dir={language}>
-                                  <span className="font-medium">{language === 'ar' ? 'السبب: ' : 'Reason: '}</span>
-                                  {comment.deletion_reason || (language === 'ar' ? 'لم يتم تحديد السبب' : 'No reason provided')}
-                                </p>
-                                {comment.deleted_at && (
-                                  <p className="text-xs text-red-600 dark:text-red-500 mt-1">
-                                    {language === 'ar' ? 'تم الحذف ' : 'Deleted '}{formatTimeAgo(comment.deleted_at, language)}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                      <Card className="p-6 transition-shadow !border-2 !border-blue-500 dark:!border-blue-400 hover:shadow-lg">
                         <div className="flex items-start gap-4">
                           <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
                             <MessageCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -306,6 +353,98 @@ export default function MyAnswers() {
                     </p>
                   </div>
                 )}
+
+                {/* Deleted Comments Section */}
+                <div className="mt-8">
+                  <Button
+                    onClick={() => setShowDeletedComments(!showDeletedComments)}
+                    variant="outline"
+                    className="w-full mb-4 rounded-2xl py-6 transition-all duration-300 hover:shadow-lg"
+                  >
+                      <div className="flex items-center justify-between w-full">
+                        <span className="text-lg font-semibold" dir={language}>
+                          {language === 'ar' 
+                            ? `التعليقات المحذوفة (${userComments.filter(c => c.is_deleted).length})`
+                            : `Deleted Comments (${userComments.filter(c => c.is_deleted).length})`
+                          }
+                        </span>
+                        {showDeletedComments ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                      </div>
+                    </Button>
+
+                    {showDeletedComments && (
+                      <div className="space-y-6">
+                        {userComments.filter(c => c.is_deleted).map((comment) => (
+                          <ScrollAnimation key={comment.id}>
+                            <Card className="p-6 transition-shadow !border-2 !border-red-300 dark:!border-red-800 hover:shadow-lg">
+                              {/* Deleted Banner */}
+                              <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                <div className="flex items-start gap-3">
+                                  <Ban className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-1" />
+                                  <div className="flex-1">
+                                    <p className="text-red-800 dark:text-red-300 font-semibold mb-1" dir={language}>
+                                      {language === 'ar' ? 'تم حذف هذا التعليق من قبل المشرف' : 'This comment was removed by admin'}
+                                    </p>
+                                    {comment.deletion_reason && (
+                                      <p className="text-red-700 dark:text-red-400 text-sm" dir={language}>
+                                        <span className="font-medium">{language === 'ar' ? 'السبب: ' : 'Reason: '}</span>
+                                        {comment.deletion_reason}
+                                      </p>
+                                    )}
+                                    {comment.deleted_at && (
+                                      <p className="text-red-600 dark:text-red-500 text-xs mt-1">
+                                        {language === 'ar' ? 'تم الحذف ' : 'Deleted '}{formatTimeAgo(comment.deleted_at, language)}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                                  <MessageCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                </div>
+
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-sm text-gray-500">
+                                      {language === 'ar' ? 'علقت منذ' : 'Commented'} {formatTimeAgo(comment.created_at, language)}
+                                    </span>
+                                  </div>
+
+                                  <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed" dir={language}>
+                                    {comment.content}
+                                  </p>
+
+                                  <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                                      <Heart className="w-4 h-4" />
+                                      <span>{comment.likes_count}</span>
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        if (comment.answer_id) {
+                                          const relatedAnswer = userAnswers.find(a => a.id === comment.answer_id);
+                                          if (relatedAnswer) {
+                                            navigate(`/community/post/${relatedAnswer.post_id}`);
+                                          }
+                                        }
+                                      }}
+                                      className="text-blue-600 hover:text-blue-800 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                                    >
+                                      {language === 'ar' ? 'عرض المنشور' : 'View Post'}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          </ScrollAnimation>
+                        ))}
+                      </div>
+                    )}
+                  </div>
               </div>
             )}
           </div>

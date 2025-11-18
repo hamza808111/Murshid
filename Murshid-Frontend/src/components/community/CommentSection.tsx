@@ -25,7 +25,16 @@ export const CommentSection = ({ answerId }: CommentSectionProps) => {
     setIsLoading(true);
     try {
       const data = await getAnswerComments(answerId);
-      setComments(data);
+      // Filter out deleted comments and their deleted replies
+      const filterDeleted = (comments: Comment[]): Comment[] => {
+        return comments
+          .filter(comment => !comment.is_deleted)
+          .map(comment => ({
+            ...comment,
+            replies: comment.replies ? filterDeleted(comment.replies) : []
+          }));
+      };
+      setComments(filterDeleted(data));
     } catch (error) {
       console.error("Error loading comments:", error);
     } finally {
