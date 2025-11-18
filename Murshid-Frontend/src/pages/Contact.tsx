@@ -12,9 +12,9 @@ const teamMembers = [
     name: 'Hamza Hamdi',
     role: 'Scrum Master & Back end Developer',
     image: '/public/hamza.jpg',
-    email: 'hamza@team3n3.com',
-    github: 'https://github.com/hamza',
-    linkedin: 'https://linkedin.com/in/hamza',
+    email: 'hamza.hamdi5@gmail.com',
+    github: 'https://github.com/hamza808111 ',
+    linkedin: 'https://www.linkedin.com/in/hamza-hamdi-48b316157?utm_source=share_via&utm_content=profile&utm_medium=member_android',
     color: 'from-blue-400 to-purple-600'
   },
   {
