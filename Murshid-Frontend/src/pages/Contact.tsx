@@ -13,8 +13,8 @@ const teamMembers = [
     role: 'Scrum Master & Back end Developer',
     image: '/Hamza.jpg',
     email: 'hamza@team3n3.com',
-    github: 'https://github.com/hamza',
-    linkedin: 'https://linkedin.com/in/hamza',
+    github: 'https://github.com/hamza808111',
+    linkedin: 'https://www.linkedin.com/in/hamza-hamdi-48b316157/',
     color: 'from-blue-400 to-purple-600'
   },
   {
@@ -23,8 +23,8 @@ const teamMembers = [
     role: 'Software Tester & Full-Stack Developer',
     image: '/bilali.jpg',
     email: 'sarah@team3n3.com',
-    github: 'https://github.com/sarah',
-    linkedin: 'https://linkedin.com/in/sarah',
+    github: 'https://github.com/MAB-SWE',
+    linkedin: 'https://www.linkedin.com/in/mohammed-albilaly-9867ab271/',
     color: 'from-pink-400 to-red-600'
   },
   {
@@ -33,8 +33,8 @@ const teamMembers = [
     role: 'Product Owner & Backend Developer',
     image: '/aziz.jpg',
     email: 'mohammed@team3n3.com',
-    github: 'https://github.com/mohammed',
-    linkedin: 'https://linkedin.com/in/mohammed',
+    github: 'https://github.com/abdulazizabdullh',
+    linkedin: 'https://www.linkedin.com/in/abdulaziz-alamro-015552273?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app',
     color: 'from-green-400 to-teal-600'
   },
   {
