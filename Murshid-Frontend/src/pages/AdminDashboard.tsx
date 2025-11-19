@@ -499,7 +499,7 @@ const AdminDashboard = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold">{language === "ar" ? "إدارة المجتمع" : "Manage Community"}</h3>
-                      <p className="text-sm text-muted-foreground">{language === "ar" ? "عرض وحذف المنشورات والإجابات والتعليقات" : "View and delete posts, answers, comments"}</p>
+                      <p className="text-sm text-muted-foreground">{language === "ar" ? "إدارة محتوى المجتمع" : "Moderate community content"}</p>
                     </div>
                   </div>
                 </CardContent>
