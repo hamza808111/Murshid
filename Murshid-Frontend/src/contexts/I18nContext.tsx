@@ -322,10 +322,10 @@ const translations = {
     'homepage.browseUniversities': 'تصفح الجامعات',
 
     // Assessment
-    'assessment.title': 'تقييم الميول المهنية',
-    'assessment.heroDesc': 'اكتشف مسارك المهني المثالي من خلال تقييم شامل يطابق اهتماماتك ومهاراتك وأهدافك مع التخصص الأنسب لك.',
+    'assessment.title': 'تقييم الميول الاكاديمية',
+    'assessment.heroDesc': 'اكتشف مسارك الجامعي المثالي من خلال تقييم شامل يطابق اهتماماتك ومهاراتك وأهدافك مع التخصص الأنسب لك.',
     'assessment.comingSoonTitle': 'قريباً: التقييم',
-    'assessment.comingSoonDesc': 'نعمل حالياً على تطوير أداة تقييم شاملة تساعدك على اكتشاف مسارك المهني المثالي. سيحلل التقييم اهتماماتك ونقاط قوتك وأهدافك لتقديم توصيات مخصصة بالتخصصات المناسبة.',
+    'assessment.comingSoonDesc': 'نعمل حالياً على تطوير أداة تقييم شاملة تساعدك على اكتشاف مسارك الجامعي المثالي. سيحلل التقييم اهتماماتك ونقاط قوتك وأهدافك لتقديم توصيات مخصصة بالتخصصات المناسبة.',
     'assessment.feature.personalized': 'مصمم خصيصاً لملفك الشخصي',
     'assessment.expectTitle': 'ما الذي ستجده في التقييم',
     'assessment.step1.title': 'تحليل الاهتمامات',
@@ -333,7 +333,7 @@ const translations = {
     'assessment.step2.title': 'تقييم المهارات',
     'assessment.step2.desc': 'تعرف على نقاط قوتك وقدراتك في مجالات متنوعة.',
     'assessment.step3.title': 'مواءمة وظيفية',
-    'assessment.step3.desc': 'احصل على توصيات مخصصة بالتخصصات والوظائف بناءً على ملفك.',
+    'assessment.step3.desc': 'احصل على توصيات مخصصة بالتخصصات  بناءً على ملفك.',
     
     // Auth
     'auth.tagline': 'دليلك لاختيار التخصص المناسب',
@@ -452,8 +452,8 @@ const translations = {
     'admin.dashboard.toast.deleteSelf': 'لا يمكنك حذف حسابك الشخصي',
     'admin.dashboard.toast.deleteSuccess': 'تم حذف المستخدم {name}',
     'admin.dashboard.toast.deleteError': 'تعذر حذف المستخدم. يرجى المحاولة مرة أخرى.',
-    'admin.dashboard.title': 'لوحة تحكم المدير',
-    'admin.dashboard.subtitle': 'إدارة المستخدمين ومتابعة نشاط المنصة',
+    'admin.dashboard.title':  '   لوحة التحكم',
+    'admin.dashboard.subtitle': 'إدارة المستخدمين   ',
     'admin.dashboard.refresh': 'تحديث',
     'admin.dashboard.stats.totalUsers': 'إجمالي المستخدمين',
     'admin.dashboard.stats.students': 'الطلاب',
