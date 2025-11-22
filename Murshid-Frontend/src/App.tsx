@@ -40,6 +40,8 @@ import UserProfile from "./pages/UserProfile";
 import Contact from "./pages/Contact";
 import AuthCallback from "./pages/AuthCallback";
 import ProfileSetup from "./pages/ProfileSetup";
+import Help from "./pages/Help";
+import HelpWidget from "./components/HelpWidget";
 
 const queryClient = new QueryClient();
 
@@ -110,6 +112,7 @@ const AppContent = () => {
       <Route path="/community/my-answers" element={<ProtectedRoute><MyAnswers /></ProtectedRoute>} />
       <Route path="/community/my-likes" element={<ProtectedRoute><MyLikes /></ProtectedRoute>} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/help" element={<Help />} />
       <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/universities" element={<ProtectedRoute><AdminUniversities /></ProtectedRoute>} />
       <Route path="/admin/majors" element={<ProtectedRoute><AdminMajors /></ProtectedRoute>} />
@@ -144,6 +147,7 @@ const App = () => {
           <BrowserRouter>
           <AuthProvider>
             <AppContent />
+            <HelpWidget />
           </AuthProvider>
         </BrowserRouter>
         <Analytics />

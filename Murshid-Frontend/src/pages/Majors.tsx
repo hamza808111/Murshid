@@ -1,11 +1,13 @@
 import Navbar from "@/components/Navbar";
 import { useState, useEffect } from 'react';
-import { Search, Bookmark, BookmarkCheck } from 'lucide-react';
+import { Search, Bookmark, BookmarkCheck, TrendingUp, Grid3x3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageAnimation } from "@/components/animations/PageAnimation";
 import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
+import { RankedMajorsList } from '@/components/RankedMajorsList';
 import { useI18n } from '@/contexts/I18nContext';
 import { useNavigate } from 'react-router-dom';
 import { getMajors } from '@/lib/majorsApi';
@@ -27,6 +29,7 @@ export default function MajorsPage() {
   const [selectedDegreeType, setSelectedDegreeType] = useState<DegreeType | 'all'>('all');
   const [majors, setMajors] = useState<MajorWithUniversities[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('browse');
   const { t, language } = useI18n();
   const navigate = useNavigate();
   const { toggleBookmark, isBookmarked } = useBookmarks();
@@ -116,7 +119,7 @@ export default function MajorsPage() {
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           {/* Header */}
           <ScrollAnimation>
-            <div className="text-center mb-12">
+            <div className="text-center mb-8">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
                 {language === 'ar' ? 'استكشف التخصصات' : 'Explore Majors'}
               </h1>
@@ -128,6 +131,27 @@ export default function MajorsPage() {
             </div>
           </ScrollAnimation>
 
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-8">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-white dark:bg-gray-800 rounded-2xl p-1">
+              <TabsTrigger 
+                value="browse" 
+                className="rounded-xl data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+              >
+                <Grid3x3 className="w-4 h-4 mr-2" />
+                {language === 'ar' ? 'تصفح' : 'Browse'}
+              </TabsTrigger>
+              <TabsTrigger 
+                value="rankings" 
+                className="rounded-xl data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+              >
+                <TrendingUp className="w-4 h-4 mr-2" />
+                {language === 'ar' ? 'التصنيفات' : 'Rankings'}
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Browse Tab Content */}
+            <TabsContent value="browse" className="mt-8">
           {/* Search and Filters */}
           <div className="max-w-4xl mx-auto mb-12 space-y-4">
             {/* Search Bar */}
@@ -296,6 +320,13 @@ export default function MajorsPage() {
               </p>
             </div>
           )}
+            </TabsContent>
+
+            {/* Rankings Tab Content */}
+            <TabsContent value="rankings" className="mt-8">
+              <RankedMajorsList />
+            </TabsContent>
+          </Tabs>
 
           {/* CTA Section */}
           <ScrollAnimation delay={0.4}>

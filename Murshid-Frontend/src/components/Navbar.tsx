@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn, User, Bookmark, LayoutDashboard } from "lucide-react";
+import { Menu, X, LogIn, User, Bookmark, LayoutDashboard, MoreHorizontal, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
@@ -9,6 +9,12 @@ import { ThemeToggle } from "./ThemeToggle";
 import { LanguageToggle } from "./LanguageToggle";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavbarProps {
   currentPage?: string;
@@ -38,6 +44,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
     if (location.pathname === '/universities' || location.pathname.startsWith('/universities/')) return 'universities';
     if (location.pathname === '/community' || location.pathname.startsWith('/community/')) return 'community';
     if (location.pathname === '/contact') return 'contact';
+    if (location.pathname === '/help') return 'help';
     if (location.pathname === '/assessment') return 'quiz';
     if (location.pathname === '/profile') return 'profile';
     return 'home';
@@ -79,6 +86,9 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
         case 'contact':
           navigate('/contact');
           break;
+        case 'help':
+          navigate('/help');
+          break;
         case 'admin-majors':
           navigate('/admin/majors');
           break;
@@ -105,27 +115,33 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
   // Dynamic nav items based on user role
   const navItems = user?.is_admin
     ? [
-        { id: "dashboard", label: language === "ar" ? "لوحة التحكم" : "Dashboard" },
-        { id: "admin-majors", label: t("navbar.majors") },
-        { id: "admin-universities", label: t("navbar.universities") },
+        { id: "dashboard", label: language === "ar" ? "لوحة التحكم" : "Dashboard", priority: 1 },
+        { id: "admin-majors", label: t("navbar.majors"), priority: 2 },
+        { id: "admin-universities", label: t("navbar.universities"), priority: 3 },
       ]
     : [
-        { id: 'home', label: t('navbar.home') },
-        { id: 'majors', label: t('navbar.majors') },
-        { id: 'universities', label: t('navbar.universities') },
-        { id: 'community', label: language === 'ar' ? 'المجتمع' : 'Community' },
-        { id: 'quiz', label: t('navbar.quiz') },
-        { id: 'contact', label: t('navbar.contact') },
+        { id: 'home', label: t('navbar.home'), priority: 1 },
+        { id: 'majors', label: t('navbar.majors'), priority: 2 },
+        { id: 'universities', label: t('navbar.universities'), priority: 3 },
+        { id: 'community', label: language === 'ar' ? 'المجتمع' : 'Community', priority: 4 },
+        { id: 'quiz', label: t('navbar.quiz'), priority: 5 },
+        { id: 'help', label: language === 'ar' ? 'المساعدة' : 'Help', priority: 6 },
+        { id: 'contact', label: t('navbar.contact'), priority: 7 },
       ];
+
+  // Split items for responsive design
+  const primaryItems = navItems.filter(item => item.priority <= 3); // Home, Majors, Universities
+  const secondaryItems = navItems.filter(item => item.priority > 3); // Rest in "More" menu
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 shadow-sm" dir="ltr">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10" dir="ltr">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-20 gap-4">
+          {/* Logo - Fixed width, never shrinks */}
           <button
             onClick={() => handleNavigate(user?.is_admin ? 'dashboard' : 'home')}
             id="navbar-logo-button"
-            className="flex items-center group rounded-xl hover:shadow-lg hover:-translate-y-1 transition-all duration-300 hover:bg-white-100 dark:hover:bg-white-800 p-3"
+            className="flex items-center group rounded-xl hover:shadow-lg hover:-translate-y-1 transition-all duration-300 hover:bg-white-100 dark:hover:bg-white-800 p-3 flex-shrink-0"
           >
              <img 
               src="/logo4.png" 
@@ -137,33 +153,82 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             </h1>          
           </button>
 
-          <div className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavigate(item.id)}
-                id={`navbar-nav-${item.id}`}
-                className={`px-4 py-2 rounded-xl transition-all ${
-                  isActive(item.id)
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+          {/* Navigation - Flexible, can shrink */}
+          <div className="flex-1 flex justify-center items-center min-w-0">
+            {/* Desktop Navigation - Show all items on large screens */}
+            <div className="hidden xl:flex items-center gap-1">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavigate(item.id)}
+                  id={`navbar-nav-${item.id}`}
+                  className={`px-3 py-2 rounded-xl transition-all whitespace-nowrap text-sm ${
+                    isActive(item.id)
+                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Medium/Large screens - Show primary items + More dropdown */}
+            <div className="hidden md:flex xl:hidden items-center gap-1">
+              {primaryItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavigate(item.id)}
+                  id={`navbar-nav-${item.id}`}
+                  className={`px-3 py-2 rounded-xl transition-all whitespace-nowrap text-sm ${
+                    isActive(item.id)
+                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+              
+              {secondaryItems.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="px-3 py-2 rounded-xl transition-all text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 flex items-center gap-1 text-sm whitespace-nowrap">
+                      {language === 'ar' ? 'المزيد' : 'More'}
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    {secondaryItems.map((item) => (
+                      <DropdownMenuItem
+                        key={item.id}
+                        onClick={() => handleNavigate(item.id)}
+                        className={`cursor-pointer ${
+                          isActive(item.id)
+                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                            : ''
+                        }`}
+                      >
+                        {item.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-3">
-            <div className="flex items-center gap-2">
+          {/* Right side - User actions - Fixed width, never shrinks */}
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-1">
               <LanguageToggle />
               <ThemeToggle />
             </div>
             
             {loading ? (
-              <div className="w-32 h-10 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-xl"></div>
+              <div className="w-24 h-10 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-xl"></div>
             ) : user ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 {!user.is_admin && (
                   <TooltipProvider>
                     <Tooltip>
@@ -173,13 +238,13 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                             variant="outline"
                             size="icon"
                             id="navbar-bookmarks-button"
-                            className={`relative transition-transform duration-300 ${
+                            className={`relative transition-transform duration-300 h-9 w-9 ${
                               animateBookmark ? 'animate-pulse scale-110' : ''
                             }`}
                           >
-                            <Bookmark className="h-[1.2rem] w-[1.2rem]" />
+                            <Bookmark className="h-4 w-4" />
                             {totalBookmarks > 0 && (
-                              <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                              <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-medium text-[10px]">
                                 {totalBookmarks > 99 ? '99+' : totalBookmarks}
                               </span>
                             )}
@@ -196,19 +261,21 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                 <Link to="/profile" id="navbar-profile-link">
                   <Button
                     variant="ghost"
+                    size="sm"
                     className="rounded-xl"
                     id="navbar-profile-button"
                   >
-                    <User className="w-4 h-4 mr-2" />
-                    {t('navbar.profile')}
+                    <User className="w-4 h-4 mr-1" />
+                    <span className="hidden xl:inline">{t('navbar.profile')}</span>
                   </Button>
                 </Link>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <Link to="/login" id="navbar-login-link">
                   <Button
                     variant="ghost"
+                    size="sm"
                     className="rounded-xl"
                     id="navbar-login-button"
                   >
@@ -216,7 +283,11 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                   </Button>
                 </Link>
                 <Link to="/signup" id="navbar-signup-link">
-                  <Button className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl px-6 shadow-md" id="navbar-signup-button">
+                  <Button 
+                    size="sm"
+                    className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl px-4 shadow-md" 
+                    id="navbar-signup-button"
+                  >
                     {t('navbar.signUp')}
                   </Button>
                 </Link>

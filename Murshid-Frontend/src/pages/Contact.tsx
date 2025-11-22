@@ -5,6 +5,7 @@ import { PageAnimation } from "@/components/animations/PageAnimation";
 import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
 import { Mail, Phone, MapPin, Github, Linkedin, Star, Heart, Sparkles } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
+import { toast } from 'sonner';
 
 const teamMembers = [
   {
@@ -72,6 +73,15 @@ const teamMembers = [
 export default function Contact() {
   const { language } = useI18n();
   const [hoveredMember, setHoveredMember] = useState<number | null>(null);
+
+  const handleEmailClick = (email: string) => {
+    window.location.href = `mailto:${email}`;
+  };
+
+  const handlePhoneClick = (phone: string) => {
+    navigator.clipboard.writeText(phone);
+    toast.success(language === 'ar' ? 'تم نسخ رقم الهاتف' : 'Phone number copied!');
+  };
 
   return (
     <PageAnimation>
@@ -216,21 +226,27 @@ export default function Contact() {
                   </h2>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="text-center transform hover:scale-110 hover:rotate-3 transition-all duration-500">
+                    <button 
+                      onClick={() => handleEmailClick('team3n3@gmail.com')}
+                      className="text-center transform hover:scale-110 hover:rotate-3 transition-all duration-500 cursor-pointer"
+                    >
                       <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                         <Mail className="w-8 h-8 text-white" />
                       </div>
                       <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Email</h3>
-                      <p className="text-gray-600 dark:text-gray-400">team3n3@gmail.com</p>
-                    </div>
+                      <p className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">team3n3@gmail.com</p>
+                    </button>
                     
-                    <div className="text-center transform hover:scale-110 hover:-rotate-3 transition-all duration-500">
+                    <button 
+                      onClick={() => handlePhoneClick('+966 508550448')}
+                      className="text-center transform hover:scale-110 hover:-rotate-3 transition-all duration-500 cursor-pointer"
+                    >
                       <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce delay-300">
                         <Phone className="w-8 h-8 text-white" />
                       </div>
                       <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Phone</h3>
-                      <p className="text-gray-600 dark:text-gray-400">+966 508550448</p>
-                    </div>
+                      <p className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400">+966 508550448</p>
+                    </button>
                     
                     <div className="text-center transform hover:scale-110 hover:rotate-3 transition-all duration-500">
                       <div className="w-16 h-16 bg-gradient-to-br from-pink-400 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce delay-500">
