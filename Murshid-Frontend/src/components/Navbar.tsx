@@ -162,7 +162,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                   key={item.id}
                   onClick={() => handleNavigate(item.id)}
                   id={`navbar-nav-${item.id}`}
-                  className={`px-3 py-2 rounded-xl transition-all whitespace-nowrap text-sm ${
+                  className={`px-4   py-2 rounded-xl transition-all whitespace-nowrap text-md ${
                     isActive(item.id)
                       ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
@@ -180,7 +180,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                   key={item.id}
                   onClick={() => handleNavigate(item.id)}
                   id={`navbar-nav-${item.id}`}
-                  className={`px-3 py-2 rounded-xl transition-all whitespace-nowrap text-sm ${
+                  className={`px-4 py-2 rounded-xl transition-all whitespace-nowrap text-md ${
                     isActive(item.id)
                       ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
@@ -193,7 +193,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
               {secondaryItems.length > 0 && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="px-3 py-2 rounded-xl transition-all text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 flex items-center gap-1 text-sm whitespace-nowrap">
+                    <button className="px-4 py-2 rounded-xl transition-all text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 flex items-center gap-1 text-md whitespace-nowrap">
                       {language === 'ar' ? 'المزيد' : 'More'}
                       <ChevronDown className="w-4 h-4" />
                     </button>

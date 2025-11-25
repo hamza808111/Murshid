@@ -2,20 +2,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { 
-  GraduationCap, 
-  TrendingUp, 
-  Briefcase, 
+import {
+  GraduationCap,
+  TrendingUp,
+  Briefcase,
   AlertCircle,
   CheckCircle,
   BookOpen,
   Download,
   Share2,
-  ArrowLeft
+  ArrowLeft,
+  Building2,
 } from 'lucide-react';
 import { AssessmentResult } from '@/services/geminiService';
 import { useI18n } from '@/contexts/I18nContext';
 import { ScrollAnimation } from './animations/ScrollAnimation';
+import { Link } from 'react-router-dom';
 
 interface AssessmentResultsProps {
   result: AssessmentResult;
@@ -36,18 +38,22 @@ ${result.personalityProfile}
 ${result.overallAnalysis}
 
 Recommended Majors:
-${result.recommendations.map((rec, i) => `
+${result.recommendations
+  .map(
+    (rec, i) => `
 ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
    ${rec.reasoning}
    
    Key Strengths:
-   ${rec.keyStrengths.map(s => `   - ${s}`).join('\n')}
+   ${rec.keyStrengths.map((s) => `   - ${s}`).join('\n')}
    
    Career Paths:
-   ${rec.careerPaths.map(c => `   - ${c}`).join('\n')}
+   ${rec.careerPaths.map((c) => `   - ${c}`).join('\n')}
    
    Considerations: ${rec.potentialChallenges}
-`).join('\n')}
+`
+  )
+  .join('\n')}
     `;
 
     const blob = new Blob([text], { type: 'text/plain' });
@@ -61,6 +67,19 @@ ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+      {/* Back button */}
+      <div className="mb-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onRetake}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {language === 'ar' ? 'العودة للتقييم' : 'Back to assessment'}
+        </Button>
+      </div>
+
       {/* Header */}
       <ScrollAnimation>
         <div className="text-center space-y-4">
@@ -73,7 +92,7 @@ ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
             {language === 'ar' ? 'نتائج التقييم الخاصة بك' : 'Your Assessment Results'}
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300" dir={language}>
-            {language === 'ar' 
+            {language === 'ar'
               ? 'بناءً على إجاباتك، إليك توصياتنا المخصصة لك'
               : 'Based on your responses, here are your personalized recommendations'}
           </p>
@@ -116,7 +135,10 @@ ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
 
       {/* Recommended Majors */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2" dir={language}>
+        <h2
+          className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2"
+          dir={language}
+        >
           <GraduationCap className="w-6 h-6" />
           {language === 'ar' ? 'التخصصات الموصى بها' : 'Recommended Majors'}
         </h2>
@@ -129,7 +151,9 @@ ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <Badge className="text-lg px-3 py-1">#{index + 1}</Badge>
-                      <CardTitle className="text-xl" dir={language}>{recommendation.majorName}</CardTitle>
+                      <CardTitle className="text-xl" dir={language}>
+                        {recommendation.majorName}
+                      </CardTitle>
                     </div>
                     <CardDescription dir={language}>{recommendation.reasoning}</CardDescription>
                   </div>
@@ -148,13 +172,20 @@ ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
               <CardContent className="space-y-4">
                 {/* Key Strengths */}
                 <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2" dir={language}>
+                  <h4
+                    className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2"
+                    dir={language}
+                  >
                     <CheckCircle className="w-4 h-4 text-green-600" />
                     {language === 'ar' ? 'نقاط القوة الرئيسية' : 'Key Strengths'}
                   </h4>
                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {recommendation.keyStrengths.map((strength, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300" dir={language}>
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300"
+                        dir={language}
+                      >
                         <span className="text-green-600 dark:text-green-400 mt-1">✓</span>
                         <span>{strength}</span>
                       </li>
@@ -164,7 +195,10 @@ ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
 
                 {/* Career Paths */}
                 <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2" dir={language}>
+                  <h4
+                    className="font-semibold text-gray-900 dark:text:white mb-2 flex items-center gap-2"
+                    dir={language}
+                  >
                     <Briefcase className="w-4 h-4 text-blue-600" />
                     {language === 'ar' ? 'المسارات المهنية' : 'Career Paths'}
                   </h4>
@@ -179,13 +213,66 @@ ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
 
                 {/* Challenges */}
                 <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
-                  <h4 className="font-semibold text-orange-900 dark:text-orange-200 mb-2 flex items-center gap-2" dir={language}>
+                  <h4
+                    className="font-semibold text-orange-900 dark:text-orange-200 mb-2 flex items-center gap-2"
+                    dir={language}
+                  >
                     <AlertCircle className="w-4 h-4" />
                     {language === 'ar' ? 'اعتبارات مهمة' : 'Important Considerations'}
                   </h4>
                   <p className="text-sm text-orange-800 dark:text-orange-300" dir={language}>
                     {recommendation.potentialChallenges}
                   </p>
+                </div>
+
+                {/* Universities offering this major */}
+                {recommendation.universities && recommendation.universities.length > 0 && (
+                  <div className="space-y-2">
+                    <h4
+                      className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2"
+                      dir={language}
+                    >
+                      <Building2 className="w-4 h-4 text-blue-600" />
+                      {language === 'ar'
+                        ? 'الجامعات التي تقدم هذا التخصص'
+                        : 'Universities offering this major'}
+                    </h4>
+
+                    <div className="flex flex-wrap gap-2">
+                      {recommendation.universities.map((uni) => (
+                        <Badge
+                          key={uni.id}
+                          variant="outline"
+                          className="text-sm px-3 py-1"
+                          dir={language}
+                        >
+                          <Link to={`/universities/${uni.id}`}>
+                            {uni.name}
+                            {uni.city ? ` • ${uni.city}` : ''}
+                          </Link>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Detail Buttons */}
+                <div className="flex flex-wrap gap-3 pt-2">
+                  {recommendation.majorId && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2 px-3 py-1 rounded-lg text-sm color:gray-700 dark:text-gray-300 dark:hover:text-gray-100 hover:text-blue-600 dark:hover:text-blue-800"
+                    >
+                      <Link to={`/majors/${recommendation.majorId}`}>
+                        <GraduationCap className="w-4 h-4" />
+                        {language === 'ar' ? ' تفاصيل التخصص والجامعات' : 'Major details And universities'}
+                      </Link>
+                    </Button>
+                  )}
+
+                 
                 </div>
               </CardContent>
             </Card>
@@ -200,7 +287,7 @@ ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
             <ArrowLeft className="w-4 h-4 mr-2" />
             {language === 'ar' ? 'إعادة التقييم' : 'Retake Assessment'}
           </Button>
-          
+
           {onSave && (
             <Button onClick={onSave} variant="default" size="lg">
               <CheckCircle className="w-4 h-4 mr-2" />
@@ -213,7 +300,7 @@ ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
             {language === 'ar' ? 'تحميل' : 'Download'}
           </Button>
 
-          <Button 
+          <Button
             onClick={() => {
               if (navigator.share) {
                 navigator.share({
@@ -222,7 +309,7 @@ ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
                 });
               }
             }}
-            variant="outline" 
+            variant="outline"
             size="lg"
           >
             <Share2 className="w-4 h-4 mr-2" />

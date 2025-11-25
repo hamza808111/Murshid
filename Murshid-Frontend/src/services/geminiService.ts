@@ -20,6 +20,14 @@ export interface MajorRecommendation {
   keyStrengths: string[];
   careerPaths: string[];
   potentialChallenges: string;
+  // Optional enrichments after DB matching:
+  majorId?: string;
+  universities?: {
+    id: string;
+    name: string;
+    city?: string | null;
+    country?: string | null;
+  }[];
 }
 
 export interface AssessmentResult {

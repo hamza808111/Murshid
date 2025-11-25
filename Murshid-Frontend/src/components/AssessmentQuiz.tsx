@@ -114,7 +114,7 @@ export const AssessmentQuiz = ({ onComplete, onCancel, onSaveAndFinish }: Assess
 
   const handleSaveAndFinish = async () => {
     if (!onSaveAndFinish) return;
-    
+
     setIsSaving(true);
     try {
       await onSaveAndFinish(answers);
@@ -261,17 +261,17 @@ export const AssessmentQuiz = ({ onComplete, onCancel, onSaveAndFinish }: Assess
             <div className="space-y-4" dir={direction}>
               <Badge
                 variant="outline"
-                className="w-fit bg-white/70 text-xs font-semibold uppercase tracking-wide text-gray-800 dark:bg-white/10 dark:text-gray-100"
+                className="w-fit bg-white/70 text-xs font-semibold uppercase tracking-wide text-gray-800 dark:bg:white/10 dark:text-gray-100"
               >
                 {language === 'ar' ? 'التركيز الحالي' : 'Current focus'} · {categoryLabels[currentCategory][languageKey]}
               </Badge>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text:white">
                 {categoryInfo.heading[languageKey]}
               </h2>
               <p className="text-base md:text-lg text-gray-800 dark:text-gray-200">
                 {categoryInfo.subheading[languageKey]}
               </p>
-              <div className="flex items-start gap-3 rounded-2xl border border-white/50 bg-white/70 p-4 text-sm text-gray-700 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/60 dark:text-gray-200">
+              <div className="flex items-start gap-3 rounded-2xl border border:white/50 bg-white/70 p-4 text-sm text-gray-700 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/60 dark:text-gray-200">
                 <Sparkles className="mt-0.5 h-4 w-4 text-blue-500 dark:text-blue-300" />
                 <p>{encouragement}</p>
               </div>
@@ -370,8 +370,8 @@ export const AssessmentQuiz = ({ onComplete, onCancel, onSaveAndFinish }: Assess
                   <ChevronLeft className="mr-2 h-4 w-4" />
                   {currentQuestionIndex === 0
                     ? language === 'ar'
-                      ? 'إلغاء'
-                      : 'Cancel'
+                      ? 'الرجوع'
+                      : 'Back'
                     : language === 'ar'
                     ? 'السابق'
                     : 'Previous'}
