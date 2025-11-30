@@ -7,9 +7,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { I18nProvider } from "@/contexts/I18nContext";
+import { MessagingProvider } from "@/contexts/MessagingContext";
 import { Analytics } from "@vercel/analytics/react";
 import { useEffect } from "react";
 import { initializeCache } from "@/lib/tagTranslation";
+import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -40,6 +42,7 @@ import UserProfile from "./pages/UserProfile";
 import Contact from "./pages/Contact";
 import AuthCallback from "./pages/AuthCallback";
 import ProfileSetup from "./pages/ProfileSetup";
+import Messages from "./pages/Messages";
 
 const queryClient = new QueryClient();
 
@@ -122,6 +125,8 @@ const AppContent = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetup /></ProtectedRoute>} />
+      <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+      <Route path="/messages/:conversationId" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -142,8 +147,11 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
+          <ScrollToTop />
           <AuthProvider>
-            <AppContent />
+            <MessagingProvider>
+              <AppContent />
+            </MessagingProvider>
           </AuthProvider>
         </BrowserRouter>
         <Analytics />
