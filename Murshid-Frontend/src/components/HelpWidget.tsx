@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { HelpCircle, Mail, X, FileQuestion } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useI18n } from '@/contexts/I18nContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -11,6 +11,7 @@ export default function HelpWidget() {
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { language } = useI18n();
 
   useEffect(() => {
@@ -21,6 +22,38 @@ export default function HelpWidget() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Hide widget on mobile when typing (focus in inputs/textareas/contenteditable)
+  useEffect(() => {
+    const isTypingTarget = (el: EventTarget | null) => {
+      if (!(el instanceof HTMLElement)) return false;
+      const tag = el.tagName.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+      if (el.getAttribute('contenteditable') === 'true') return true;
+      return false;
+    };
+
+    const handleFocusIn = (e: FocusEvent) => {
+      if (!isMobile) return;
+      if (isTypingTarget(e.target)) {
+        setIsOpen(false);
+        setIsVisible(false);
+      }
+    };
+
+    const handleFocusOut = () => {
+      if (!isMobile) return;
+      // Small delay to wait for keyboard dismissal
+      setTimeout(() => setIsVisible(true), 150);
+    };
+
+    document.addEventListener('focusin', handleFocusIn);
+    document.addEventListener('focusout', handleFocusOut);
+    return () => {
+      document.removeEventListener('focusin', handleFocusIn);
+      document.removeEventListener('focusout', handleFocusOut);
+    };
+  }, [isMobile]);
 
   const handleHelpPage = () => {
     navigate('/help');
@@ -95,6 +128,11 @@ export default function HelpWidget() {
     },
   ];
   // --- END OF LOGIC ---
+
+  // Hide entirely on Messages pages (any /messages route)
+  if (location.pathname === '/messages' || location.pathname.startsWith('/messages/')) {
+    return null;
+  }
 
   if (isMobile && !isVisible) {
     return null;

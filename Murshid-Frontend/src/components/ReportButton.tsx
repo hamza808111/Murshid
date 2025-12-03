@@ -4,7 +4,7 @@ import { Flag } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/contexts/I18nContext';
-import { getUserReport } from '@/lib/communityApi';
+import { checkExistingReport } from '@/lib/communityApi';
 import ReportDialog from './ReportDialog';
 
 interface ReportButtonProps {
@@ -45,8 +45,8 @@ export default function ReportButton({
     if (!user) return;
 
     try {
-      const report = await getUserReport(contentType, contentId, user.id);
-      setHasReported(!!report);
+      const exists = await checkExistingReport(user.id, contentType, contentId);
+      setHasReported(!!exists);
     } catch (error) {
       console.error('Error checking report status:', error);
     }

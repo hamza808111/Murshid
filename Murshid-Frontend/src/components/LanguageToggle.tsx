@@ -16,7 +16,7 @@ export function LanguageToggle() {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2"
+            className="gap-2 h-9 px-3 rounded-xl"
             onClick={toggleLanguage}
             id="navbar-language-toggle"
             aria-label={label}

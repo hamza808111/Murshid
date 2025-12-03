@@ -1,10 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn, User, Bookmark, LayoutDashboard, MoreHorizontal, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { Menu, X, LogIn, User, Bookmark, LayoutDashboard, MoreHorizontal, ChevronDown ,MessageSquare  } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
 import { useBookmarks } from "@/hooks/useBookmarks";
+import { useMessaging } from "@/contexts/MessagingContext";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageToggle } from "./LanguageToggle";
 import { toast } from "sonner";
@@ -27,7 +28,11 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
   const { user, loading } = useAuth();
   const { t, language } = useI18n();
   const { totalBookmarks, animateBookmark } = useBookmarks();
+  const { totalUnreadCount } = useMessaging();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Check if user is currently on the messages page
+  const isOnMessagesPage = location.pathname === '/messages' || location.pathname.startsWith('/messages/');
   
   const getCurrentPage = () => {
     if (currentPage) return currentPage;
@@ -130,33 +135,46 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
       ];
 
   // Split items for responsive design
-  const primaryItems = navItems.filter(item => item.priority <= 3); // Home, Majors, Universities
-  const secondaryItems = navItems.filter(item => item.priority > 3); // Rest in "More" menu
+  // Dynamic visible count between md and xl to progressively collapse one-by-one
+  const [visibleCount, setVisibleCount] = useState(5);
+  useEffect(() => {
+    const updateVisible = () => {
+      const w = window.innerWidth;
+      if (w >= 1240) setVisibleCount(5);
+      else if (w >= 1170) setVisibleCount(4);
+      else if (w >= 1100) setVisibleCount(3);
+      else if (w >= 1030) setVisibleCount(2);
+      else setVisibleCount(1);
+    };
+    updateVisible();
+    window.addEventListener('resize', updateVisible);
+    return () => window.removeEventListener('resize', updateVisible);
+  }, []);
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 shadow-sm" dir="ltr">
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10" dir="ltr">
+      <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-10" dir="ltr">
         <div className="flex justify-between items-center h-20 gap-4">
           {/* Logo - Fixed width, never shrinks */}
           <button
             onClick={() => handleNavigate(user?.is_admin ? 'dashboard' : 'home')}
             id="navbar-logo-button"
-            className="flex items-center group rounded-xl hover:shadow-lg hover:-translate-y-1 transition-all duration-300 hover:bg-white-100 dark:hover:bg-white-800 p-3 flex-shrink-0"
+            className="flex items-center group rounded-xl hover:shadow-lg hover:-translate-y-1 transition-all duration-300 hover:bg-white-100 dark:hover:bg-white-800 p-2 md:p-3 flex-shrink-0"
           >
              <img 
               src="/logo4.png" 
               alt="Murshid Logo" 
-              className="h-14 object-contain transition-transform group-hover:scale-105"
+              className="h-12 md:h-14 object-contain transition-transform group-hover:scale-105"
             />
-            <h1 className={`text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 ${language === "ar" ? "leading-normal pb-1.5" : ""}`}>
+            <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 ${language === "ar" ? "leading-normal pb-1.5" : ""}`}>
               {language === "ar" ? "مرشــــد" : "Murshid"}
             </h1>          
           </button>
 
-          {/* Navigation - Flexible, can shrink */}
-          <div className="flex-1 flex justify-center items-center min-w-0">
+          {/* Navigation - Flexible, can shrink but never overlap sides */}
+          <div className="flex-1 flex justify-center items-center min-w-0 overflow-hidden">
             {/* Desktop Navigation - Show all items on large screens */}
-            <div className="hidden xl:flex items-center gap-1">
+            <div className="hidden xl:flex items-center gap-1 flex-nowrap">
               {navItems.map((item) => (
                 <button
                   key={item.id}
@@ -173,9 +191,9 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
               ))}
             </div>
 
-            {/* Medium/Large screens - Show primary items + More dropdown */}
-            <div className="hidden md:flex xl:hidden items-center gap-1">
-              {primaryItems.map((item) => (
+            {/* md..xl-1 screens - progressively collapse one-by-one into More */}
+            <div className="hidden md:flex xl:hidden items-center gap-1 flex-nowrap">
+              {navItems.slice(0, Math.min(visibleCount, navItems.length)).map((item) => (
                 <button
                   key={item.id}
                   onClick={() => handleNavigate(item.id)}
@@ -189,8 +207,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                   {item.label}
                 </button>
               ))}
-              
-              {secondaryItems.length > 0 && (
+              {navItems.length > visibleCount && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="px-4 py-2 rounded-xl transition-all text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 flex items-center gap-1 text-md whitespace-nowrap">
@@ -199,7 +216,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    {secondaryItems.map((item) => (
+                    {navItems.slice(visibleCount).map((item) => (
                       <DropdownMenuItem
                         key={item.id}
                         onClick={() => handleNavigate(item.id)}
@@ -230,6 +247,35 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             ) : user ? (
               <div className="flex items-center gap-2">
                 {!user.is_admin && (
+                  <>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Link to="/messages" id="navbar-messages-link" className="relative">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              id="navbar-messages-button"
+                              className="relative h-9 w-9"
+                            >
+                              <MessageSquare className="h-4 w-4" />
+                              {totalUnreadCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-pulse">
+                                  {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                                </span>
+                              )}
+                              <span className="sr-only">Messages</span>
+                            </Button>
+                          </Link>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{language === 'ar' ? 'الرسائل' : 'Messages'}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </>
+                )}
+                {!user.is_admin && (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -244,7 +290,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                           >
                             <Bookmark className="h-4 w-4" />
                             {totalBookmarks > 0 && (
-                              <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-medium text-[10px]">
+                              <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
                                 {totalBookmarks > 99 ? '99+' : totalBookmarks}
                               </span>
                             )}
@@ -295,9 +341,26 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             )}
           </div>
 
-          <div className="md:hidden flex items-center gap-2">
+          <div className="md:hidden flex items-center gap-1 flex-shrink-0">
             <LanguageToggle />
             <ThemeToggle />
+            {/* Mobile - Always show Messages icon */}
+            <Link to="/messages" id="navbar-mobile-messages-top-link" className="relative">
+              <Button
+                variant="outline"
+                size="icon"
+                id="navbar-mobile-messages-top-button"
+                className="relative h-9 w-9 rounded-xl"
+              >
+                <MessageSquare className="h-4 w-4" />
+                {totalUnreadCount > 0 && !isOnMessagesPage  && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-pulse">
+                    {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                  </span>
+                )}
+                <span className="sr-only">Messages</span>
+              </Button>
+            </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               id="navbar-mobile-menu-toggle"
@@ -341,6 +404,11 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                 </div>
               ) : user ? (
                 <div className="space-y-3">
+                  {!user.is_admin && (
+                    <Link to="/messages" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-messages-link" className="block">
+                      
+                    </Link>
+                  )}
                   {!user.is_admin && (
                     <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)} id="navbar-mobile-bookmarks-link" className="block">
                       <Button
