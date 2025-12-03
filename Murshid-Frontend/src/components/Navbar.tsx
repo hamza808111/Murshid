@@ -30,6 +30,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
   const { totalBookmarks, animateBookmark } = useBookmarks();
   const { totalUnreadCount } = useMessaging();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isSpecialist = !!user && (user.role?.toLowerCase?.() === 'specialist');
 
   // Check if user is currently on the messages page
   const isOnMessagesPage = location.pathname === '/messages' || location.pathname.startsWith('/messages/');
@@ -129,7 +130,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
         { id: 'majors', label: t('navbar.majors'), priority: 2 },
         { id: 'universities', label: t('navbar.universities'), priority: 3 },
         { id: 'community', label: language === 'ar' ? 'المجتمع' : 'Community', priority: 4 },
-        { id: 'quiz', label: t('navbar.quiz'), priority: 5 },
+        ...(!isSpecialist ? [{ id: 'quiz', label: t('navbar.quiz'), priority: 5 } as const] : []),
         { id: 'help', label: language === 'ar' ? 'المساعدة' : 'Help', priority: 6 },
         { id: 'contact', label: t('navbar.contact'), priority: 7 },
       ];
