@@ -69,7 +69,7 @@ export const categoryVisuals: Record<CategoryKey, CategoryVisualMeta> = {
       en: 'Answer with your real lifestyle preferences - there is a major that fits each personality.',
       ar: 'أجب وفقاً لتفضيلاتك الحقيقية - هناك تخصص يناسب كل شخصية.',
     },
-    image: 'https://images.unsplash.com/photo-1528747045269-390fe33c19d4?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=1200&q=80',
     gradient: 'from-[#dcfce7] via-[#ecfdf5] to-[#e0f7fa]',
     darkGradient: 'dark:from-[#0b3b2e] dark:via-[#0f4b3d] dark:to-[#105555]',
     accentBorder: 'border-green-200 dark:border-emerald-700',

@@ -131,7 +131,7 @@ export const AssessmentQuiz = ({ onComplete, onCancel, onSaveAndFinish }: Assess
         <RadioGroup
           value={typeof currentAnswer === 'string' ? (currentAnswer as string) : ''}
           onValueChange={(value) => handleAnswer(question.id, value)}
-          className="grid gap-3"
+          className="grid gap-3 md:grid-cols-2"
           dir={direction}
         >
           {question.options.map((option, index) => {
@@ -180,26 +180,132 @@ export const AssessmentQuiz = ({ onComplete, onCancel, onSaveAndFinish }: Assess
 
     if (question.type === 'scale' && question.scaleLabels) {
       const scaleValue = typeof currentAnswer === 'number' ? currentAnswer : 50;
+      const getEmoji = (value: number) => {
+        if (value <= 20) return '😴';
+        if (value <= 40) return '😌';
+        if (value <= 60) return '🙂';
+        if (value <= 80) return '😊';
+        return '🤩';
+      };
+      
       return (
         <div className="space-y-6" dir={direction}>
           <div className="flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300">
-            <span>{language === 'ar' ? question.scaleLabels.min.ar : question.scaleLabels.min.en}</span>
-            <span>{language === 'ar' ? question.scaleLabels.max.ar : question.scaleLabels.max.en}</span>
+            <motion.span
+              animate={{ scale: scaleValue <= 25 ? [1, 1.1, 1] : 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              {language === 'ar' ? question.scaleLabels.min.ar : question.scaleLabels.min.en}
+            </motion.span>
+            <motion.span
+              animate={{ scale: scaleValue >= 75 ? [1, 1.1, 1] : 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              {language === 'ar' ? question.scaleLabels.max.ar : question.scaleLabels.max.en}
+            </motion.span>
           </div>
-          <div className="rounded-2xl border border-blue-200/60 bg-blue-50/70 p-6 shadow-inner dark:border-blue-400/30 dark:bg-blue-950/40">
-            <Slider
-              value={[scaleValue]}
-              onValueChange={(value) => handleAnswer(question.id, value[0])}
-              min={0}
-              max={100}
-              step={1}
-              className="w-full"
-            />
-          </div>
-          <div className="flex items-center justify-center">
-            <div className="rounded-full bg-blue-500/10 px-4 py-1 text-sm font-semibold text-blue-700 dark:bg-blue-400/20 dark:text-blue-100">
+          <motion.div 
+            className="relative rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50/70 via-purple-50/50 to-pink-50/50 p-8 shadow-inner dark:border-blue-400/30 dark:from-blue-950/40 dark:via-purple-950/40 dark:to-pink-950/40"
+            whileHover={{ scale: 1.01 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            {/* Animated background particles */}
+            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              {[...Array(5)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute h-2 w-2 rounded-full bg-blue-400/20 dark:bg-blue-300/20"
+                  style={{
+                    left: `${(scaleValue / 100) * 100}%`,
+                    top: `${20 + i * 15}%`,
+                  }}
+                  animate={{
+                    x: [-10, 10, -10],
+                    opacity: [0.3, 0.7, 0.3],
+                  }}
+                  transition={{
+                    duration: 2 + i * 0.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              ))}
+            </div>
+            
+            <div className="relative">
+              <Slider
+                value={[scaleValue]}
+                onValueChange={(value) => handleAnswer(question.id, value[0])}
+                min={0}
+                max={100}
+                step={1}
+                className="w-full cursor-grab active:cursor-grabbing"
+              />
+              
+              {/* Progress fill indicator */}
+              <div className="absolute -top-2 left-0 h-1 rounded-full overflow-hidden pointer-events-none">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${scaleValue}%` }}
+                  transition={{ type: "spring", stiffness: 100, damping: 15 }}
+                />
+              </div>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            className="flex items-center justify-center gap-3"
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 0.3 }}
+            key={scaleValue}
+          >
+            <motion.div
+              className="text-3xl"
+              animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.2, 1] }}
+              transition={{ duration: 0.5 }}
+            >
+              {getEmoji(scaleValue)}
+            </motion.div>
+            <div className="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-6 py-2 text-lg font-bold text-white shadow-lg">
               {scaleValue}%
             </div>
+          </motion.div>
+          
+          {/* Fun milestone messages - fixed height container */}
+          <div className="h-6 flex items-center justify-center">
+            <AnimatePresence mode="wait">
+              {scaleValue === 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="text-center text-sm text-gray-600 dark:text-gray-400"
+                >
+                  {language === 'ar' ? '🎯 ابدأ بتحريك المؤشر!' : '🎯 Start by moving the slider!'}
+                </motion.div>
+              )}
+              {scaleValue === 50 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="text-center text-sm font-medium text-purple-600 dark:text-purple-400"
+                >
+                  {language === 'ar' ? '⚖️ في المنتصف تماماً!' : '⚖️ Perfectly balanced!'}
+                </motion.div>
+              )}
+              {scaleValue === 100 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="text-center text-sm font-bold text-pink-600 dark:text-pink-400"
+                >
+                  {language === 'ar' ? '🎉 إلى أقصى حد!' : '🎉 Maximum power!'}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       );
@@ -235,7 +341,7 @@ export const AssessmentQuiz = ({ onComplete, onCancel, onSaveAndFinish }: Assess
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm font-medium text-gray-700 dark:text-gray-300">
           <span>{language === 'ar' ? 'التقدم العام' : 'Overall progress'}</span>
           <span>
-            {questionNumber} / {assessmentQuestions.length}
+            {Object.keys(answers).length} / {assessmentQuestions.length}
           </span>
         </div>
         <Progress value={progress} className="mt-3 h-3" />
@@ -298,45 +404,6 @@ export const AssessmentQuiz = ({ onComplete, onCancel, onSaveAndFinish }: Assess
         </motion.div>
       </AnimatePresence>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4" dir={direction}>
-        {categories.map((category) => {
-          const progressValue = Math.round(categoryProgressMap[category]);
-          const isActive = category === currentCategory;
-          const isComplete = progressValue >= 99;
-
-          return (
-            <motion.div
-              key={category}
-              whileHover={{ scale: 1.01 }}
-              className={cn(
-                'rounded-2xl border bg-white/80 p-4 text-sm shadow-sm backdrop-blur-sm transition-all dark:bg-slate-900/60',
-                isActive
-                  ? 'border-blue-400 shadow-lg ring-2 ring-blue-200/70 dark:border-blue-500 dark:ring-blue-500/30'
-                  : isComplete
-                  ? 'border-emerald-300 dark:border-emerald-600'
-                  : 'border-slate-200 dark:border-slate-800'
-              )}
-            >
-              <div className="flex items-center justify-between gap-2 text-gray-700 dark:text-gray-200">
-                <div className="flex items-center gap-2 font-semibold">
-                  {categoryIcons[category]}
-                  <span>{categoryLabels[category][languageKey]}</span>
-                </div>
-                {isComplete ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                ) : isActive ? (
-                  <span className="text-xs font-semibold text-blue-600 dark:text-blue-300">
-                    {language === 'ar' ? 'الآن' : 'Now'}
-                  </span>
-                ) : null}
-              </div>
-              <Progress value={progressValue} className="mt-3 h-2" />
-              <span className="mt-2 block text-xs text-gray-500 dark:text-gray-400">{progressValue}%</span>
-            </motion.div>
-          );
-        })}
-      </div>
-
       <AnimatePresence mode="wait">
         <motion.div key={currentQuestion.id} {...questionTransition}>
           <Card className="border-2 border-white/60 bg-white/90 shadow-xl backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/70">
@@ -378,44 +445,45 @@ export const AssessmentQuiz = ({ onComplete, onCancel, onSaveAndFinish }: Assess
                 </Button>
 
                 <div className="order-1 flex flex-1 gap-3 sm:order-2 sm:flex-none">
-                  {isLastQuestion && onSaveAndFinish && (
-                    <Button
-                      onClick={handleSaveAndFinish}
-                      disabled={!canProceed || isSaving}
-                      variant="outline"
-                      className="flex-1 gap-2 border-2 border-green-500 bg-green-50 text-base font-semibold text-green-700 shadow-lg transition-all hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-green-600 dark:bg-green-950/40 dark:text-green-300 dark:hover:bg-green-950/60 sm:flex-none"
-                    >
-                      {isSaving ? (
-                        <>
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                          {language === 'ar' ? 'جاري الحفظ...' : 'Saving...'}
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="h-5 w-5" />
-                          {language === 'ar' ? 'حفظ وإنهاء' : 'Save & Finish'}
-                        </>
-                      )}
-                    </Button>
-                  )}
-
-                  <Button
-                    onClick={handleNext}
-                    disabled={!canProceed}
-                    className="flex-1 gap-2 bg-blue-600 text-base font-semibold shadow-lg transition-all hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-300 dark:bg-blue-500 dark:hover:bg-blue-400 sm:flex-none"
-                  >
-                    {isLastQuestion ? (
-                      <>
+                  {isLastQuestion ? (
+                    onSaveAndFinish ? (
+                      <Button
+                        onClick={handleSaveAndFinish}
+                        disabled={!canProceed || isSaving}
+                        className="flex-1 gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-base font-semibold text-white shadow-lg transition-all hover:from-green-500 hover:to-emerald-500 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+                      >
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            {language === 'ar' ? 'جاري الحفظ...' : 'Saving...'}
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="h-5 w-5" />
+                            {language === 'ar' ? 'حفظ وإنهاء' : 'Save & Finish'}
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={handleNext}
+                        disabled={!canProceed}
+                        className="flex-1 gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-base font-semibold text-white shadow-lg transition-all hover:from-green-500 hover:to-emerald-500 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+                      >
                         <CheckCircle2 className="h-5 w-5" />
                         {language === 'ar' ? 'إنهاء' : 'Finish'}
-                      </>
-                    ) : (
-                      <>
-                        {language === 'ar' ? 'التالي' : 'Next'}
-                        <ChevronRight className="h-5 w-5" />
-                      </>
-                    )}
-                  </Button>
+                      </Button>
+                    )
+                  ) : (
+                    <Button
+                      onClick={handleNext}
+                      disabled={!canProceed}
+                      className="flex-1 gap-2 bg-blue-600 text-base font-semibold shadow-lg transition-all hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-300 dark:bg-blue-500 dark:hover:bg-blue-400 sm:flex-none"
+                    >
+                      {language === 'ar' ? 'التالي' : 'Next'}
+                      <ChevronRight className="h-5 w-5" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
