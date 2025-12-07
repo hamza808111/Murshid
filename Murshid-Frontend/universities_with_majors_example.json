@@ -1,0 +1,39 @@
+[
+  {
+    "name": "Umm Al-Qura University",
+    "name_ar": "جامعة أم القرى",
+    "city": "Makkah",
+    "location": "Makkah",
+    "location_ar": "مكة المكرمة",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 1981,
+    "website_url": "https://uqu.edu.sa",
+    "majors": ["Computer Science", "Engineering", "Medicine", "Business"]
+  },
+  {
+    "name": "King Khalid University",
+    "name_ar": "جامعة الملك خالد",
+    "city": "Abha",
+    "location": "Abha",
+    "location_ar": "أبها",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 1998,
+    "website_url": "https://kku.edu.sa",
+    "majors": ["Engineering", "Medicine", "IT"]
+  },
+  {
+    "name": "Qassim University",
+    "name_ar": "جامعة القصيم",
+    "city": "Buraydah",
+    "location": "Buraydah",
+    "location_ar": "بريدة",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2004,
+    "website_url": "https://qu.edu.sa",
+    "majors": ["Computer Science", "Engineering"]
+  }
+]
+

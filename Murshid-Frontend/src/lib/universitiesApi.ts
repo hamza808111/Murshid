@@ -127,6 +127,104 @@ export async function deleteUniversity(id: string): Promise<void> {
   }
 }
 
+// Bulk create universities (admin only)
+export async function bulkCreateUniversities(
+  universities: Omit<University, 'id' | 'created_at' | 'updated_at'>[],
+  createdBy?: string,
+  options?: {
+    assignAllMajors?: boolean;
+    majorIds?: string[];
+  }
+): Promise<{ success: University[]; errors: { index: number; error: string }[] }> {
+  const universitiesWithDefaults = universities.map(uni => ({
+    ...uni,
+    is_active: true,
+    country: uni.country || 'Saudi Arabia',
+    created_by: createdBy,
+  }));
+
+  const { data, error } = await supabase
+    .from('universities')
+    .insert(universitiesWithDefaults)
+    .select();
+
+  if (error) {
+    console.error('Error bulk creating universities:', error);
+    throw error;
+  }
+
+  const createdUniversities = data || [];
+
+  // Assign majors if requested
+  if (options?.assignAllMajors || options?.majorIds) {
+    let majorIdsToAssign: string[] = [];
+
+    if (options.assignAllMajors) {
+      // Fetch all active majors
+      const { data: allMajors, error: majorsError } = await supabase
+        .from('majors')
+        .select('id')
+        .eq('is_active', true);
+
+      if (majorsError) {
+        console.error('Error fetching majors for assignment:', majorsError);
+      } else {
+        majorIdsToAssign = allMajors?.map(m => m.id) || [];
+      }
+    } else if (options.majorIds) {
+      majorIdsToAssign = options.majorIds;
+    }
+
+    // Assign majors to all created universities
+    if (majorIdsToAssign.length > 0) {
+      const assignments = createdUniversities.flatMap(uni =>
+        majorIdsToAssign.map(majorId => ({
+          university_id: uni.id,
+          major_id: majorId,
+          is_available: true,
+        }))
+      );
+
+      const { error: assignError } = await supabase
+        .from('university_majors')
+        .insert(assignments);
+
+      if (assignError) {
+        console.error('Error assigning majors to universities:', assignError);
+        // Don't throw - universities were created successfully, just log the error
+      }
+    }
+  }
+
+  return {
+    success: createdUniversities,
+    errors: [],
+  };
+}
+
+// Bulk assign majors to universities
+export async function bulkAssignMajorsToUniversities(
+  universityIds: string[],
+  majorIds: string[]
+): Promise<void> {
+  const assignments = universityIds.flatMap(uniId =>
+    majorIds.map(majorId => ({
+      university_id: uniId,
+      major_id: majorId,
+      is_available: true,
+    }))
+  );
+
+  const { error } = await supabase
+    .from('university_majors')
+    .insert(assignments);
+
+  if (error) {
+    console.error('Error bulk assigning majors:', error);
+    throw error;
+  }
+}
+
 // Get unique cities for filter dropdown
 export async function getUniversityCities(): Promise<string[]> {
   const { data, error } = await supabase

@@ -1,0 +1,113 @@
+[
+  {
+    "name": "King Saud University",
+    "name_ar": "جامعة الملك سعود",
+    "city": "Riyadh",
+    "location": "Riyadh",
+    "location_ar": "الرياض",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 1957,
+    "website_url": "https://ksu.edu.sa"
+  },
+  {
+    "name": "King Fahd University of Petroleum and Minerals",
+    "name_ar": "جامعة الملك فهد للبترول والمعادن",
+    "city": "Dhahran",
+    "location": "Dhahran",
+    "location_ar": "الظهران",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 1963,
+    "website_url": "https://kfupm.edu.sa"
+  },
+  {
+    "name": "King Abdulaziz University",
+    "name_ar": "جامعة الملك عبدالعزيز",
+    "city": "Jeddah",
+    "location": "Jeddah",
+    "location_ar": "جدة",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 1967,
+    "website_url": "https://kau.edu.sa"
+  },
+  {
+    "name": "Imam Mohammad Ibn Saud Islamic University",
+    "name_ar": "جامعة الإمام محمد بن سعود الإسلامية",
+    "city": "Riyadh",
+    "location": "Riyadh",
+    "location_ar": "الرياض",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 1974,
+    "website_url": "https://imamu.edu.sa"
+  },
+  {
+    "name": "Umm Al-Qura University",
+    "name_ar": "جامعة أم القرى",
+    "city": "Makkah",
+    "location": "Makkah",
+    "location_ar": "مكة المكرمة",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 1981,
+    "website_url": "https://uqu.edu.sa"
+  },
+  {
+    "name": "King Khalid University",
+    "name_ar": "جامعة الملك خالد",
+    "city": "Abha",
+    "location": "Abha",
+    "location_ar": "أبها",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 1998,
+    "website_url": "https://kku.edu.sa"
+  },
+  {
+    "name": "Qassim University",
+    "name_ar": "جامعة القصيم",
+    "city": "Buraydah",
+    "location": "Buraydah",
+    "location_ar": "بريدة",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2004,
+    "website_url": "https://qu.edu.sa"
+  },
+  {
+    "name": "Taif University",
+    "name_ar": "جامعة الطائف",
+    "city": "Taif",
+    "location": "Taif",
+    "location_ar": "الطائف",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2003,
+    "website_url": "https://tu.edu.sa"
+  },
+  {
+    "name": "Prince Sultan University",
+    "name_ar": "جامعة الأمير سلطان",
+    "city": "Riyadh",
+    "location": "Riyadh",
+    "location_ar": "الرياض",
+    "university_type": "Private",
+    "country": "Saudi Arabia",
+    "establishment_year": 1999,
+    "website_url": "https://psu.edu.sa"
+  },
+  {
+    "name": "Alfaisal University",
+    "name_ar": "جامعة الفيصل",
+    "city": "Riyadh",
+    "location": "Riyadh",
+    "location_ar": "الرياض",
+    "university_type": "Private",
+    "country": "Saudi Arabia",
+    "establishment_year": 2002,
+    "website_url": "https://alfaisal.edu"
+  }
+]
+

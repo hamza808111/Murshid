@@ -1,0 +1,223 @@
+[
+  {
+    "name": "Umm Al-Qura University",
+    "name_ar": "جامعة أم القرى",
+    "city": "Makkah",
+    "location": "Makkah",
+    "location_ar": "مكة المكرمة",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 1981,
+    "website_url": "https://uqu.edu.sa",
+    "majors": []
+  },
+  {
+    "name": "King Khalid University",
+    "name_ar": "جامعة الملك خالد",
+    "city": "Abha",
+    "location": "Abha",
+    "location_ar": "أبها",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 1998,
+    "website_url": "https://kku.edu.sa"
+  },
+  {
+    "name": "Qassim University",
+    "name_ar": "جامعة القصيم",
+    "city": "Buraydah",
+    "location": "Buraydah",
+    "location_ar": "بريدة",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2004,
+    "website_url": "https://qu.edu.sa"
+  },
+  {
+    "name": "Taif University",
+    "name_ar": "جامعة الطائف",
+    "city": "Taif",
+    "location": "Taif",
+    "location_ar": "الطائف",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2003,
+    "website_url": "https://tu.edu.sa"
+  },
+  {
+    "name": "Prince Sultan University",
+    "name_ar": "جامعة الأمير سلطان",
+    "city": "Riyadh",
+    "location": "Riyadh",
+    "location_ar": "الرياض",
+    "university_type": "Private",
+    "country": "Saudi Arabia",
+    "establishment_year": 1999,
+    "website_url": "https://psu.edu.sa"
+  },
+  {
+    "name": "Alfaisal University",
+    "name_ar": "جامعة الفيصل",
+    "city": "Riyadh",
+    "location": "Riyadh",
+    "location_ar": "الرياض",
+    "university_type": "Private",
+    "country": "Saudi Arabia",
+    "establishment_year": 2002,
+    "website_url": "https://alfaisal.edu"
+  },
+  {
+    "name": "King Faisal University",
+    "name_ar": "جامعة الملك فيصل",
+    "city": "Al-Ahsa",
+    "location": "Al-Ahsa",
+    "location_ar": "الأحساء",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 1975,
+    "website_url": "https://kfu.edu.sa"
+  },
+  {
+    "name": "University of Tabuk",
+    "name_ar": "جامعة تبوك",
+    "city": "Tabuk",
+    "location": "Tabuk",
+    "location_ar": "تبوك",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2006,
+    "website_url": "https://ut.edu.sa"
+  },
+  {
+    "name": "Northern Border University",
+    "name_ar": "جامعة الحدود الشمالية",
+    "city": "Arar",
+    "location": "Arar",
+    "location_ar": "عرعر",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2007,
+    "website_url": "https://nbu.edu.sa"
+  },
+  {
+    "name": "Jazan University",
+    "name_ar": "جامعة جازان",
+    "city": "Jazan",
+    "location": "Jazan",
+    "location_ar": "جازان",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2005,
+    "website_url": "https://jazanu.edu.sa"
+  },
+  {
+    "name": "Najran University",
+    "name_ar": "جامعة نجران",
+    "city": "Najran",
+    "location": "Najran",
+    "location_ar": "نجران",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2006,
+    "website_url": "https://nu.edu.sa"
+  },
+  {
+    "name": "Hail University",
+    "name_ar": "جامعة حائل",
+    "city": "Hail",
+    "location": "Hail",
+    "location_ar": "حائل",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2005,
+    "website_url": "https://uoh.edu.sa"
+  },
+  {
+    "name": "Al-Baha University",
+    "name_ar": "جامعة الباحة",
+    "city": "Al-Baha",
+    "location": "Al-Baha",
+    "location_ar": "الباحة",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2006,
+    "website_url": "https://bu.edu.sa"
+  },
+  {
+    "name": "Jouf University",
+    "name_ar": "جامعة الجوف",
+    "city": "Sakaka",
+    "location": "Sakaka",
+    "location_ar": "سكاكا",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2005,
+    "website_url": "https://ju.edu.sa"
+  },
+  {
+    "name": "Prince Mohammad bin Fahd University",
+    "name_ar": "جامعة الأمير محمد بن فهد",
+    "city": "Al Khobar",
+    "location": "Al Khobar",
+    "location_ar": "الخبر",
+    "university_type": "Private",
+    "country": "Saudi Arabia",
+    "establishment_year": 2006,
+    "website_url": "https://pmu.edu.sa"
+  },
+  {
+    "name": "Effat University",
+    "name_ar": "جامعة عفت",
+    "city": "Jeddah",
+    "location": "Jeddah",
+    "location_ar": "جدة",
+    "university_type": "Private",
+    "country": "Saudi Arabia",
+    "establishment_year": 1999,
+    "website_url": "https://effatuniversity.edu.sa"
+  },
+  {
+    "name": "Dar Al-Hekma University",
+    "name_ar": "جامعة دار الحكمة",
+    "city": "Jeddah",
+    "location": "Jeddah",
+    "location_ar": "جدة",
+    "university_type": "Private",
+    "country": "Saudi Arabia",
+    "establishment_year": 1999,
+    "website_url": "https://dah.edu.sa"
+  },
+  {
+    "name": "Prince Sattam bin Abdulaziz University",
+    "name_ar": "جامعة الأمير سطام بن عبدالعزيز",
+    "city": "Al-Kharj",
+    "location": "Al-Kharj",
+    "location_ar": "الخرج",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2009,
+    "website_url": "https://psau.edu.sa"
+  },
+  {
+    "name": "Shaqra University",
+    "name_ar": "جامعة شقراء",
+    "city": "Shaqra",
+    "location": "Shaqra",
+    "location_ar": "شقراء",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2009,
+    "website_url": "https://su.edu.sa"
+  },
+  {
+    "name": "Majmaah University",
+    "name_ar": "جامعة المجمعة",
+    "city": "Majmaah",
+    "location": "Majmaah",
+    "location_ar": "المجمعة",
+    "university_type": "Public",
+    "country": "Saudi Arabia",
+    "establishment_year": 2009,
+    "website_url": "https://mu.edu.sa"
+  }
+]
