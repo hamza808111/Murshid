@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, LogIn, User, Bookmark, LayoutDashboard, MoreHorizontal, ChevronDown ,MessageSquare  } from "lucide-react";
+import NotificationBell from "./NotificationBell";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/contexts/I18nContext";
@@ -249,6 +250,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
               <div className="flex items-center gap-2">
                 {!user.is_admin && (
                   <>
+                    <NotificationBell />
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -345,23 +347,27 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
           <div className="md:hidden flex items-center gap-1 flex-shrink-0">
             <LanguageToggle />
             <ThemeToggle />
+            {/* Mobile - Always show Notifications icon */}
+            {user && !user.is_admin && <NotificationBell />}
             {/* Mobile - Always show Messages icon */}
-            <Link to="/messages" id="navbar-mobile-messages-top-link" className="relative">
-              <Button
-                variant="outline"
-                size="icon"
-                id="navbar-mobile-messages-top-button"
-                className="relative h-9 w-9 rounded-xl"
-              >
-                <MessageSquare className="h-4 w-4" />
-                {totalUnreadCount > 0 && !isOnMessagesPage  && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-pulse">
-                    {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
-                  </span>
-                )}
-                <span className="sr-only">Messages</span>
-              </Button>
-            </Link>
+            {user && !user.is_admin && (
+              <Link to="/messages" id="navbar-mobile-messages-top-link" className="relative">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  id="navbar-mobile-messages-top-button"
+                  className="relative h-9 w-9 rounded-xl"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  {totalUnreadCount > 0 && !isOnMessagesPage  && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-pulse">
+                      {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                    </span>
+                  )}
+                  <span className="sr-only">Messages</span>
+                </Button>
+              </Link>
+            )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               id="navbar-mobile-menu-toggle"

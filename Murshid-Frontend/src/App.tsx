@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { I18nProvider } from "@/contexts/I18nContext";
 import { MessagingProvider } from "@/contexts/MessagingContext";
+import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { Analytics } from "@vercel/analytics/react";
 import { useEffect } from "react";
 import { initializeCache } from "@/lib/tagTranslation";
@@ -153,7 +154,9 @@ const App = () => {
           <ScrollToTop />
           <AuthProvider>
           <MessagingProvider>
+          <NotificationsProvider>
             <AppContent />
+          </NotificationsProvider>
           </MessagingProvider>
             <HelpWidget />
           </AuthProvider>
