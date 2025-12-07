@@ -302,6 +302,14 @@ export default function Community() {
                       </Avatar>
                       
                       <div className="flex-1">
+                        {/* Targeting Badge */}
+                        {post.is_targeted && (
+                          <Badge variant="default" className="mb-2 bg-purple-500 hover:bg-purple-600">
+                            {post.target_type === 'major' 
+                              ? (language === 'ar' ? '🎯 موجه لتخصص' : '🎯 Targeted to Major')
+                              : (language === 'ar' ? '🎯 موجه لجامعة' : '🎯 Targeted to University')}
+                          </Badge>
+                        )}
                         <div className="flex items-center gap-2 mb-2">
                           <span 
                             className="font-medium text-gray-900 dark:text-gray-100 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"

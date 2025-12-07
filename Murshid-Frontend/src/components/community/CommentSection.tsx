@@ -6,13 +6,15 @@ import { CommentForm } from "./CommentForm";
 import { useI18n } from "@/contexts/I18nContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAnswerComments } from "@/lib/communityApi";
-import type { Comment } from "@/types/community";
+import type { Comment, Post } from "@/types/community";
 
 interface CommentSectionProps {
   answerId: string;
+  post?: Post;
+  canRespond?: boolean;
 }
 
-export const CommentSection = ({ answerId }: CommentSectionProps) => {
+export const CommentSection = ({ answerId, post, canRespond = true }: CommentSectionProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -90,7 +92,7 @@ export const CommentSection = ({ answerId }: CommentSectionProps) => {
           )}
         </Button>
 
-        {isExpanded && user && user.role && user.gender && !user.is_admin && (
+        {isExpanded && user && user.role && user.gender && !user.is_admin && canRespond && (
           <Button
             variant="ghost"
             size="sm"
@@ -110,7 +112,16 @@ export const CommentSection = ({ answerId }: CommentSectionProps) => {
 
       {isExpanded && (
         <div className="space-y-2">
-          {showCommentForm && (
+          {!canRespond && post?.is_targeted && (
+            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg text-center mb-4">
+              <p className="text-sm text-purple-700 dark:text-purple-300" dir={language}>
+                {language === "ar"
+                  ? "هذا السؤال موجه لتخصص أو جامعة معينة. فقط الطلاب/المتخصصون من التخصص أو الجامعة المحددة يمكنهم التعليق."
+                  : "This question is targeted to a specific Major or University. Only students/specialists from the selected Major or University can comment."}
+              </p>
+            </div>
+          )}
+          {showCommentForm && canRespond && (
             <div className="mb-4">
               <CommentForm
                 answerId={answerId}

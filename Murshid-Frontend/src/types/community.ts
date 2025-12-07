@@ -27,6 +27,10 @@ export interface Post {
   approved_by?: string;
   approved_at?: string;
   rejection_reason?: string;
+  is_targeted?: boolean;
+  target_major_id?: string;
+  target_university_id?: string;
+  target_type?: 'major' | 'university';
 }
 
 export interface Answer {
@@ -57,6 +61,10 @@ export interface CreatePostRequest {
   tags: string[];
   major_tags?: string[];
   university_tags?: string[];
+  is_targeted?: boolean;
+  target_major_id?: string;
+  target_university_id?: string;
+  target_type?: 'major' | 'university';
 }
 
 export interface CreateAnswerRequest {

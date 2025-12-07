@@ -11,8 +11,9 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useI18n } from "@/contexts/I18nContext";
 import { getUniversities } from "@/lib/universitiesApi";
+import { getMajors } from "@/lib/majorsApi";
 import { supabase } from "@/lib/supabase";
-import type { University } from "@/types/database";
+import type { University, Major } from "@/types/database";
 import { PageAnimation } from "@/components/animations/PageAnimation";
 import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
 
@@ -28,6 +29,9 @@ const ProfileSetup = () => {
   const [specialistProofFile, setSpecialistProofFile] = useState<File | null>(null);
   const [universities, setUniversities] = useState<University[]>([]);
   const [loadingUniversities, setLoadingUniversities] = useState(false);
+  const [majors, setMajors] = useState<Major[]>([]);
+  const [loadingMajors, setLoadingMajors] = useState(false);
+  const [selectedMajorId, setSelectedMajorId] = useState<string>("");
 
   const { user, updateProfile, refreshUser } = useAuth();
   const navigate = useNavigate();
@@ -69,6 +73,22 @@ const ProfileSetup = () => {
     load();
   }, []);
 
+  // Load majors list
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoadingMajors(true);
+        const data = await getMajors({});
+        setMajors(data || []);
+      } catch (e) {
+        console.error('Failed to load majors', e);
+      } finally {
+        setLoadingMajors(false);
+      }
+    };
+    load();
+  }, []);
+
   const handleCompleteLater = () => {
     // Allow user to skip profile completion and go to home
     navigate("/");
@@ -99,6 +119,11 @@ const ProfileSetup = () => {
         return;
       }
 
+      if (role === 'Specialist' && !selectedMajorId) {
+        toast.error(language === 'ar' ? 'يرجى اختيار التخصص' : 'Please select your major');
+        return;
+      }
+
       // Validate student type for students
       if (role === 'Student' && !student_type) {
         toast.error(language === 'ar' ? 'نوع الطالب مطلوب' : 'Student type is required');
@@ -111,6 +136,11 @@ const ProfileSetup = () => {
         return;
       }
 
+      // For specialists, use the selected major name as track
+      const finalTrack = role === 'Specialist' && selectedMajorId 
+        ? majors.find(m => m.id === selectedMajorId)?.name || ''
+        : track;
+
       await updateProfile(
         user.name,
         user.email,
@@ -119,7 +149,7 @@ const ProfileSetup = () => {
         gender,
         role,
         student_type,
-        track
+        finalTrack
       );
 
       // Update university_id if applicable
@@ -276,6 +306,47 @@ const ProfileSetup = () => {
                             <SelectContent>
                               <SelectItem value="High School">{t("auth.studentType.highSchool")}</SelectItem>
                               <SelectItem value="University">{t("auth.studentType.university")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      {/* Major selection for Specialists */}
+                      {role === 'Specialist' && (
+                        <div className="space-y-2">
+                          <Label htmlFor="profile-setup-major" className="text-gray-900 dark:text-gray-200">
+                            {language === 'ar' ? 'التخصص' : 'Major'} <span className="text-red-500">*</span>
+                          </Label>
+                          <Select 
+                            value={selectedMajorId} 
+                            onValueChange={(val) => {
+                              setSelectedMajorId(val);
+                              const major = majors.find(m => m.id === val);
+                              setTrack(major ? (language === 'ar' && major.name_ar ? major.name_ar : major.name) : '');
+                            }} 
+                            disabled={isLoading || loadingMajors}
+                          >
+                            <SelectTrigger id="profile-setup-major">
+                              <div className="flex items-center">
+                                <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
+                                <SelectValue placeholder={language === 'ar' ? 'اختر التخصص' : 'Select a major'} />
+                              </div>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {majors.length > 0 ? (
+                                majors.map((major) => {
+                                  const majorName = language === 'ar' && major.name_ar ? major.name_ar : major.name;
+                                  return (
+                                    <SelectItem key={major.id} value={major.id}>
+                                      {majorName}
+                                    </SelectItem>
+                                  );
+                                })
+                              ) : (
+                                <SelectItem value="" disabled>
+                                  {language === 'ar' ? 'لا توجد تخصصات' : 'No majors available'}
+                                </SelectItem>
+                              )}
                             </SelectContent>
                           </Select>
                         </div>

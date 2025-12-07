@@ -46,7 +46,8 @@ import {
   unlikeAnswer,
   acceptAnswer,
   unacceptAnswer,
-  deleteCommunityAnswer
+  deleteCommunityAnswer,
+  canUserRespondToPost
 } from '@/lib/communityApi';
 import { LikeButton } from '@/components/community/LikeButton';
 import { CommentSection } from '@/components/community/CommentSection';
@@ -71,6 +72,7 @@ export default function PostDetail() {
   const [showAnswerFormInline, setShowAnswerFormInline] = useState(false);
   const [deleteAnswerId, setDeleteAnswerId] = useState<string | null>(null);
   const [timeRefresh, setTimeRefresh] = useState(0);
+  const [canRespond, setCanRespond] = useState(true);
   const answerFormRef = useRef<HTMLDivElement>(null);
   const answerTextareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -143,6 +145,14 @@ export default function PostDetail() {
       setPost(fetchedPost);
       // Filter out deleted answers
       setAnswers(fetchedAnswers.filter(answer => !answer.is_deleted));
+
+      // Check if user can respond to targeted post
+      if (fetchedPost && user) {
+        const canUserRespond = await canUserRespondToPost(fetchedPost, user.id);
+        setCanRespond(canUserRespond);
+      } else {
+        setCanRespond(true);
+      }
     } catch (error) {
       console.error('Error fetching post details:', error);
       toast.error(language === 'ar' ? 'فشل تحميل تفاصيل المنشور' : 'Failed to load post details');
@@ -169,6 +179,16 @@ export default function PostDetail() {
 
     if (post && post.author_id === user.id) {
       toast.error(language === 'ar' ? 'لا يمكنك الإجابة على سؤالك الخاص' : 'You cannot answer your own question');
+      return;
+    }
+
+    // Check if user can respond to targeted post
+    if (post && !canRespond) {
+      toast.error(
+        language === 'ar'
+          ? 'هذا السؤال موجه لتخصص أو جامعة معينة. لا يمكنك الإجابة عليه.'
+          : 'This question is targeted to a specific Major or University. You cannot respond to it.'
+      );
       return;
     }
 
@@ -398,6 +418,17 @@ export default function PostDetail() {
                     </div>
                   )}
 
+                  {/* Targeting Badge */}
+                  {post.is_targeted && (
+                    <div className="mb-4">
+                      <Badge variant="default" className="bg-purple-500 hover:bg-purple-600">
+                        {post.target_type === 'major' 
+                          ? (language === 'ar' ? '🎯 موجه لتخصص معين' : '🎯 Targeted to Specific Major')
+                          : (language === 'ar' ? '🎯 موجه لجامعة معينة' : '🎯 Targeted to Specific University')}
+                      </Badge>
+                    </div>
+                  )}
+
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
                     {post.title}
                   </h1>
@@ -512,7 +543,15 @@ export default function PostDetail() {
                   
                 </div>
 
-                {!isProfileComplete ? (
+                {!canRespond && post.is_targeted ? (
+                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg text-center">
+                    <p className="text-purple-700 dark:text-purple-300" dir={language}>
+                      {language === 'ar'
+                        ? 'هذا السؤال موجه لتخصص أو جامعة معينة. فقط الطلاب/المتخصصون من التخصص أو الجامعة المحددة يمكنهم الإجابة والتعليق.'
+                        : 'This question is targeted to a specific Major or University. Only students/specialists from the selected Major or University can respond and comment.'}
+                    </p>
+                  </div>
+                ) : !isProfileComplete ? (
                   <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-center">
                     <p className="text-amber-700 dark:text-amber-300 mb-3">
                       {language === 'ar'
@@ -523,7 +562,7 @@ export default function PostDetail() {
                       {language === 'ar' ? 'إكمال الملف الشخصي' : 'Complete Profile'}
                     </Button>
                   </div>
-                ) : (
+                ) : canRespond ? (
                   <form onSubmit={(e) => {
                     handleSubmitAnswer(e);
                     setShowAnswerFormInline(false);
@@ -557,7 +596,7 @@ export default function PostDetail() {
                       </Button>
                     </div>
                   </form>
-                )}
+                ) : null}
               </Card>
             )}
 
@@ -701,7 +740,7 @@ export default function PostDetail() {
                           </div>
 
                           {/* Comments Section */}
-                          <CommentSection answerId={answer.id} />
+                          <CommentSection answerId={answer.id} post={post} canRespond={canRespond} />
                         </div>
                       </div>
                     </Card>
@@ -716,7 +755,15 @@ export default function PostDetail() {
                   {language === 'ar' ? 'اكتب إجابتك' : 'Write Your Answer'}
                 </h3>
 
-                {!isProfileComplete ? (
+                {!canRespond && post.is_targeted ? (
+                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg text-center">
+                    <p className="text-purple-700 dark:text-purple-300" dir={language}>
+                      {language === 'ar'
+                        ? 'هذا السؤال موجه لتخصص أو جامعة معينة. فقط الطلاب/المتخصصون من التخصص أو الجامعة المحددة يمكنهم الإجابة والتعليق.'
+                        : 'This question is targeted to a specific Major or University. Only students/specialists from the selected Major or University can respond and comment.'}
+                    </p>
+                  </div>
+                ) : !isProfileComplete ? (
                   <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-center">
                     <p className="text-amber-700 dark:text-amber-300 mb-3">
                       {language === 'ar'
@@ -727,7 +774,7 @@ export default function PostDetail() {
                       {language === 'ar' ? 'إكمال الملف الشخصي' : 'Complete Profile'}
                     </Button>
                   </div>
-                ) : (
+                ) : canRespond ? (
                   <form onSubmit={handleSubmitAnswer}>
                     <Textarea
                       ref={answerTextareaRef}
@@ -751,7 +798,7 @@ export default function PostDetail() {
                       </Button>
                     </div>
                   </form>
-                )}
+                ) : null}
               </Card>
             )}
           </div>

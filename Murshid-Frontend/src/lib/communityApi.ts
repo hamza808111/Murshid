@@ -58,6 +58,10 @@ const mapPost = (row: any): Post => ({
   approved_by: row.approved_by ?? undefined,
   approved_at: row.approved_at ?? undefined,
   rejection_reason: row.rejection_reason ?? undefined,
+  is_targeted: row.is_targeted ?? false,
+  target_major_id: row.target_major_id ?? undefined,
+  target_university_id: row.target_university_id ?? undefined,
+  target_type: row.target_type ?? undefined,
 });
 
 const mapAnswer = (row: any): Answer => ({
@@ -190,6 +194,10 @@ export async function createCommunityPost(payload: CreatePostRequest, author: Co
         author_academic_level: author.level,
         author_avatar: author.avatar_url,
         approval_status: approvalStatus,
+        is_targeted: payload.is_targeted ?? false,
+        target_major_id: payload.target_major_id ?? null,
+        target_university_id: payload.target_university_id ?? null,
+        target_type: payload.target_type ?? null,
       },
     ])
     .select()
@@ -222,6 +230,15 @@ export async function getPostAnswers(postId: string): Promise<Answer[]> {
 
 export async function createCommunityAnswer(payload: CreateAnswerRequest, author: CommunityAuthor): Promise<Answer> {
   const normalizedRole = getNormalizedRole(author);
+
+  // Check if post is targeted and user can respond
+  const post = await getCommunityPostById(payload.post_id);
+  if (post && post.is_targeted) {
+    const canRespond = await canUserRespondToPost(post, author.id);
+    if (!canRespond) {
+      throw new Error("You cannot respond to this targeted post. Only students/specialists from the selected Major or University can respond.");
+    }
+  }
 
   const { data, error } = await supabase
     .from("community_answers")
@@ -622,6 +639,23 @@ export async function getAnswerComments(answerId: string): Promise<Comment[]> {
 
 export async function createComment(payload: CreateCommentRequest, author: CommunityAuthor): Promise<Comment> {
   const normalizedRole = getNormalizedRole(author);
+
+  // Check if the answer's post is targeted and user can respond
+  const { data: answerData } = await supabase
+    .from("community_answers")
+    .select("post_id")
+    .eq("id", payload.answer_id)
+    .single();
+
+  if (answerData) {
+    const post = await getCommunityPostById(answerData.post_id);
+    if (post && post.is_targeted) {
+      const canRespond = await canUserRespondToPost(post, author.id);
+      if (!canRespond) {
+        throw new Error("You cannot comment on this targeted post. Only students/specialists from the selected Major or University can comment.");
+      }
+    }
+  }
 
   const { data, error } = await supabase
     .from("community_comments")
@@ -1233,4 +1267,94 @@ export async function getPendingPosts(): Promise<Post[]> {
   }
 
   return (data ?? []).map(mapPost);
+}
+
+// ============================================================================
+// POST TARGETING SYSTEM
+// ============================================================================
+
+/**
+ * Check if a user can respond to a targeted post
+ */
+export async function canUserRespondToPost(post: Post, userId: string): Promise<boolean> {
+  // If post is not targeted, anyone can respond
+  if (!post.is_targeted) {
+    return true;
+  }
+
+  // Get user profile
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("track, university_id, is_admin, role")
+    .eq("id", userId)
+    .single();
+
+  if (error || !profile) {
+    return false;
+  }
+
+  // Admins can always respond
+  if (profile.is_admin) {
+    return true;
+  }
+
+  // Check targeting
+  if (post.target_type === "major" && post.target_major_id) {
+    // Both students and specialists must have the same major (track)
+    // Specialists now select a major during signup
+    if (!profile.track) {
+      return false;
+    }
+
+    // Get the major by ID to compare names
+    const { data: targetMajor } = await supabase
+      .from("majors")
+      .select("name, name_ar")
+      .eq("id", post.target_major_id)
+      .single();
+
+    if (!targetMajor) {
+      return false;
+    }
+
+    // Match by major name (case-insensitive)
+    const userMajor = profile.track.toLowerCase();
+    const targetMajorName = (targetMajor.name || "").toLowerCase();
+    const targetMajorNameAr = (targetMajor.name_ar || "").toLowerCase();
+
+    return (
+      userMajor === targetMajorName ||
+      userMajor === targetMajorNameAr ||
+      userMajor.includes(targetMajorName) ||
+      targetMajorName.includes(userMajor)
+    );
+  }
+
+  if (post.target_type === "university" && post.target_university_id) {
+    // User must be from the same university
+    return profile.university_id === post.target_university_id;
+  }
+
+  return false;
+}
+
+/**
+ * Get user's major ID from their track name
+ */
+export async function getUserMajorId(trackName: string): Promise<string | null> {
+  if (!trackName) return null;
+
+  const { data, error } = await supabase
+    .from("majors")
+    .select("id")
+    .or(`name.ilike.%${trackName}%,name_ar.ilike.%${trackName}%`)
+    .eq("is_active", true)
+    .limit(1)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data.id;
 }

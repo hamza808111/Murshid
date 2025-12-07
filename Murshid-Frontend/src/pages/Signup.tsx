@@ -13,7 +13,8 @@ import PasswordValidationPopup from "@/components/PasswordValidationPopup";
 import PasswordInput from "@/components/PasswordInput";
 import { useI18n } from "@/contexts/I18nContext";
 import { getUniversities } from "@/lib/universitiesApi";
-import type { University } from "@/types/database";
+import { getMajors } from "@/lib/majorsApi";
+import type { University, Major } from "@/types/database";
 import { PageAnimation } from "@/components/animations/PageAnimation";
 import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
 
@@ -34,6 +35,9 @@ const Signup = () => {
   const [specialistProofFile, setSpecialistProofFile] = useState<File | null>(null);
   const [universities, setUniversities] = useState<University[]>([]);
   const [loadingUniversities, setLoadingUniversities] = useState(false);
+  const [majors, setMajors] = useState<Major[]>([]);
+  const [loadingMajors, setLoadingMajors] = useState(false);
+  const [selectedMajorId, setSelectedMajorId] = useState<string>("");
 
   const { user, signup, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -97,6 +101,22 @@ const Signup = () => {
     load();
   }, []);
 
+  // Load majors list (for Specialists)
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoadingMajors(true);
+        const data = await getMajors({});
+        setMajors(data || []);
+      } catch (e) {
+        console.error('Failed to load majors', e);
+      } finally {
+        setLoadingMajors(false);
+      }
+    };
+    load();
+  }, []);
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -120,6 +140,11 @@ const Signup = () => {
       }
       if (role === 'Specialist' && !selectedUniversityId) {
         toast.error(language === 'ar' ? 'يرجى اختيار الجامعة' : 'Please select your university');
+        return;
+      }
+
+      if (role === 'Specialist' && !selectedMajorId) {
+        toast.error(language === 'ar' ? 'يرجى اختيار التخصص' : 'Please select your major');
         return;
       }
       await signup(
@@ -457,24 +482,64 @@ const Signup = () => {
               )}
 
               {role === "Specialist" && (
-                <div className="space-y-2">
-                  <Label htmlFor="signup-level-specialist" className="text-gray-900 dark:text-gray-200">
-                    {t("auth.fields.academicLevel")}
-                  </Label>
-                  <Select value={level} onValueChange={setLevel} disabled={isLoading}>
-                    <SelectTrigger id="signup-level-specialist">
-                      <div className="flex items-center">
-                        <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
-                        <SelectValue placeholder={t("auth.placeholders.academicLevel")} />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="3rd Year" id="signup-level-specialist-3">{t("auth.academicLevel.year3")}</SelectItem>
-                      <SelectItem value="4th Year" id="signup-level-specialist-4">{t("auth.academicLevel.year4")}</SelectItem>
-                      <SelectItem value="Graduate" id="signup-level-specialist-graduate">{t("auth.academicLevel.graduate")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-major-specialist" className="text-gray-900 dark:text-gray-200">
+                      {language === 'ar' ? 'التخصص' : 'Major'}
+                      <span className="text-red-500 ml-1">*</span>
+                    </Label>
+                    <Select 
+                      value={selectedMajorId} 
+                      onValueChange={(val) => {
+                        setSelectedMajorId(val);
+                        const major = majors.find(m => m.id === val);
+                        setTrack(major ? (language === 'ar' && major.name_ar ? major.name_ar : major.name) : '');
+                      }} 
+                      disabled={isLoading || loadingMajors}
+                    >
+                      <SelectTrigger id="signup-major-specialist">
+                        <div className="flex items-center">
+                          <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
+                          <SelectValue placeholder={language === 'ar' ? 'اختر التخصص' : 'Select a major'} />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {majors.length > 0 ? (
+                          majors.map((major) => {
+                            const majorName = language === 'ar' && major.name_ar ? major.name_ar : major.name;
+                            return (
+                              <SelectItem key={major.id} value={major.id} id={`signup-major-${major.id}`}>
+                                {majorName}
+                              </SelectItem>
+                            );
+                          })
+                        ) : (
+                          <SelectItem value="" disabled>
+                            {language === 'ar' ? 'لا توجد تخصصات' : 'No majors available'}
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-level-specialist" className="text-gray-900 dark:text-gray-200">
+                      {t("auth.fields.academicLevel")}
+                    </Label>
+                    <Select value={level} onValueChange={setLevel} disabled={isLoading}>
+                      <SelectTrigger id="signup-level-specialist">
+                        <div className="flex items-center">
+                          <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
+                          <SelectValue placeholder={t("auth.placeholders.academicLevel")} />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="3rd Year" id="signup-level-specialist-3">{t("auth.academicLevel.year3")}</SelectItem>
+                        <SelectItem value="4th Year" id="signup-level-specialist-4">{t("auth.academicLevel.year4")}</SelectItem>
+                        <SelectItem value="Graduate" id="signup-level-specialist-graduate">{t("auth.academicLevel.graduate")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
               )}
               {role === "Specialist" && (
                 <div className="space-y-2">

@@ -6,6 +6,9 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { PageAnimation } from "@/components/animations/PageAnimation";
 import { ArrowLeft, X, Plus, Search } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
@@ -35,12 +38,22 @@ export default function CreatePost() {
   const [majorSearch, setMajorSearch] = useState('');
   const [showUniversityDropdown, setShowUniversityDropdown] = useState(false);
   const [showMajorDropdown, setShowMajorDropdown] = useState(false);
+  const [isTargeted, setIsTargeted] = useState(false);
+  const [targetType, setTargetType] = useState<'major' | 'university' | null>(null);
+  const [targetMajorId, setTargetMajorId] = useState<string | null>(null);
+  const [targetUniversityId, setTargetUniversityId] = useState<string | null>(null);
+  const [targetMajorSearch, setTargetMajorSearch] = useState('');
+  const [targetUniversitySearch, setTargetUniversitySearch] = useState('');
+  const [showTargetMajorDropdown, setShowTargetMajorDropdown] = useState(false);
+  const [showTargetUniversityDropdown, setShowTargetUniversityDropdown] = useState(false);
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
   
   const universityDropdownRef = useRef<HTMLDivElement>(null);
   const majorDropdownRef = useRef<HTMLDivElement>(null);
+  const targetMajorDropdownRef = useRef<HTMLDivElement>(null);
+  const targetUniversityDropdownRef = useRef<HTMLDivElement>(null);
 
   // Check if profile is complete
   const isProfileComplete = user && user.role && user.gender;
@@ -104,6 +117,55 @@ export default function CreatePost() {
     };
   }, [showMajorDropdown]);
 
+  // Close target major dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (targetMajorDropdownRef.current && !targetMajorDropdownRef.current.contains(event.target as Node)) {
+        setShowTargetMajorDropdown(false);
+      }
+    };
+
+    if (showTargetMajorDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showTargetMajorDropdown]);
+
+  // Close target university dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (targetUniversityDropdownRef.current && !targetUniversityDropdownRef.current.contains(event.target as Node)) {
+        setShowTargetUniversityDropdown(false);
+      }
+    };
+
+    if (showTargetUniversityDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showTargetUniversityDropdown]);
+
+  // Filtered lists for targeting
+  const filteredTargetMajors = majors.filter(major => {
+    if (!targetMajorSearch) return true;
+    const searchLower = targetMajorSearch.toLowerCase();
+    const name = (language === 'ar' && major.name_ar ? major.name_ar : major.name).toLowerCase();
+    return name.includes(searchLower);
+  });
+
+  const filteredTargetUniversities = universities.filter(university => {
+    if (!targetUniversitySearch) return true;
+    const searchLower = targetUniversitySearch.toLowerCase();
+    const name = (language === 'ar' && university.name_ar ? university.name_ar : university.name).toLowerCase();
+    return name.includes(searchLower);
+  });
+
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,6 +196,22 @@ export default function CreatePost() {
           : 'Content is too short (minimum 20 characters)'
       );
       return;
+    }
+
+    // Validate targeting
+    if (isTargeted) {
+      if (!targetType) {
+        toast.error(language === 'ar' ? 'يرجى اختيار نوع الاستهداف (تخصص أو جامعة)' : 'Please select target type (Major or University)');
+        return;
+      }
+      if (targetType === 'major' && !targetMajorId) {
+        toast.error(language === 'ar' ? 'يرجى اختيار التخصص المستهدف' : 'Please select a target major');
+        return;
+      }
+      if (targetType === 'university' && !targetUniversityId) {
+        toast.error(language === 'ar' ? 'يرجى اختيار الجامعة المستهدفة' : 'Please select a target university');
+        return;
+      }
     }
 
     // Content moderation
@@ -176,6 +254,10 @@ export default function CreatePost() {
         {
           ...formData,
           post_type: safePostType,
+          is_targeted: isTargeted,
+          target_type: isTargeted ? targetType : undefined,
+          target_major_id: isTargeted && targetType === 'major' ? targetMajorId : undefined,
+          target_university_id: isTargeted && targetType === 'university' ? targetUniversityId : undefined,
         },
         {
           id: user.id,
@@ -469,7 +551,183 @@ export default function CreatePost() {
                   </div>
                 </div>
 
+                {/* Post Targeting Section */}
+                <div className="border-t pt-6 mt-6">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Checkbox
+                      id="is-targeted"
+                      checked={isTargeted}
+                      onCheckedChange={(checked) => {
+                        setIsTargeted(checked as boolean);
+                        if (!checked) {
+                          setTargetType(null);
+                          setTargetMajorId(null);
+                          setTargetUniversityId(null);
+                        }
+                      }}
+                    />
+                    <Label htmlFor="is-targeted" className="text-sm font-medium cursor-pointer" dir={language}>
+                      {language === 'ar' 
+                        ? 'استهداف السؤال لتخصص أو جامعة معينة (اختياري)' 
+                        : 'Target this question to a specific Major or University (Optional)'}
+                    </Label>
+                  </div>
 
+                  {isTargeted && (
+                    <div className="space-y-4 pl-6 border-l-2 border-blue-200 dark:border-blue-800">
+                      <p className="text-xs text-gray-500 dark:text-gray-400" dir={language}>
+                        {language === 'ar' 
+                          ? 'عند الاستهداف، فقط الطلاب/المتخصصون من التخصص أو الجامعة المحددة يمكنهم الإجابة والتعليق' 
+                          : 'When targeted, only students/specialists from the selected Major or University can respond and comment'}
+                      </p>
+
+                      <RadioGroup
+                        value={targetType || ''}
+                        onValueChange={(value) => {
+                          setTargetType(value as 'major' | 'university' | null);
+                          setTargetMajorId(null);
+                          setTargetUniversityId(null);
+                          setTargetMajorSearch('');
+                          setTargetUniversitySearch('');
+                        }}
+                        dir={language}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="major" id="target-major" />
+                          <Label htmlFor="target-major" className="cursor-pointer" dir={language}>
+                            {language === 'ar' ? 'استهداف تخصص معين' : 'Target Specific Major'}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="university" id="target-university" />
+                          <Label htmlFor="target-university" className="cursor-pointer" dir={language}>
+                            {language === 'ar' ? 'استهداف جامعة معينة' : 'Target Specific University'}
+                          </Label>
+                        </div>
+                      </RadioGroup>
+
+                      {/* Target Major Selection */}
+                      {targetType === 'major' && (
+                        <div className="relative" ref={targetMajorDropdownRef}>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" dir={language}>
+                            {language === 'ar' ? 'اختر التخصص المستهدف' : 'Select Target Major'}
+                          </label>
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <Input
+                              value={targetMajorSearch}
+                              onChange={(e) => {
+                                setTargetMajorSearch(e.target.value);
+                                setShowTargetMajorDropdown(true);
+                              }}
+                              onFocus={() => setShowTargetMajorDropdown(true)}
+                              placeholder={language === 'ar' ? 'ابحث عن تخصص...' : 'Search for a major...'}
+                              className="rounded-xl pl-10"
+                              dir={language}
+                            />
+                            {showTargetMajorDropdown && filteredTargetMajors.length > 0 && (
+                              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-40 overflow-y-auto">
+                                {filteredTargetMajors.map((major) => {
+                                  const majorName = language === 'ar' && major.name_ar ? major.name_ar : major.name;
+                                  return (
+                                    <button
+                                      key={major.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setTargetMajorId(major.id);
+                                        setTargetMajorSearch(majorName);
+                                        setShowTargetMajorDropdown(false);
+                                      }}
+                                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-xl last:rounded-b-xl"
+                                    >
+                                      {majorName}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                          {targetMajorId && (
+                            <div className="mt-2">
+                              <Badge variant="default" className="flex items-center gap-1 w-fit">
+                                {language === 'ar' && majors.find(m => m.id === targetMajorId)?.name_ar 
+                                  ? majors.find(m => m.id === targetMajorId)?.name_ar 
+                                  : majors.find(m => m.id === targetMajorId)?.name}
+                                <X 
+                                  className="w-3 h-3 cursor-pointer" 
+                                  onClick={() => {
+                                    setTargetMajorId(null);
+                                    setTargetMajorSearch('');
+                                  }}
+                                />
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Target University Selection */}
+                      {targetType === 'university' && (
+                        <div className="relative" ref={targetUniversityDropdownRef}>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" dir={language}>
+                            {language === 'ar' ? 'اختر الجامعة المستهدفة' : 'Select Target University'}
+                          </label>
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <Input
+                              value={targetUniversitySearch}
+                              onChange={(e) => {
+                                setTargetUniversitySearch(e.target.value);
+                                setShowTargetUniversityDropdown(true);
+                              }}
+                              onFocus={() => setShowTargetUniversityDropdown(true)}
+                              placeholder={language === 'ar' ? 'ابحث عن جامعة...' : 'Search for a university...'}
+                              className="rounded-xl pl-10"
+                              dir={language}
+                            />
+                            {showTargetUniversityDropdown && filteredTargetUniversities.length > 0 && (
+                              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-40 overflow-y-auto">
+                                {filteredTargetUniversities.map((university) => {
+                                  const universityName = language === 'ar' && university.name_ar ? university.name_ar : university.name;
+                                  return (
+                                    <button
+                                      key={university.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setTargetUniversityId(university.id);
+                                        setTargetUniversitySearch(universityName);
+                                        setShowTargetUniversityDropdown(false);
+                                      }}
+                                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-xl last:rounded-b-xl"
+                                    >
+                                      {universityName}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                          {targetUniversityId && (
+                            <div className="mt-2">
+                              <Badge variant="default" className="flex items-center gap-1 w-fit">
+                                {language === 'ar' && universities.find(u => u.id === targetUniversityId)?.name_ar 
+                                  ? universities.find(u => u.id === targetUniversityId)?.name_ar 
+                                  : universities.find(u => u.id === targetUniversityId)?.name}
+                                <X 
+                                  className="w-3 h-3 cursor-pointer" 
+                                  onClick={() => {
+                                    setTargetUniversityId(null);
+                                    setTargetUniversitySearch('');
+                                  }}
+                                />
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Submit Button */}
                 <div className="flex justify-end gap-4">
