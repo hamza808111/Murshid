@@ -31,6 +31,10 @@ export interface Post {
   target_major_id?: string;
   target_university_id?: string;
   target_type?: 'major' | 'university';
+  target_major_name?: string;
+  target_major_name_ar?: string;
+  target_university_name?: string;
+  target_university_name_ar?: string;
 }
 
 export interface Answer {

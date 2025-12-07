@@ -500,6 +500,17 @@ const AdminCommunity = () => {
                                     {language === "ar" ? "مرفوض" : "Rejected"}
                                   </Badge>
                                 )}
+                                {post.is_targeted && (
+                                  <Badge variant="default" className="bg-purple-500 hover:bg-purple-600">
+                                    {post.target_type === 'major' 
+                                      ? (language === 'ar' 
+                                          ? `🎯 موجه لتخصص: ${post.target_major_name_ar || post.target_major_name || 'تخصص'}`
+                                          : `🎯 Targeted: ${post.target_major_name || 'Major'}`)
+                                      : (language === 'ar' 
+                                          ? `🎯 موجه لجامعة: ${post.target_university_name_ar || post.target_university_name || 'جامعة'}`
+                                          : `🎯 Targeted: ${post.target_university_name || 'University'}`)}
+                                  </Badge>
+                                )}
                                 <div className="flex items-center gap-1">
                                   <Heart className="w-4 h-4" />
                                   <span>{post.likes_count || 0}</span>

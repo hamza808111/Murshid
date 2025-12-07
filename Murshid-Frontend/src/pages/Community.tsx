@@ -305,9 +305,17 @@ export default function Community() {
                         {/* Targeting Badge */}
                         {post.is_targeted && (
                           <Badge variant="default" className="mb-2 bg-purple-500 hover:bg-purple-600">
-                            {post.target_type === 'major' 
-                              ? (language === 'ar' ? '🎯 موجه لتخصص' : '🎯 Targeted to Major')
-                              : (language === 'ar' ? '🎯 موجه لجامعة' : '🎯 Targeted to University')}
+                            {post.target_type === 'major' && post.target_major_id
+                              ? (language === 'ar' 
+                                  ? `🎯 موجه لتخصص: ${post.target_major_name_ar || post.target_major_name || 'جاري التحميل...'}`
+                                  : `🎯 Targeted to Major: ${post.target_major_name || 'Loading...'}`)
+                              : post.target_type === 'university' && post.target_university_id
+                              ? (language === 'ar' 
+                                  ? `🎯 موجه لجامعة: ${post.target_university_name_ar || post.target_university_name || 'جاري التحميل...'}`
+                                  : `🎯 Targeted to University: ${post.target_university_name || 'Loading...'}`)
+                              : (language === 'ar' 
+                                  ? '🎯 موجه لتخصص/جامعة'
+                                  : '🎯 Targeted')}
                           </Badge>
                         )}
                         <div className="flex items-center gap-2 mb-2">

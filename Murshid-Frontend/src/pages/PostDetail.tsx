@@ -422,9 +422,17 @@ export default function PostDetail() {
                   {post.is_targeted && (
                     <div className="mb-4">
                       <Badge variant="default" className="bg-purple-500 hover:bg-purple-600">
-                        {post.target_type === 'major' 
-                          ? (language === 'ar' ? '🎯 موجه لتخصص معين' : '🎯 Targeted to Specific Major')
-                          : (language === 'ar' ? '🎯 موجه لجامعة معينة' : '🎯 Targeted to Specific University')}
+                        {post.target_type === 'major' && post.target_major_id
+                          ? (language === 'ar' 
+                              ? `🎯 موجه لتخصص: ${post.target_major_name_ar || post.target_major_name || 'جاري التحميل...'}`
+                              : `🎯 Targeted to Major: ${post.target_major_name || 'Loading...'}`)
+                          : post.target_type === 'university' && post.target_university_id
+                          ? (language === 'ar' 
+                              ? `🎯 موجه لجامعة: ${post.target_university_name_ar || post.target_university_name || 'جاري التحميل...'}`
+                              : `🎯 Targeted to University: ${post.target_university_name || 'Loading...'}`)
+                          : (language === 'ar' 
+                              ? '🎯 موجه لتخصص/جامعة معينة'
+                              : '🎯 Targeted to Specific Major/University')}
                       </Badge>
                     </div>
                   )}

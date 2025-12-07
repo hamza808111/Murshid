@@ -62,6 +62,10 @@ const mapPost = (row: any): Post => ({
   target_major_id: row.target_major_id ?? undefined,
   target_university_id: row.target_university_id ?? undefined,
   target_type: row.target_type ?? undefined,
+  target_major_name: row.target_major?.name ?? undefined,
+  target_major_name_ar: row.target_major?.name_ar ?? undefined,
+  target_university_name: row.target_university?.name ?? undefined,
+  target_university_name_ar: row.target_university?.name_ar ?? undefined,
 });
 
 const mapAnswer = (row: any): Answer => ({
@@ -91,6 +95,77 @@ const getNormalizedRole = (author: CommunityAuthor): Post["author_role"] => {
   if (role === "specialist") return "specialist";
   return "student";
 };
+
+/**
+ * Enrich posts with target major/university names
+ */
+async function enrichPostsWithTargetNames(posts: Post[]): Promise<void> {
+  if (!posts || posts.length === 0) return;
+
+  // Get unique major and university IDs
+  const majorIds = [...new Set(posts.filter(p => p.target_major_id).map(p => p.target_major_id!))];
+  const universityIds = [...new Set(posts.filter(p => p.target_university_id).map(p => p.target_university_id!))];
+
+  // Fetch majors
+  const majorsMap = new Map<string, { name: string; name_ar?: string }>();
+  if (majorIds.length > 0) {
+    try {
+      const { data: majors, error: majorsError } = await supabase
+        .from("majors")
+        .select("id, name, name_ar")
+        .in("id", majorIds);
+      
+      if (majorsError) {
+        console.error("Error fetching target majors:", majorsError);
+      } else {
+        majors?.forEach(major => {
+          majorsMap.set(major.id, { name: major.name, name_ar: major.name_ar });
+        });
+      }
+    } catch (error) {
+      console.error("Error in enrichPostsWithTargetNames (majors):", error);
+    }
+  }
+
+  // Fetch universities
+  const universitiesMap = new Map<string, { name: string; name_ar?: string }>();
+  if (universityIds.length > 0) {
+    try {
+      const { data: universities, error: universitiesError } = await supabase
+        .from("universities")
+        .select("id, name, name_ar")
+        .in("id", universityIds);
+      
+      if (universitiesError) {
+        console.error("Error fetching target universities:", universitiesError);
+      } else {
+        universities?.forEach(university => {
+          universitiesMap.set(university.id, { name: university.name, name_ar: university.name_ar });
+        });
+      }
+    } catch (error) {
+      console.error("Error in enrichPostsWithTargetNames (universities):", error);
+    }
+  }
+
+  // Enrich posts with names
+  posts.forEach(post => {
+    if (post.target_major_id) {
+      const major = majorsMap.get(post.target_major_id);
+      if (major) {
+        post.target_major_name = major.name;
+        post.target_major_name_ar = major.name_ar;
+      }
+    }
+    if (post.target_university_id) {
+      const university = universitiesMap.get(post.target_university_id);
+      if (university) {
+        post.target_university_name = university.name;
+        post.target_university_name_ar = university.name_ar;
+      }
+    }
+  });
+}
 
 const checkIsAdmin = async (userId: string): Promise<boolean> => {
   const { data, error } = await supabase
@@ -140,7 +215,11 @@ export async function getCommunityPosts(params?: { search?: string; type?: "all"
     throw error;
   }
 
-  return (data ?? []).map(mapPost);
+  // Fetch target major/university names for targeted posts
+  const posts = (data ?? []).map(mapPost);
+  await enrichPostsWithTargetNames(posts);
+  
+  return posts;
 }
 
 export async function getCommunityPostById(id: string): Promise<Post | null> {
@@ -166,7 +245,12 @@ export async function getCommunityPostById(id: string): Promise<Post | null> {
     throw error;
   }
 
-  return data ? mapPost(data) : null;
+  if (!data) return null;
+
+  const post = mapPost(data);
+  await enrichPostsWithTargetNames([post]);
+  
+  return post;
 }
 
 export async function createCommunityPost(payload: CreatePostRequest, author: CommunityAuthor): Promise<Post> {
@@ -280,7 +364,10 @@ export async function getCommunityPostsByAuthor(authorId: string): Promise<Post[
     throw error;
   }
 
-  return (data ?? []).map(mapPost);
+  const posts = (data ?? []).map(mapPost);
+  await enrichPostsWithTargetNames(posts);
+  
+  return posts;
 }
 
 // Admin function to get ALL posts including deleted ones
@@ -295,7 +382,10 @@ export async function getAllCommunityPostsForAdmin(): Promise<Post[]> {
     throw error;
   }
 
-  return (data ?? []).map(mapPost);
+  const posts = (data ?? []).map(mapPost);
+  await enrichPostsWithTargetNames(posts);
+  
+  return posts;
 }
 
 export async function getCommunityAnswersByAuthor(authorId: string): Promise<Answer[]> {
@@ -1242,7 +1332,7 @@ export async function rejectPost(postId: string, adminId: string, reason?: strin
       rejection_reason: reason || null,
     })
     .eq("id", postId)
-    .select()
+    .select("*")
     .single();
 
   if (error) {
@@ -1250,7 +1340,10 @@ export async function rejectPost(postId: string, adminId: string, reason?: strin
     throw new Error(error.message || "Failed to reject post");
   }
 
-  return mapPost(data);
+  const post = mapPost(data);
+  await enrichPostsWithTargetNames([post]);
+  
+  return post;
 }
 
 export async function getPendingPosts(): Promise<Post[]> {
@@ -1266,7 +1359,10 @@ export async function getPendingPosts(): Promise<Post[]> {
     throw error;
   }
 
-  return (data ?? []).map(mapPost);
+  const posts = (data ?? []).map(mapPost);
+  await enrichPostsWithTargetNames(posts);
+  
+  return posts;
 }
 
 // ============================================================================

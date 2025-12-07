@@ -188,6 +188,17 @@ export default function MyPosts() {
                                   {language === 'ar' ? 'قيد المراجعة' : 'Pending Review'}
                                 </Badge>
                               )}
+                              {post.is_targeted && (
+                                <Badge variant="default" className="bg-purple-500 hover:bg-purple-600">
+                                  {post.target_type === 'major' 
+                                    ? (language === 'ar' 
+                                        ? `🎯 موجه لتخصص: ${post.target_major_name_ar || post.target_major_name || 'تخصص'}`
+                                        : `🎯 Targeted: ${post.target_major_name || 'Major'}`)
+                                    : (language === 'ar' 
+                                        ? `🎯 موجه لجامعة: ${post.target_university_name_ar || post.target_university_name || 'جامعة'}`
+                                        : `🎯 Targeted: ${post.target_university_name || 'University'}`)}
+                                </Badge>
+                              )}
                               {post.approval_status === "rejected" && (
                                 <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
                                   <Ban className="w-3 h-3 mr-1" />
