@@ -278,6 +278,45 @@ export default function HelpPage() {
       },
       keywords: ['report', 'flag', 'inappropriate', 'spam', 'إبلاغ', 'غير مناسب', 'رسائل مزعجة']
     },
+    {
+      id: 'community-5',
+      category: 'community',
+      question: {
+        en: 'What are targeted questions?',
+        ar: 'ما هي الأسئلة المستهدفة؟'
+      },
+      answer: {
+        en: 'Targeted questions allow you to ask questions specifically to students/specialists from a certain major or university. When creating a post, you can optionally enable targeting and select either a specific major or university. Only users from that major/university (plus admins) can respond or comment on targeted posts. This helps you get more relevant answers from the right audience.',
+        ar: 'الأسئلة المستهدفة تتيح لك طرح أسئلة محددة للطلاب/المتخصصين من تخصص أو جامعة معينة. عند إنشاء منشور، يمكنك اختياريًا تفعيل الاستهداف واختيار تخصص أو جامعة معينة. فقط المستخدمون من ذلك التخصص/الجامعة (بالإضافة إلى المشرفين) يمكنهم الرد أو التعليق على المنشورات المستهدفة. يساعدك هذا في الحصول على إجابات أكثر صلة من الجمهور المناسب.'
+      },
+      keywords: ['targeted', 'major', 'university', 'restricted', 'مستهدف', 'تخصص', 'جامعة', 'مقيد']
+    },
+    {
+      id: 'community-6',
+      category: 'community',
+      question: {
+        en: 'Why can\'t I respond to a targeted question?',
+        ar: 'لماذا لا يمكنني الرد على سؤال مستهدف؟'
+      },
+      answer: {
+        en: 'If you see a message saying you cannot respond to a targeted question, it means the question is specifically directed to students/specialists from a different major or university than yours. Only users matching the target criteria can respond. You can still view the question and its answers, but cannot add your own response or comments.',
+        ar: 'إذا رأيت رسالة تقول إنك لا يمكنك الرد على سؤال مستهدف، فهذا يعني أن السؤال موجه خصيصًا للطلاب/المتخصصين من تخصص أو جامعة مختلفة عن تخصصك أو جامعتك. فقط المستخدمون المطابقون لمعايير الهدف يمكنهم الرد. لا يزال بإمكانك عرض السؤال وإجاباته، ولكن لا يمكنك إضافة ردك أو تعليقاتك.'
+      },
+      keywords: ['cannot respond', 'restricted', 'targeted', 'لا يمكن الرد', 'مقيد', 'مستهدف']
+    },
+    {
+      id: 'account-5',
+      category: 'account',
+      question: {
+        en: 'Do specialists need to select a major?',
+        ar: 'هل يحتاج المتخصصون لاختيار تخصص؟'
+      },
+      answer: {
+        en: 'Yes! Specialists must select their major during signup or profile setup. This ensures specialists can respond to questions targeted to their field of expertise. The major selection is required and helps match specialists with relevant questions in the community.',
+        ar: 'نعم! يجب على المتخصصين اختيار تخصصهم أثناء التسجيل أو إعداد الملف الشخصي. يضمن هذا أن المتخصصين يمكنهم الرد على الأسئلة الموجهة لمجال خبرتهم. اختيار التخصص مطلوب ويساعد في مطابقة المتخصصين مع الأسئلة ذات الصلة في المجتمع.'
+      },
+      keywords: ['specialist', 'major', 'required', 'متخصص', 'تخصص', 'مطلوب']
+    },
 
     // Features
     {
@@ -585,7 +624,11 @@ export default function HelpPage() {
                       ? 'إذا لم تجد ما تبحث عنه، فريق الدعم لدينا هنا لمساعدتك. اتصل بنا وسنعود إليك في أقرب وقت ممكن.'
                       : 'If you didn\'t find what you\'re looking for, our support team is here to help. Contact us and we\'ll get back to you as soon as possible.'}
                   </p>
-                  <Button size="lg" className="rounded-xl gap-2">
+                  <Button 
+                    size="lg" 
+                    className="rounded-xl gap-2"
+                    onClick={() => window.location.href = '/contact'}
+                  >
                     <Mail className="w-4 h-4" />
                     {language === 'ar' ? 'اتصل بالدعم' : 'Contact Support'}
                     <ExternalLink className="w-4 h-4" />
