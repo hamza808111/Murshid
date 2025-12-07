@@ -172,7 +172,7 @@ export default function CreatePost() {
         toast.info(language === 'ar' ? 'الطلاب يمكنهم نشر الأسئلة فقط' : 'Students can only create questions');
       }
 
-      await createCommunityPost(
+      const createdPost = await createCommunityPost(
         {
           ...formData,
           post_type: safePostType,
@@ -190,7 +190,16 @@ export default function CreatePost() {
         }
       );
 
-      toast.success(language === 'ar' ? 'Post created successfully' : 'Post created successfully');
+      // Show different messages based on approval status
+      if (createdPost.approval_status === 'pending') {
+        toast.success(
+          language === 'ar' 
+            ? 'تم إنشاء المنشور بنجاح! سيتم مراجعته من قبل المشرف قبل النشر.' 
+            : 'Post created successfully! It will be reviewed by an admin before being published.'
+        );
+      } else {
+        toast.success(language === 'ar' ? 'تم إنشاء المنشور بنجاح' : 'Post created successfully');
+      }
       navigate('/community');
     } catch (error: any) {
       console.error('Error creating post:', error);

@@ -18,14 +18,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MessageSquare, Loader2, Trash2, ArrowLeft, Eye, Heart, CheckCircle2, Flag, Ban, XCircle } from "lucide-react";
+import { MessageSquare, Loader2, Trash2, ArrowLeft, Eye, Heart, CheckCircle2, Flag, Ban, XCircle, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { useI18n } from "@/contexts/I18nContext";
 import { PageAnimation } from "@/components/animations/PageAnimation";
 import { ScrollAnimation } from "@/components/animations/ScrollAnimation";
 import { DeletionReasonDialog } from "@/components/DeletionReasonDialog";
-import { getCommunityPosts, deleteCommunityPost, deleteCommunityAnswer, deleteComment, getAnswers, getComments, getReports, updateReportStatus, getCommunityPostById } from "@/lib/communityApi";
+import { getCommunityPosts, deleteCommunityPost, deleteCommunityAnswer, deleteComment, getAnswers, getComments, getReports, updateReportStatus, getCommunityPostById, approvePost, rejectPost, getPendingPosts } from "@/lib/communityApi";
 import type { Post, Answer, Comment, ReportWithContent, ReportStatus } from "@/types/community";
 import { supabase } from "@/lib/supabase";
 
@@ -41,6 +41,7 @@ const AdminCommunity = () => {
   const [reports, setReports] = useState<ReportWithContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"posts" | "answers" | "comments" | "reports">("posts");
+  const [approving, setApproving] = useState<string | null>(null);
 
   // Restore active tab from location state if available
   useEffect(() => {
@@ -281,6 +282,38 @@ const AdminCommunity = () => {
 
   const filteredReports = reportFilter === "all" ? reports : reports.filter(r => r.status === reportFilter);
   const pendingReportsCount = reports.filter(r => r.status === "pending").length;
+  const pendingPostsCount = posts.filter(p => p.approval_status === "pending" && !p.is_deleted).length;
+  
+  const handleApprovePost = async (postId: string) => {
+    if (!user) return;
+    try {
+      setApproving(postId);
+      await approvePost(postId, user.id);
+      toast.success(language === "ar" ? "تم الموافقة على المنشور" : "Post approved");
+      await fetchData();
+    } catch (error) {
+      console.error("Error approving post:", error);
+      toast.error(language === "ar" ? "فشل الموافقة على المنشور" : "Failed to approve post");
+    } finally {
+      setApproving(null);
+    }
+  };
+
+  const handleRejectPost = async (postId: string) => {
+    if (!user) return;
+    const reason = prompt(language === "ar" ? "سبب الرفض (اختياري):" : "Rejection reason (optional):");
+    try {
+      setApproving(postId);
+      await rejectPost(postId, user.id, reason || undefined);
+      toast.success(language === "ar" ? "تم رفض المنشور" : "Post rejected");
+      await fetchData();
+    } catch (error) {
+      console.error("Error rejecting post:", error);
+      toast.error(language === "ar" ? "فشل رفض المنشور" : "Failed to reject post");
+    } finally {
+      setApproving(null);
+    }
+  };
 
   if (!user || user.is_admin !== true) {
     return null;
@@ -319,8 +352,8 @@ const AdminCommunity = () => {
               </div>
             </div>
 
-            {/* Stats - 2x2 grid on mobile, 4 columns on larger screens */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {/* Stats - 2x2 grid on mobile, 5 columns on larger screens */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -351,6 +384,20 @@ const AdminCommunity = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">{comments.length}</div>
+                </CardContent>
+              </Card>
+
+              <Card className={pendingPostsCount > 0 ? "border-yellow-200 dark:border-yellow-800" : ""}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4" />
+                    {language === "ar" ? "المنشورات المعلقة" : "Pending Posts"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-3xl font-bold ${pendingPostsCount > 0 ? "text-yellow-600" : ""}`}>
+                    {pendingPostsCount}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -443,6 +490,16 @@ const AdminCommunity = () => {
                                     ? language === "ar" ? "طالب" : "Student"
                                     : language === "ar" ? "مشرف" : "Admin"}
                                 </Badge>
+                                {post.approval_status === "pending" && (
+                                  <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700">
+                                    {language === "ar" ? "قيد المراجعة" : "Pending"}
+                                  </Badge>
+                                )}
+                                {post.approval_status === "rejected" && (
+                                  <Badge variant="outline" className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-300 dark:border-red-700">
+                                    {language === "ar" ? "مرفوض" : "Rejected"}
+                                  </Badge>
+                                )}
                                 <div className="flex items-center gap-1">
                                   <Heart className="w-4 h-4" />
                                   <span>{post.likes_count || 0}</span>
@@ -459,17 +516,55 @@ const AdminCommunity = () => {
                               </div>
                             </div>
 
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteClick(post.id, "post", post.title);
-                              }}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              {post.approval_status === "pending" && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleApprovePost(post.id);
+                                    }}
+                                    disabled={approving === post.id}
+                                    className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                  >
+                                    {approving === post.id ? (
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                      <Check className="w-4 h-4" />
+                                    )}
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRejectPost(post.id);
+                                    }}
+                                    disabled={approving === post.id}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  >
+                                    {approving === post.id ? (
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                      <X className="w-4 h-4" />
+                                    )}
+                                  </Button>
+                                </>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(post.id, "post", post.title);
+                                }}
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
                         </Card>
                       ))}

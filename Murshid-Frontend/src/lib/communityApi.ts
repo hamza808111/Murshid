@@ -54,6 +54,10 @@ const mapPost = (row: any): Post => ({
   deleted_at: row.deleted_at ?? undefined,
   deleted_by: row.deleted_by ?? undefined,
   deletion_reason: row.deletion_reason ?? undefined,
+  approval_status: row.approval_status ?? 'approved',
+  approved_by: row.approved_by ?? undefined,
+  approved_at: row.approved_at ?? undefined,
+  rejection_reason: row.rejection_reason ?? undefined,
 });
 
 const mapAnswer = (row: any): Answer => ({
@@ -84,12 +88,31 @@ const getNormalizedRole = (author: CommunityAuthor): Post["author_role"] => {
   return "student";
 };
 
+const checkIsAdmin = async (userId: string): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", userId)
+    .single();
+  
+  if (error || !data) return false;
+  return data.is_admin === true;
+};
+
 export async function getCommunityPosts(params?: { search?: string; type?: "all" | "questions" | "discussions" | "announcements" }): Promise<Post[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  const isAdmin = user ? await checkIsAdmin(user.id) : false;
+  
   let query = supabase
     .from("community_posts")
     .select("*")
     .eq("is_deleted", false)
     .order("created_at", { ascending: false });
+  
+  // Non-admins only see approved posts
+  if (!isAdmin) {
+    query = query.eq("approval_status", "approved");
+  }
 
   if (params?.type && params.type !== "all") {
     const typeMap: Record<string, string> = {
@@ -117,11 +140,22 @@ export async function getCommunityPosts(params?: { search?: string; type?: "all"
 }
 
 export async function getCommunityPostById(id: string): Promise<Post | null> {
-  const { data, error } = await supabase
+  const { data: { user } } = await supabase.auth.getUser();
+  const isAdmin = user ? await checkIsAdmin(user.id) : false;
+  
+  let query = supabase
     .from("community_posts")
     .select("*")
-    .eq("id", id)
-    .single();
+    .eq("id", id);
+  
+  // Non-admins can only view approved posts (unless it's their own post)
+  if (!isAdmin && user) {
+    query = query.or(`approval_status.eq.approved,author_id.eq.${user.id}`);
+  } else if (!isAdmin) {
+    query = query.eq("approval_status", "approved");
+  }
+  
+  const { data, error } = await query.single();
 
   if (error) {
     console.error("Error fetching post:", error);
@@ -134,6 +168,9 @@ export async function getCommunityPostById(id: string): Promise<Post | null> {
 export async function createCommunityPost(payload: CreatePostRequest, author: CommunityAuthor): Promise<Post> {
   const normalizedRole = getNormalizedRole(author);
   const safePostType = normalizedRole === "student" ? "question" : payload.post_type;
+  
+  // Set approval status: students and admins are auto-approved, specialists need approval
+  const approvalStatus = normalizedRole === "specialist" ? "pending" : "approved";
 
   const { data, error } = await supabase
     .from("community_posts")
@@ -152,6 +189,7 @@ export async function createCommunityPost(payload: CreatePostRequest, author: Co
         author_major: author.track,
         author_academic_level: author.level,
         author_avatar: author.avatar_url,
+        approval_status: approvalStatus,
       },
     ])
     .select()
@@ -1082,4 +1120,66 @@ export async function deleteReport(reportId: string): Promise<void> {
     console.error("Error deleting report:", error);
     throw error;
   }
+}
+
+// ============================================================================
+// POST APPROVAL SYSTEM
+// ============================================================================
+
+export async function approvePost(postId: string, adminId: string): Promise<Post> {
+  const { data, error } = await supabase
+    .from("community_posts")
+    .update({
+      approval_status: "approved",
+      approved_by: adminId,
+      approved_at: new Date().toISOString(),
+      rejection_reason: null,
+    })
+    .eq("id", postId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error approving post:", error);
+    throw new Error(error.message || "Failed to approve post");
+  }
+
+  return mapPost(data);
+}
+
+export async function rejectPost(postId: string, adminId: string, reason?: string): Promise<Post> {
+  const { data, error } = await supabase
+    .from("community_posts")
+    .update({
+      approval_status: "rejected",
+      approved_by: adminId,
+      approved_at: new Date().toISOString(),
+      rejection_reason: reason || null,
+    })
+    .eq("id", postId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error rejecting post:", error);
+    throw new Error(error.message || "Failed to reject post");
+  }
+
+  return mapPost(data);
+}
+
+export async function getPendingPosts(): Promise<Post[]> {
+  const { data, error } = await supabase
+    .from("community_posts")
+    .select("*")
+    .eq("approval_status", "pending")
+    .eq("is_deleted", false)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching pending posts:", error);
+    throw error;
+  }
+
+  return (data ?? []).map(mapPost);
 }

@@ -182,6 +182,21 @@ export default function MyPosts() {
                                   {language === 'ar' ? 'محلولة' : 'Solved'}
                                 </Badge>
                               )}
+                              {post.approval_status === "pending" && (
+                                <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                                  <AlertTriangle className="w-3 h-3 mr-1" />
+                                  {language === 'ar' ? 'قيد المراجعة' : 'Pending Review'}
+                                </Badge>
+                              )}
+                              {post.approval_status === "rejected" && (
+                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                  <Ban className="w-3 h-3 mr-1" />
+                                  {language === 'ar' ? 'مرفوض' : 'Rejected'}
+                                  {post.rejection_reason && (
+                                    <span className="ml-1">({post.rejection_reason})</span>
+                                  )}
+                                </Badge>
+                              )}
                             </div>
                             
                             <h3 

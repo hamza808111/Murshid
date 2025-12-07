@@ -23,6 +23,10 @@ export interface Post {
   deleted_at?: string;
   deleted_by?: string;
   deletion_reason?: string;
+  approval_status?: 'pending' | 'approved' | 'rejected';
+  approved_by?: string;
+  approved_at?: string;
+  rejection_reason?: string;
 }
 
 export interface Answer {
