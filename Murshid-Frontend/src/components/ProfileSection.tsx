@@ -9,6 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { User, Mail, Edit2, Save, X, BookOpen, Users, UserCheck, Sparkles, Building2, Award, LogOut } from "lucide-react";
+import { useGamification } from "@/contexts/GamificationContext";
+import PointsDisplay from "@/components/gamification/PointsDisplay";
+import LevelProgress from "@/components/gamification/LevelProgress";
+import BadgesDisplay from "@/components/gamification/BadgesDisplay";
+import StatsCard from "@/components/gamification/StatsCard";
 import { z } from "zod";
 import ImageUpload from "@/components/ImageUpload";
 import { supabase } from "@/lib/supabase";
@@ -31,6 +36,7 @@ interface ProfileSectionProps {
 
 const ProfileSection = ({ onClose }: ProfileSectionProps = {}) => {
   const { user, updateProfile, logout } = useAuth();
+  const { stats, badges, levelInfo, loading: gamificationLoading } = useGamification();
   const { t, language } = useI18n();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
@@ -649,6 +655,29 @@ const ProfileSection = ({ onClose }: ProfileSectionProps = {}) => {
                         </div>
                       )}
                     </div>
+                  </div>
+                )}
+
+                {/* Gamification Section - Only show when not editing */}
+                {!isEditing && !user.is_admin && stats && (
+                  <div className="space-y-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    {/* Points and Level Display */}
+                    <PointsDisplay 
+                      points={stats.points} 
+                      level={stats.level}
+                      className="mb-4"
+                    />
+
+                    {/* Level Progress */}
+                    {levelInfo && (
+                      <LevelProgress levelInfo={levelInfo} className="mb-4" />
+                    )}
+
+                    {/* Statistics */}
+                    <StatsCard stats={stats} className="mb-4" />
+
+                    {/* Badges */}
+                    <BadgesDisplay badges={badges} />
                   </div>
                 )}
               </div>

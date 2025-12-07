@@ -23,7 +23,8 @@ import {
   CheckCircle,
   Filter,
   TrendingUp,
-  FileText
+  FileText,
+  Trophy
 } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -172,6 +173,14 @@ export default function Community() {
                       >
                         <Heart className={`w-5 h-5 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
                         {language === 'ar' ? 'إعجاباتي' : 'My Likes'}
+                      </Button>
+                      <Button
+                        onClick={() => navigate('/community/leaderboard')}
+                        variant="outline"
+                        className="rounded-2xl px-8 py-6 border-2 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:text-yellow-600 dark:hover:text-yellow-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 w-full xl:w-auto"
+                      >
+                        <Trophy className={`w-5 h-5 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                        {language === 'ar' ? 'لوحة المتصدرين' : 'Leaderboard'}
                       </Button>
                     </>
                   )}

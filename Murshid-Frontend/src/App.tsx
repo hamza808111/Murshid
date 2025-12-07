@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { I18nProvider } from "@/contexts/I18nContext";
 import { MessagingProvider } from "@/contexts/MessagingContext";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
+import { GamificationProvider } from "@/contexts/GamificationContext";
 import { Analytics } from "@vercel/analytics/react";
 import { useEffect } from "react";
 import { initializeCache } from "@/lib/tagTranslation";
@@ -46,6 +47,7 @@ import ProfileSetup from "./pages/ProfileSetup";
 import Messages from "./pages/Messages";
 import Help from "./pages/Help";
 import HelpWidget from "./components/HelpWidget";
+import Leaderboard from "./pages/Leaderboard";
 
 const queryClient = new QueryClient();
 
@@ -115,6 +117,7 @@ const AppContent = () => {
       <Route path="/community/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
       <Route path="/community/my-answers" element={<ProtectedRoute><MyAnswers /></ProtectedRoute>} />
       <Route path="/community/my-likes" element={<ProtectedRoute><MyLikes /></ProtectedRoute>} />
+      <Route path="/community/leaderboard" element={<Leaderboard />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/help" element={<Help />} />
       <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
@@ -155,7 +158,9 @@ const App = () => {
           <AuthProvider>
           <MessagingProvider>
           <NotificationsProvider>
+          <GamificationProvider>
             <AppContent />
+          </GamificationProvider>
           </NotificationsProvider>
           </MessagingProvider>
             <HelpWidget />

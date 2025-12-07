@@ -363,6 +363,23 @@ export async function likePost(postId: string, userId: string): Promise<void> {
       console.error("Error liking post:", error);
       throw error;
     }
+  } else {
+    // Award points to post author (if not the same user)
+    try {
+      const { data: post } = await supabase
+        .from("community_posts")
+        .select("author_id")
+        .eq("id", postId)
+        .single();
+      
+      if (post && post.author_id !== userId) {
+        const { awardLikePoints } = await import("./gamificationApi");
+        await awardLikePoints(post.author_id, postId, "post");
+      }
+    } catch (err) {
+      console.error("Error awarding like points:", err);
+      // Don't throw - gamification is not critical
+    }
   }
 }
 
@@ -406,6 +423,23 @@ export async function likeAnswer(answerId: string, userId: string): Promise<void
       console.error("Error liking answer:", error);
       throw error;
     }
+  } else {
+    // Award points to answer author (if not the same user)
+    try {
+      const { data: answer } = await supabase
+        .from("community_answers")
+        .select("author_id")
+        .eq("id", answerId)
+        .single();
+      
+      if (answer && answer.author_id !== userId) {
+        const { awardLikePoints } = await import("./gamificationApi");
+        await awardLikePoints(answer.author_id, answerId, "answer");
+      }
+    } catch (err) {
+      console.error("Error awarding like points:", err);
+      // Don't throw - gamification is not critical
+    }
   }
 }
 
@@ -448,6 +482,23 @@ export async function likeComment(commentId: string, userId: string): Promise<vo
     if (error.code !== "23505") {
       console.error("Error liking comment:", error);
       throw error;
+    }
+  } else {
+    // Award points to comment author (if not the same user)
+    try {
+      const { data: comment } = await supabase
+        .from("community_comments")
+        .select("author_id")
+        .eq("id", commentId)
+        .single();
+      
+      if (comment && comment.author_id !== userId) {
+        const { awardLikePoints } = await import("./gamificationApi");
+        await awardLikePoints(comment.author_id, commentId, "comment");
+      }
+    } catch (err) {
+      console.error("Error awarding like points:", err);
+      // Don't throw - gamification is not critical
     }
   }
 }

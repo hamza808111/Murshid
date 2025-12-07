@@ -12,6 +12,11 @@ import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { getUserStats, getUserBadges } from '@/lib/gamificationApi';
+import PointsDisplay from '@/components/gamification/PointsDisplay';
+import BadgesDisplay from '@/components/gamification/BadgesDisplay';
+import StatsCard from '@/components/gamification/StatsCard';
+import type { UserStats, Badge as BadgeType } from '@/types/gamification';
 
 interface UserProfile {
   id: string;
@@ -38,6 +43,8 @@ export default function UserProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [university, setUniversity] = useState<University | null>(null);
   const [loading, setLoading] = useState(true);
+  const [gamificationStats, setGamificationStats] = useState<UserStats | null>(null);
+  const [gamificationBadges, setGamificationBadges] = useState<BadgeType[]>([]);
   const { language } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -82,6 +89,21 @@ export default function UserProfile() {
 
         if (!uniError && uniData) {
           setUniversity(uniData);
+        }
+      }
+
+      // Fetch gamification stats (only for non-admin users)
+      if (!data.is_admin) {
+        try {
+          const [stats, badges] = await Promise.all([
+            getUserStats(userId!),
+            getUserBadges(userId!),
+          ]);
+          setGamificationStats(stats);
+          setGamificationBadges(badges);
+        } catch (error) {
+          console.error('Error fetching gamification data:', error);
+          // Don't show error - gamification is optional
         }
       }
     } catch (error) {
@@ -245,14 +267,25 @@ export default function UserProfile() {
               </div>
             </Card>
 
+            {/* Gamification Section - Only show for non-admin users */}
+            {!profile.is_admin && gamificationStats && (
+              <div className="space-y-6">
+                <PointsDisplay 
+                  points={gamificationStats.points} 
+                  level={gamificationStats.level}
+                />
+                <StatsCard stats={gamificationStats} />
+                <BadgesDisplay badges={gamificationBadges} />
+              </div>
+            )}
+
             {/* Additional Info */}
-            {!isOwnProfile &&   !user && (
+            {!isOwnProfile && !user && (
               <Card className="p-6">
                 <p className="text-center text-gray-600 dark:text-gray-300" dir={language}>
                   {language === 'ar' 
                     ? 'سجل دخولك لإرسال رسالة' 
-                    : 'Login to send a message'}' 
-                     
+                    : 'Login to send a message'}
                 </p>
               </Card>
             )}
