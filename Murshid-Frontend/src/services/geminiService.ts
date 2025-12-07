@@ -91,7 +91,25 @@ Provide exactly 5 majors, ranked by match percentage (highest first).`;
       },
     });
 
-    const text = response.text ?? "";
+    // Handle response - text is a getter property
+    let text = "";
+    try {
+      text = response.text || "";
+    } catch (e) {
+      // If text getter fails, try alternative structures
+      if (response.candidates?.[0]?.content?.parts?.[0]?.text) {
+        text = response.candidates[0].content.parts[0].text;
+      } else {
+        console.error("Unexpected response structure:", response);
+        throw new Error("Unexpected response format from Gemini API");
+      }
+    }
+
+    if (!text || text.trim().length === 0) {
+      console.error("Empty response from Gemini API:", response);
+      throw new Error("Received empty response from AI. Please try again.");
+    }
+
     console.log("Gemini raw response:", text);
 
     // --- Clean up to valid JSON ---
@@ -123,9 +141,24 @@ Provide exactly 5 majors, ranked by match percentage (highest first).`;
     parsed.recommendations.sort((a, b) => b.matchPercentage - a.matchPercentage);
 
     return parsed;
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error analyzing assessment with Gemini:", err);
-    throw new Error("Failed to analyze assessment. Please try again later.");
+    
+    // Provide more specific error messages
+    if (err?.message?.includes("API key")) {
+      throw new Error("Invalid or missing Gemini API key. Please check your configuration.");
+    }
+    if (err?.message?.includes("quota") || err?.message?.includes("rate limit")) {
+      throw new Error("API quota exceeded. Please try again later.");
+    }
+    if (err?.message?.includes("network") || err?.message?.includes("fetch")) {
+      throw new Error("Network error. Please check your internet connection and try again.");
+    }
+    if (err instanceof SyntaxError) {
+      throw new Error("Failed to parse AI response. Please try again.");
+    }
+    
+    throw new Error(err?.message || "Failed to analyze assessment. Please try again later.");
   }
 };
 

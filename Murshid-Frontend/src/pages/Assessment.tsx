@@ -214,7 +214,9 @@ const Assessment = () => {
 
   // helper to save a result to DB (used by auto-save + manual save)
   const saveResultToDb = async (result: AssessmentResult) => {
-    if (!user) return;
+    if (!user) {
+      throw new Error('User must be logged in to save assessment results');
+    }
 
     const { error } = await supabase.from('assessment_results').insert({
       user_id: user.id,
@@ -224,7 +226,13 @@ const Assessment = () => {
 
     if (error) {
       console.error('Failed to save assessment result:', error);
-      throw error;
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      throw new Error(`Failed to save assessment: ${error.message}`);
     }
 
     setResultSaved(true);
@@ -257,13 +265,15 @@ const Assessment = () => {
           ? 'تم إنشاء وحفظ توصياتك المخصصة'
           : 'Your personalized recommendations have been generated and saved',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Assessment analysis failed:', error);
+      
+      // More specific error message
+      const errorMessage = error?.message || 'Failed to analyze or save your assessment. Please try again.';
+      
       toast({
         title: language === 'ar' ? 'حدث خطأ' : 'Error',
-        description: language === 'ar'
-          ? 'فشل تحليل التقييم أو حفظه. يرجى المحاولة مرة أخرى.'
-          : 'Failed to analyze or save your assessment. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
       setState('quiz');
