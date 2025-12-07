@@ -399,6 +399,29 @@ export default function AdminUniversities() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
+                <Label htmlFor="admin-universities-form-location">Location (English)</Label>
+                <Input
+                  id="admin-universities-form-location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  placeholder="e.g., Al Malaz, Riyadh"
+                />
+                <p className="text-xs text-gray-500 mt-1">This will be displayed instead of city if provided</p>
+              </div>
+              <div>
+                <Label htmlFor="admin-universities-form-location-ar">Location (Arabic)</Label>
+                <Input
+                  id="admin-universities-form-location-ar"
+                  value={formData.location_ar}
+                  onChange={(e) => setFormData({ ...formData, location_ar: e.target.value })}
+                  placeholder="مثل: الملز، الرياض"
+                  dir="rtl"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <Label htmlFor="admin-universities-form-establishment-year">Establishment Year</Label>
                 <Input
                   id="admin-universities-form-establishment-year"
