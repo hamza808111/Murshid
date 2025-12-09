@@ -26,14 +26,14 @@ export const RankedMajorsList = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    fetchRankedMajors();
+    fetchRankedMajors(false);
   }, [language]);
 
-  const fetchRankedMajors = async () => {
+  const fetchRankedMajors = async (forceRefresh: boolean = false) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getRankedMajors(language as 'en' | 'ar');
+      const data = await getRankedMajors(language as 'en' | 'ar', forceRefresh);
       setRankedData(data);
     } catch (err) {
       setError(language === 'ar' 
@@ -47,7 +47,7 @@ export const RankedMajorsList = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchRankedMajors();
+    await fetchRankedMajors(true); // Force refresh from API
     setRefreshing(false);
   };
 

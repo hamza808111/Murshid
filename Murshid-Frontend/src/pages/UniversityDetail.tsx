@@ -141,14 +141,14 @@ export default function UniversityDetail() {
           {language === 'ar' ? 'العودة إلى الجامعات' : 'Back to Universities'}
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
             {/* Header */}
-            <Card className="p-8 mb-6">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg">
+            <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+                <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                  <div className="w-16 h-16 sm:w-24 sm:h-24 bg-blue-100 dark:bg-blue-900 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg flex-shrink-0">
                     {university.logo_url ? (
                       <img 
                         src={`${university.logo_url}?t=${new Date(university.updated_at || Date.now()).getTime()}`}
@@ -162,16 +162,16 @@ export default function UniversityDetail() {
                       />
                     ) : null}
                     <Building2 
-                      className="w-12 h-12 text-blue-600 dark:text-blue-400" 
+                      className="w-8 h-8 sm:w-12 sm:h-12 text-blue-600 dark:text-blue-400" 
                       style={{ display: university.logo_url ? 'none' : 'block' }}
                     />
                   </div>
-                  <div>
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2" dir={language}>
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-1 sm:mb-2 break-words" dir={language}>
                       {universityName}
                     </h1>
                     {university.name_ar && language === 'en' && (
-                      <p className="text-lg text-gray-600 dark:text-gray-400" dir="rtl">
+                      <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 break-words" dir="rtl">
                         {university.name_ar}
                       </p>
                     )}
@@ -183,7 +183,7 @@ export default function UniversityDetail() {
                   id="university-detail-bookmark-button"
                   variant="outline"
                   size="lg"
-                  className="rounded-full"
+                  className="rounded-full flex-shrink-0"
                 >
                   {bookmarked ? (
                     <BookmarkCheck className="w-5 h-5 text-blue-500 fill-blue-500" />
@@ -241,14 +241,14 @@ export default function UniversityDetail() {
             </Card>
 
             {/* Majors Section */}
-            <Card className="p-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6" dir={language}>
+            <Card className="p-4 sm:p-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 sm:mb-6" dir={language}>
                 {language === 'ar' ? 'التخصصات المتاحة' : 'Available Majors'}
                 <span className="text-gray-500 ml-2">({majors.length})</span>
               </h2>
 
               {majors.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                   {majors.map((major) => {
                     const majorName = language === 'ar' && major.name_ar ? major.name_ar : major.name;
                     
@@ -256,18 +256,18 @@ export default function UniversityDetail() {
                       <Card
                         key={major.id}
                         id={`university-detail-major-card-${major.id}`}
-                        className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                        className="p-3 sm:p-4 hover:shadow-lg transition-shadow cursor-pointer"
                         onClick={() => navigate(`/majors/${major.id}`)}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center text-2xl shadow-md">
+                        <div className="flex items-start gap-2 sm:gap-3">
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center text-xl sm:text-2xl shadow-md flex-shrink-0">
                             {major.icon_name || '📚'}
                           </div>
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 dark:text-gray-100" dir={language}>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100 break-words" dir={language}>
                               {majorName}
                             </h3>
-                            <div className="flex items-center gap-2 mt-1">
+                            <div className="flex flex-wrap items-center gap-1 mt-1">
                               <Badge variant="secondary" className="text-xs">
                                 {major.category}
                               </Badge>
@@ -292,21 +292,21 @@ export default function UniversityDetail() {
           </div>
 
           {/* Sidebar */}
-          <div>
-            <Card className="p-6 sticky top-24">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
+          <div className="lg:sticky lg:top-24 lg:h-fit">
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
                 {language === 'ar' ? 'معلومات الاتصال' : 'Contact Information'}
               </h3>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {university.city && (
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-gray-500 mt-0.5" />
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         {language === 'ar' ? 'الموقع' : 'Location'}
                       </p>
-                      <p className="font-medium text-gray-900 dark:text-gray-100" dir={language}>
+                      <p className="font-medium text-xs sm:text-sm text-gray-900 dark:text-gray-100 break-words" dir={language}>
                         {universityLocation || university.city}
                         {university.country && `, ${university.country}`}
                       </p>
@@ -315,15 +315,15 @@ export default function UniversityDetail() {
                 )}
 
                 {university.contact_email && (
-                  <div className="flex items-start gap-3">
-                    <Mail className="w-5 h-5 text-gray-500 mt-0.5" />
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         {language === 'ar' ? 'البريد الإلكتروني' : 'Email'}
                       </p>
                       <a 
                         href={`mailto:${university.contact_email}`}
-                        className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                        className="font-medium text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:underline truncate block"
                       >
                         {university.contact_email}
                       </a>
@@ -332,15 +332,15 @@ export default function UniversityDetail() {
                 )}
 
                 {university.contact_phone && (
-                  <div className="flex items-start gap-3">
-                    <Phone className="w-5 h-5 text-gray-500 mt-0.5" />
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         {language === 'ar' ? 'الهاتف' : 'Phone'}
                       </p>
                       <a 
                         href={`tel:${university.contact_phone}`}
-                        className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                        className="font-medium text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:underline"
                       >
                         {university.contact_phone}
                       </a>
@@ -349,13 +349,13 @@ export default function UniversityDetail() {
                 )}
 
                 {studentCount > 0 && (
-                  <div className="flex items-start gap-3">
-                    <Users className="w-5 h-5 text-gray-500 mt-0.5" />
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         {language === 'ar' ? 'عدد الطلاب' : 'Students'}
                       </p>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                      <p className="font-medium text-xs sm:text-sm text-gray-900 dark:text-gray-100">
                         {studentCount.toLocaleString()}+
                       </p>
                     </div>
@@ -363,13 +363,13 @@ export default function UniversityDetail() {
                 )}
 
                 {university.ranking_international && (
-                  <div className="flex items-start gap-3">
-                    <Star className="w-5 h-5 text-gray-500 mt-0.5" />
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         {language === 'ar' ? 'الترتيب الدولي' : 'International Rank'}
                       </p>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                      <p className="font-medium text-xs sm:text-sm text-gray-900 dark:text-gray-100">
                         #{university.ranking_international}
                       </p>
                     </div>

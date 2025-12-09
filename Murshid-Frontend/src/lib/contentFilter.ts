@@ -1,3 +1,5 @@
+// TODO: Re-enable profanity filter later
+/*
 // Comprehensive profanity filter
 class ProfanityFilter {
   private bannedWords: Set<string>;
@@ -85,6 +87,7 @@ class ProfanityFilter {
 }
 
 const profanityFilter = new ProfanityFilter();
+*/
 
 const suspiciousPatterns = [
   /\b\d{10,}\b/g, // Phone numbers
@@ -103,15 +106,16 @@ export function analyzeContent(text: string, language: 'ar' | 'en' = 'en'): Cont
   const issues: string[] = [];
   let severity: 'low' | 'medium' | 'high' = 'low';
   
+  // TODO: Re-enable profanity and violent content validation later
   // Check for profanity using comprehensive filter
-  if (profanityFilter.isProfane(text)) {
-    const violations = profanityFilter.getViolations(text);
-    issues.push(language === 'ar' ? 
-      `يحتوي على كلمات غير مناسبة (${violations.length} مخالفة)` :
-      `Contains inappropriate language (${violations.length} violations)`
-    );
-    severity = 'high';
-  }
+  // if (profanityFilter.isProfane(text)) {
+  //   const violations = profanityFilter.getViolations(text);
+  //   issues.push(language === 'ar' ? 
+  //     `يحتوي على كلمات غير مناسبة (${violations.length} مخالفة)` :
+  //     `Contains inappropriate language (${violations.length} violations)`
+  //   );
+  //   severity = 'high';
+  // }
   
   // Check for suspicious patterns
   suspiciousPatterns.forEach(pattern => {

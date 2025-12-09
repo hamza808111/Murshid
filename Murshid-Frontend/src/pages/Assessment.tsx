@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
-type AssessmentState = 'intro' | 'quiz' | 'analyzing' | 'results';
+type AssessmentState = 'intro' | 'quiz' | 'analyzing' | 'results' | 'error';
 
 const MAX_ATTEMPTS = 3;
 
@@ -163,6 +163,8 @@ const Assessment = () => {
   const [attemptCount, setAttemptCount] = useState(0);
   const [showPreviousTests, setShowPreviousTests] = useState(false);
   const [resultSaved, setResultSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [lastQuizAnswers, setLastQuizAnswers] = useState<Record<string, string | number> | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -241,6 +243,8 @@ const Assessment = () => {
 
   const handleQuizComplete = async (answers: Record<string, string | number>) => {
     setState('analyzing');
+    // Save answers in case of error so user can retry from where they left off
+    setLastQuizAnswers(answers);
 
     try {
       // 1) Get AI analysis
@@ -252,6 +256,7 @@ const Assessment = () => {
       // 3) Save to state
       setAssessmentResult(enrichedResult);
       setResultSaved(false);
+      setLastQuizAnswers(null); // Clear saved answers on success
 
       // 4) Auto-save to DB
       await saveResultToDb(enrichedResult);
@@ -269,14 +274,21 @@ const Assessment = () => {
       console.error('Assessment analysis failed:', error);
       
       // More specific error message
-      const errorMessage = error?.message || 'Failed to analyze or save your assessment. Please try again.';
+      let errorMsg = error?.message || 'Failed to analyze your assessment';
       
-      toast({
-        title: language === 'ar' ? 'حدث خطأ' : 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      setState('quiz');
+      // Provide user-friendly messages
+      if (errorMsg.includes('VITE_GEMINI_API_KEY') || errorMsg.includes('API')) {
+        errorMsg = language === 'ar' 
+          ? 'عذراً، خدمة التحليل غير متاحة حالياً. يرجى المحاولة لاحقاً.'
+          : 'Sorry, the analysis service is temporarily unavailable. Please try again later.';
+      } else if (errorMsg.includes('Failed to save')) {
+        errorMsg = language === 'ar'
+          ? 'حدث خطأ أثناء حفظ النتائج. تم إنشاء التوصيات الخاصة بك ولكن لم يتم حفظها.'
+          : 'Failed to save your results. Your recommendations were generated but not saved.';
+      }
+      
+      setErrorMessage(errorMsg);
+      setState('error');
     }
   };
 
@@ -339,6 +351,68 @@ const Assessment = () => {
     setState('intro');
   };
 
+  const handleRetryError = () => {
+    setErrorMessage(null);
+    setState('quiz');
+  };
+
+  // Error state
+  if (state === 'error' && errorMessage) {
+    return (
+      <PageAnimation>
+        <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
+          <Navbar />
+          <div className="flex items-center justify-center min-h-[80vh]">
+            <div className="max-w-md w-full mx-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border-2 border-red-200 dark:border-red-800 overflow-hidden">
+              <div className="bg-gradient-to-r from-red-500 to-red-600 p-6">
+                <div className="flex items-center justify-center w-12 h-12 bg-red-600 rounded-full mx-auto mb-4">
+                  <AlertCircle className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-xl font-bold text-white text-center" dir={language}>
+                  {language === 'ar' ? 'حدث خطأ' : 'Oops! Something went wrong'}
+                </h2>
+              </div>
+              
+              <div className="p-8 space-y-6">
+                <div className="bg-red-50 dark:bg-red-950/30 rounded-xl p-4 border border-red-200 dark:border-red-800">
+                  <p className="text-gray-700 dark:text-gray-300 text-center" dir={language}>
+                    {errorMessage}
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 text-center" dir={language}>
+                    {language === 'ar' 
+                      ? 'يمكنك المحاولة مرة أخرى أو العودة إلى الصفحة الرئيسية'
+                      : 'You can try again or return to the home page'}
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <Button
+                    onClick={handleRetryError}
+                    className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-6 py-3 shadow-lg transition-all"
+                  >
+                    {language === 'ar' ? 'المحاولة مرة أخرى' : 'Try Again'}
+                  </Button>
+                  <Link to="/">
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-2xl px-6 py-3 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      {language === 'ar' ? 'العودة للرئيسية' : 'Back to Home'}
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </PageAnimation>
+    );
+  }
+
   // Analyzing state
   if (state === 'analyzing') {
     return (
@@ -394,6 +468,7 @@ const Assessment = () => {
               onSaveAndFinish={async (answers) => {
                 await handleQuizComplete(answers);
               }}
+              initialAnswers={lastQuizAnswers || undefined}
             />
           </div>
         </div>
@@ -478,7 +553,7 @@ const Assessment = () => {
                         onClick={handleStartQuiz}
                         size="lg"
                         disabled={user && attemptCount >= MAX_ATTEMPTS}
-                        className="text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-8 py-6 shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <GraduationCap className="w-5 h-5 mr-2" />
                         {language === 'ar' ? 'ابدأ التقييم' : 'Start Assessment'}
@@ -489,7 +564,7 @@ const Assessment = () => {
                           onClick={() => setShowPreviousTests(true)}
                           size="lg"
                           variant="outline"
-                          className="text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                          className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-md"
                         >
                           <History className="w-5 h-5 mr-2" />
                           {language === 'ar' ? 'الاختبارات السابقة' : 'Previous Tests'}
@@ -600,7 +675,7 @@ const Assessment = () => {
                     <Button
                       id="assessment-back-to-home-button"
                       variant="outline"
-                      className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl text-lg transform hover:scale-110"
+                      className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-md"
                     >
                       <ArrowLeft className="w-5 h-5 mr-2" />
                       {t('auth.actions.backToHome')}
