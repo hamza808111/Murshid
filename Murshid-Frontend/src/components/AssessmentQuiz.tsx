@@ -190,19 +190,22 @@ export const AssessmentQuiz = ({ onComplete, onCancel, onSaveAndFinish }: Assess
       
       return (
         <div className="space-y-6" dir={direction}>
-          <div className="flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="relative flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
             <motion.span
+              className="absolute left-0"
               animate={{ scale: scaleValue <= 25 ? [1, 1.1, 1] : 1 }}
               transition={{ duration: 0.3 }}
             >
               {language === 'ar' ? question.scaleLabels.min.ar : question.scaleLabels.min.en}
             </motion.span>
             <motion.span
+              className="absolute right-0"
               animate={{ scale: scaleValue >= 75 ? [1, 1.1, 1] : 1 }}
               transition={{ duration: 0.3 }}
             >
               {language === 'ar' ? question.scaleLabels.max.ar : question.scaleLabels.max.en}
             </motion.span>
+            <div className="w-full" aria-hidden="true"></div>
           </div>
           <motion.div 
             className="relative rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50/70 via-purple-50/50 to-pink-50/50 p-8 shadow-inner dark:border-blue-400/30 dark:from-blue-950/40 dark:via-purple-950/40 dark:to-pink-950/40"
@@ -432,16 +435,22 @@ export const AssessmentQuiz = ({ onComplete, onCancel, onSaveAndFinish }: Assess
                 <Button
                   variant="outline"
                   onClick={currentQuestionIndex === 0 ? onCancel : handlePrevious}
-                  className="order-2 flex-1 border-2 border-slate-200 bg-white/80 text-sm font-semibold transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900/60 dark:hover:border-blue-500/60 dark:hover:bg-blue-950/40 sm:order-1 sm:flex-none"
+                  className="order-2 flex flex-1 items-center justify-center border-2 border-slate-200 bg-white/80 text-sm font-semibold text-gray-900 transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-gray-900 dark:border-slate-700 dark:bg-slate-900/60 dark:text-gray-100 dark:hover:border-blue-500/60 dark:hover:bg-blue-950/40 dark:hover:text-gray-100 sm:order-1 sm:flex-none"
                 >
-                  <ChevronLeft className="mr-2 h-4 w-4" />
-                  {currentQuestionIndex === 0
-                    ? language === 'ar'
-                      ? 'الرجوع'
-                      : 'Back'
-                    : language === 'ar'
-                    ? 'السابق'
-                    : 'Previous'}
+                  {language === 'ar' ? (
+                    <ChevronRight className="ml-2 h-4 w-4 flex-shrink-0" />
+                  ) : (
+                    <ChevronLeft className="mr-2 h-4 w-4 flex-shrink-0" />
+                  )}
+                  <span className="whitespace-nowrap">
+                    {currentQuestionIndex === 0
+                      ? language === 'ar'
+                        ? 'الرجوع'
+                        : 'Back'
+                      : language === 'ar'
+                      ? 'السابق'
+                      : 'Previous'}
+                  </span>
                 </Button>
 
                 <div className="order-1 flex flex-1 gap-3 sm:order-2 sm:flex-none">
@@ -481,7 +490,11 @@ export const AssessmentQuiz = ({ onComplete, onCancel, onSaveAndFinish }: Assess
                       className="flex-1 gap-2 bg-blue-600 text-base font-semibold shadow-lg transition-all hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-300 dark:bg-blue-500 dark:hover:bg-blue-400 sm:flex-none"
                     >
                       {language === 'ar' ? 'التالي' : 'Next'}
-                      <ChevronRight className="h-5 w-5" />
+                      {language === 'ar' ? (
+                        <ChevronLeft className="h-5 w-5" />
+                      ) : (
+                        <ChevronRight className="h-5 w-5" />
+                      )}
                     </Button>
                   )}
                 </div>

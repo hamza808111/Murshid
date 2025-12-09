@@ -31,7 +31,7 @@ export const categoryVisuals: Record<CategoryKey, CategoryVisualMeta> = {
     },
     tip: {
       en: 'Trust your natural interests - they are your best clues for a major you will enjoy.',
-      ar: 'ثق باهتماماتك الطبيعية - فهي أفضل دليل لاختيار تخصص تستمتع به.',
+      ar: 'ثق باهتماماتك - فهي أفضل دليل لاختيار تخصص تستمتع به.',
     },
     image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80',
     gradient: 'from-[#dbeafe] via-[#eff6ff] to-[#e0f2fe]',
@@ -67,7 +67,7 @@ export const categoryVisuals: Record<CategoryKey, CategoryVisualMeta> = {
     },
     tip: {
       en: 'Answer with your real lifestyle preferences - there is a major that fits each personality.',
-      ar: 'أجب وفقاً لتفضيلاتك الحقيقية - هناك تخصص يناسب كل شخصية.',
+      ar: 'أجب وفقاً لتفضيلاتك - هناك تخصص يناسب كل شخصية.',
     },
     image: 'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=1200&q=80',
     gradient: 'from-[#dcfce7] via-[#ecfdf5] to-[#e0f7fa]',
@@ -87,7 +87,7 @@ export const categoryVisuals: Record<CategoryKey, CategoryVisualMeta> = {
       en: 'Your personality guides how you shine in teamwork, leadership, and creativity.',
       ar: 'شخصيتك تحدد كيف تتألق في العمل الجماعي والقيادة والإبداع.',
     },
-    image: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
     gradient: 'from-[#fee2e2] via-[#fef2f2] to-[#ffe4e6]',
     darkGradient: 'dark:from-[#3f0d1f] dark:via-[#4d1729] dark:to-[#521b30]',
     accentBorder: 'border-rose-200 dark:border-rose-700',
