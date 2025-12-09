@@ -1,4 +1,6 @@
 import 'cypress-file-upload';
+import 'cypress-iframe';
+
 
 
 // here are the commands that are needed for Sprint 2 testing (Admin)
