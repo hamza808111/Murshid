@@ -44,10 +44,13 @@ import {
 import { getMajors } from '@/lib/majorsApi';
 import type { University, UniversityType } from '@/types/database';
 import { toast } from 'sonner';
+import { useI18n } from '@/contexts/I18nContext';
+
 
 export default function AdminUniversities() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { t, language } = useI18n();
   const [universities, setUniversities] = useState<University[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,7 +100,7 @@ export default function AdminUniversities() {
       setUniversities(data);
     } catch (error) {
       console.error('Error fetching universities:', error);
-      toast.error('Failed to load universities');
+      toast.error(t('admin.universities.toast.loadError'));
     } finally {
       setLoading(false);
     }
@@ -115,10 +118,10 @@ export default function AdminUniversities() {
 
       if (editingUniversity) {
         await updateUniversity(editingUniversity.id, universityData);
-        toast.success('University updated successfully');
+        toast.success(t('admin.universities.toast.updateSuccess'));
       } else {
         await createUniversity(universityData as any);
-        toast.success('University created successfully');
+        toast.success(t('admin.universities.toast.createSuccess'));
       }
 
       setDialogOpen(false);
@@ -154,15 +157,15 @@ export default function AdminUniversities() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this university?')) return;
+    if (!confirm(t('admin.universities.toast.deleteConfirm'))) return;
 
     try {
       await deleteUniversity(id);
-      toast.success('University deleted successfully');
+      toast.success(t('admin.universities.toast.deleteSuccess'));
       fetchUniversities();
     } catch (error) {
       console.error('Error deleting university:', error);
-      toast.error('Failed to delete university');
+      toast.error(t('admin.universities.toast.deleteError'));
     }
   };
 
@@ -227,6 +230,7 @@ export default function AdminUniversities() {
             student_count: uni.student_count ? parseInt(uni.student_count) : undefined,
             contact_email: uni.contact_email || '',
             contact_phone: uni.contact_phone || '',
+          is_active: true,
           };
         });
         
@@ -282,6 +286,7 @@ export default function AdminUniversities() {
           student_count: uni.student_count ? parseInt(uni.student_count) : undefined,
           contact_email: uni.contact_email || uni.email || '',
           contact_phone: uni.contact_phone || uni.phone || '',
+          is_active: true,
         };
       }).filter(uni => uni.name); // Filter out empty rows
       
@@ -291,7 +296,7 @@ export default function AdminUniversities() {
 
   const handleBulkImport = async () => {
     if (!bulkImportData.trim()) {
-      toast.error('Please provide data to import');
+      toast.error(t('admin.universities.bulkImport.missingData'));
       return;
     }
 
@@ -300,7 +305,7 @@ export default function AdminUniversities() {
       const { universities, majorAssignments } = parseBulkImport(bulkImportData, bulkImportFormat);
       
       if (universities.length === 0) {
-        toast.error('No valid universities found in the data');
+        toast.error(t('admin.universities.bulkImport.noValidData'));
         return;
       }
 
@@ -366,11 +371,11 @@ export default function AdminUniversities() {
           }
         }
         
-        let message = `Successfully imported ${result.success.length} university(ies)`;
+        let message = t('admin.universities.bulkImport.success', { count: result.success.length });
         if (hasSpecificMajors) {
-          message += ` with specified majors assigned`;
+          message += ` ${t('admin.universities.bulkImport.successWithMajors')}`;
         } else if (assignAllMajors) {
-          message += ` with all available majors assigned`;
+          message += ` ${t('admin.universities.bulkImport.successAssignAll')}`;
         }
         toast.success(message);
         setBulkImportDialogOpen(false);
@@ -379,11 +384,11 @@ export default function AdminUniversities() {
       }
       
       if (result.errors.length > 0) {
-        toast.error(`Failed to import ${result.errors.length} university(ies)`);
+        toast.error(t('admin.universities.bulkImport.partialError', { count: result.errors.length }));
       }
     } catch (error) {
       console.error('Error bulk importing universities:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to import universities');
+      toast.error(error instanceof Error ? error.message : t('admin.universities.bulkImport.genericError'));
     } finally {
       setBulkImportLoading(false);
     }
@@ -423,10 +428,10 @@ export default function AdminUniversities() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Manage Universities
+              {t('admin.universities.title')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Add, edit, and manage universities in the system
+              {t('admin.universities.subtitle')}
             </p>
           </div>
           <div className="flex gap-3">
@@ -439,7 +444,7 @@ export default function AdminUniversities() {
               className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add University
+              {t('admin.universities.add')}
             </Button>
             <Button
               onClick={() => {
@@ -452,7 +457,7 @@ export default function AdminUniversities() {
               className="border-2 border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl px-8 py-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
             >
               <Upload className="w-4 h-4 mr-2" />
-              Bulk Import
+              {t('admin.universities.bulkImport.button')}
             </Button>
           </div>
         </div>
@@ -464,7 +469,7 @@ export default function AdminUniversities() {
             <Input
               id="admin-universities-search-input"
               type="text"
-              placeholder="Search universities..."
+              placeholder={t('admin.universities.search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -521,7 +526,7 @@ export default function AdminUniversities() {
                   className="flex-1 rounded-xl border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                 >
                   <Edit className="w-4 h-4 mr-1" />
-                  Edit
+                  {t('admin.universities.edit')}
                 </Button>
                 <Button
                   onClick={() => handleDelete(university.id)}
@@ -531,7 +536,7 @@ export default function AdminUniversities() {
                   className="flex-1 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
-                  Delete
+                  {t('admin.universities.delete')}
                 </Button>
               </div>
             </Card>
@@ -541,7 +546,7 @@ export default function AdminUniversities() {
         {filteredUniversities.length === 0 && (
           <div className="text-center py-20">
             <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 dark:text-gray-400">No universities found</p>
+            <p className="text-gray-600 dark:text-gray-400">{t('admin.universities.noResults')}</p>
           </div>
         )}
       </div>
@@ -551,30 +556,32 @@ export default function AdminUniversities() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingUniversity ? 'Edit University' : 'Add New University'}
+              {editingUniversity ? t('admin.universities.dialog.editTitle') : t('admin.universities.dialog.addTitle')}
             </DialogTitle>
             <DialogDescription>
-              Fill in the information below to {editingUniversity ? 'update' : 'create'} a university
+              {t('admin.universities.dialog.description', {
+                action: editingUniversity ? t('admin.universities.dialog.update') : t('admin.universities.dialog.create'),
+              })}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Logo Upload */}
             <div>
-              <Label>University Logo</Label>
+              <Label>{t('admin.universities.form.logoLabel')}</Label>
               <ImageUpload
                 currentImage={formData.logo_url}
                 onImageUpload={(url) => setFormData({ ...formData, logo_url: url })}
                 bucket="university-logos"
                 path={editingUniversity?.id || `temp-${Date.now()}`}
-                label="Upload Logo"
+                label={t('admin.universities.form.uploadLabel')}
                 maxSizeMB={2}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="name">Name (English)*</Label>
+                <Label htmlFor="name">{t('admin.universities.form.nameEn')}</Label>
                 <Input
                   id="admin-universities-form-name"
                   value={formData.name}
@@ -583,7 +590,7 @@ export default function AdminUniversities() {
                 />
               </div>
               <div>
-                <Label htmlFor="admin-universities-form-name-ar">Name (Arabic)</Label>
+                <Label htmlFor="admin-universities-form-name-ar">{t('admin.universities.form.nameAr')}</Label>
                 <Input
                   id="admin-universities-form-name-ar"
                   value={formData.name_ar}
@@ -594,7 +601,7 @@ export default function AdminUniversities() {
             </div>
 
             <div>
-              <Label htmlFor="admin-universities-form-description">Description (English)</Label>
+              <Label htmlFor="admin-universities-form-description">{t('admin.universities.form.descriptionEn')}</Label>
               <Textarea
                 id="admin-universities-form-description"
                 value={formData.description}
@@ -604,7 +611,7 @@ export default function AdminUniversities() {
             </div>
 
             <div>
-              <Label htmlFor="admin-universities-form-description-ar">Description (Arabic)</Label>
+              <Label htmlFor="admin-universities-form-description-ar">{t('admin.universities.form.descriptionAr')}</Label>
               <Textarea
                 id="admin-universities-form-description-ar"
                 value={formData.description_ar}
@@ -616,7 +623,7 @@ export default function AdminUniversities() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="admin-universities-form-city">City*</Label>
+                <Label htmlFor="admin-universities-form-city">{t('admin.universities.form.city')}</Label>
                 <Input
                   id="admin-universities-form-city"
                   value={formData.city}
@@ -625,7 +632,7 @@ export default function AdminUniversities() {
                 />
               </div>
               <div>
-                <Label htmlFor="admin-universities-form-type">Type*</Label>
+                <Label htmlFor="admin-universities-form-type">{t('admin.universities.form.type')}</Label>
                 <Select 
                   value={formData.university_type} 
                   onValueChange={(value: UniversityType) => setFormData({ ...formData, university_type: value })}
@@ -634,9 +641,9 @@ export default function AdminUniversities() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Public">Public</SelectItem>
-                    <SelectItem value="Private">Private</SelectItem>
-                    <SelectItem value="International">International</SelectItem>
+                    <SelectItem value="Public">{t('admin.universities.form.typePublic', { defaultValue: 'Public' })}</SelectItem>
+                    <SelectItem value="Private">{t('admin.universities.form.typePrivate', { defaultValue: 'Private' })}</SelectItem>
+                    <SelectItem value="International">{t('admin.universities.form.typeInternational', { defaultValue: 'International' })}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -644,17 +651,17 @@ export default function AdminUniversities() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="admin-universities-form-location">Location (English)</Label>
+                <Label htmlFor="admin-universities-form-location">{t('admin.universities.form.locationEn', { defaultValue: 'Location (English)' })}</Label>
                 <Input
                   id="admin-universities-form-location"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   placeholder="e.g., Al Malaz, Riyadh"
                 />
-                <p className="text-xs text-gray-500 mt-1">This will be displayed instead of city if provided</p>
+                <p className="text-xs text-gray-500 mt-1">{t('admin.universities.form.locationHint', { defaultValue: 'This will be displayed instead of city if provided' })}</p>
               </div>
               <div>
-                <Label htmlFor="admin-universities-form-location-ar">Location (Arabic)</Label>
+                <Label htmlFor="admin-universities-form-location-ar">{t('admin.universities.form.locationAr', { defaultValue: 'Location (Arabic)' })}</Label>
                 <Input
                   id="admin-universities-form-location-ar"
                   value={formData.location_ar}
@@ -667,7 +674,7 @@ export default function AdminUniversities() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="admin-universities-form-establishment-year">Establishment Year</Label>
+                <Label htmlFor="admin-universities-form-establishment-year">{t('admin.universities.form.establishmentYear')}</Label>
                 <Input
                   id="admin-universities-form-establishment-year"
                   type="number"
@@ -676,7 +683,7 @@ export default function AdminUniversities() {
                 />
               </div>
               <div>
-                <Label htmlFor="admin-universities-form-student-count">Student Count</Label>
+                <Label htmlFor="admin-universities-form-student-count">{t('admin.universities.form.studentCount')}</Label>
                 <Input
                   id="admin-universities-form-student-count"
                   type="number"
@@ -687,7 +694,7 @@ export default function AdminUniversities() {
             </div>
 
             <div>
-              <Label htmlFor="admin-universities-form-website">Website URL</Label>
+              <Label htmlFor="admin-universities-form-website">{t('admin.universities.form.website')}</Label>
               <Input
                 id="admin-universities-form-website"
                 type="url"
@@ -698,7 +705,7 @@ export default function AdminUniversities() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="admin-universities-form-contact-email">Contact Email</Label>
+                <Label htmlFor="admin-universities-form-contact-email">{t('admin.universities.form.contactEmail')}</Label>
                 <Input
                   id="admin-universities-form-contact-email"
                   type="email"
@@ -707,7 +714,7 @@ export default function AdminUniversities() {
                 />
               </div>
               <div>
-                <Label htmlFor="admin-universities-form-contact-phone">Contact Phone</Label>
+                <Label htmlFor="admin-universities-form-contact-phone">{t('admin.universities.form.contactPhone')}</Label>
                 <Input
                   id="admin-universities-form-contact-phone"
                   value={formData.contact_phone}
@@ -727,10 +734,10 @@ export default function AdminUniversities() {
                   resetForm();
                 }}
               >
-                Cancel
+                {t('admin.universities.form.cancel')}
               </Button>
               <Button type="submit" id="admin-universities-form-submit-button" className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-6 py-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                {editingUniversity ? 'Update' : 'Create'} University
+                {editingUniversity ? t('admin.universities.form.update') : t('admin.universities.form.create')}
               </Button>
             </DialogFooter>
           </form>
@@ -741,16 +748,16 @@ export default function AdminUniversities() {
       <Dialog open={bulkImportDialogOpen} onOpenChange={setBulkImportDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Bulk Import Universities</DialogTitle>
+            <DialogTitle>{t('admin.universities.bulkImport.title')}</DialogTitle>
             <DialogDescription>
-              Import multiple universities at once using JSON or CSV format
+              {t('admin.universities.bulkImport.subtitle')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             {/* Format Selection */}
             <div>
-              <Label>Import Format</Label>
+              <Label>{t('admin.universities.bulkImport.format')}</Label>
               <Select value={bulkImportFormat} onValueChange={(value: 'json' | 'csv') => setBulkImportFormat(value)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -764,7 +771,7 @@ export default function AdminUniversities() {
 
             {/* File Upload */}
             <div>
-              <Label>Upload File (Optional)</Label>
+              <Label>{t('admin.universities.bulkImport.uploadFile')}</Label>
               <div className="flex items-center gap-2">
                 <Input
                   type="file"
@@ -778,7 +785,7 @@ export default function AdminUniversities() {
             {/* Data Input */}
             <div>
               <Label>
-                {bulkImportFormat === 'json' ? 'JSON Data' : 'CSV Data'}
+                {bulkImportFormat === 'json' ? t('admin.universities.bulkImport.jsonData') : t('admin.universities.bulkImport.csvData')}
               </Label>
               <Textarea
                 value={bulkImportData}
@@ -798,11 +805,11 @@ export default function AdminUniversities() {
               <div className="flex items-start gap-2">
                 <FileText className="w-5 h-5 text-gray-500 mt-0.5" />
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                  <p className="font-semibold mb-2">Required fields: name, city</p>
-                  <p className="mb-1">Optional fields: name_ar, description, description_ar, location, location_ar, country, university_type (Public/Private/International), website_url, logo_url, establishment_year, ranking_national, student_count, contact_email, contact_phone</p>
-                  <p className="mt-2 font-semibold">Major Assignment:</p>
-                  <p className="mb-1">Add a "majors" field (array of major names) to assign specific majors to each university. If not specified, the checkbox below will determine if all majors are assigned.</p>
-                  <p className="text-xs mt-1 text-gray-500">Example: "majors": ["Computer Science", "Engineering", "Medicine"]</p>
+                  <p className="font-semibold mb-2">{t('admin.universities.bulkImport.requiredFields')}</p>
+                  <p className="mb-1">{t('admin.universities.bulkImport.optionalFields')}</p>
+                  <p className="mt-2 font-semibold">{t('admin.universities.bulkImport.majorAssignmentTitle')}</p>
+                  <p className="mb-1">{t('admin.universities.bulkImport.majorAssignmentHint')}</p>
+                  <p className="text-xs mt-1 text-gray-500">{t('admin.universities.bulkImport.exampleMajors')}</p>
                 </div>
               </div>
             </div>
@@ -817,7 +824,7 @@ export default function AdminUniversities() {
                 className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
               />
               <Label htmlFor="assign-all-majors" className="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300">
-                Automatically assign all available majors to imported universities
+                {t('admin.universities.bulkImport.assignAll')}
               </Label>
             </div>
           </div>
@@ -832,14 +839,14 @@ export default function AdminUniversities() {
                 setAssignAllMajors(true);
               }}
             >
-              Cancel
+              {t('admin.universities.form.cancel')}
             </Button>
             <Button
               onClick={handleBulkImport}
               disabled={bulkImportLoading || !bulkImportData.trim()}
               className="bg-green-500 hover:bg-green-600 text-white"
             >
-              {bulkImportLoading ? 'Importing...' : 'Import Universities'}
+              {bulkImportLoading ? t('admin.universities.bulkImport.importing') : t('admin.universities.bulkImport.import')}
             </Button>
           </DialogFooter>
         </DialogContent>
