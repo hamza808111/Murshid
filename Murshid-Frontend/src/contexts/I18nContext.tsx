@@ -23,7 +23,7 @@ const translations = {
     'navbar.home': 'Home',
     'navbar.majors': 'Majors',
     'navbar.universities': 'Universities',
-    'navbar.quiz': 'Quiz',
+    'navbar.quiz': 'AI quiz',
     'navbar.about': 'About Us',
     'navbar.contact': 'Contact Us',
     'navbar.signUp': 'Sign Up',
@@ -282,7 +282,7 @@ const translations = {
     'navbar.home': 'الرئيسية',
     'navbar.majors': 'التخصصات',
     'navbar.universities': 'الجامعات',
-    'navbar.quiz': 'الاختبار',
+    'navbar.quiz': 'AI اختبار',
     'navbar.about': 'من نحن',
     'navbar.contact': 'تواصل معنا',
     'navbar.signUp': 'حساب جديد',
@@ -322,7 +322,7 @@ const translations = {
     'homepage.browseUniversities': 'تصفح الجامعات',
 
     // Assessment
-    'assessment.title': 'تقييم الميول المهنية',
+    'assessment.title': 'تقييم المسار المهني مع AI',
     'assessment.heroDesc': 'اكتشف مسارك المهني المثالي من خلال تقييم شامل يطابق اهتماماتك ومهاراتك وأهدافك مع التخصص الأنسب لك.',
     'assessment.comingSoonTitle': 'قريباً: التقييم',
     'assessment.comingSoonDesc': 'نعمل حالياً على تطوير أداة تقييم شاملة تساعدك على اكتشاف مسارك المهني المثالي. سيحلل التقييم اهتماماتك ونقاط قوتك وأهدافك لتقديم توصيات مخصصة بالتخصصات المناسبة.',
