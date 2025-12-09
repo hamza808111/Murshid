@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search, Bookmark, BookmarkCheck, TrendingUp, Grid3x3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -110,6 +110,20 @@ export default function MajorsPage() {
     return colors[category] || 'from-gray-400 to-gray-500';
   };
 
+  const sortedMajors = useMemo(() => {
+    const priority: Partial<Record<MajorCategory, number>> = {
+      IT: 0,
+      Engineering: 1,
+    };
+
+    return [...majors].sort((a, b) => {
+      const pa = priority[a.category] ?? 10;
+      const pb = priority[b.category] ?? 10;
+      if (pa !== pb) return pa - pb;
+      return (a.name || '').localeCompare(b.name || '');
+    });
+  }, [majors]);
+
   return (
     <PageAnimation>
       <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
@@ -146,7 +160,7 @@ export default function MajorsPage() {
                 className="rounded-xl data-[state=active]:bg-blue-500 data-[state=active]:text-white"
               >
                 <TrendingUp className="w-4 h-4 mr-2" />
-                {language === 'ar' ? 'التصنيفات' : 'Rankings'}
+                {language === 'ar' ? 'تصنيف التخصصات' : 'Rankings'}
               </TabsTrigger>
             </TabsList>
 
@@ -229,7 +243,7 @@ export default function MajorsPage() {
           {!loading && majors.length > 0 && (
             <ScrollAnimation delay={0.2}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {majors.map((major, index) => {
+                {sortedMajors.map((major, index) => {
                 const bookmarked = isBookmarked('major', major.id);
                 const majorName = language === 'ar' && major.name_ar ? major.name_ar : major.name;
                 const majorDescription = language === 'ar' && major.description_ar ? major.description_ar : major.description;

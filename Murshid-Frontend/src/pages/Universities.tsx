@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search, MapPin, Star, Users, Bookmark, BookmarkCheck, Building2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -111,6 +111,18 @@ export default function UniversitiesPage() {
     return type;
   };
 
+  const sortedUniversities = useMemo(() => {
+    return [...universities].sort((a, b) => {
+      const yearA = Number(a.establishment_year ?? 0);
+      const yearB = Number(b.establishment_year ?? 0);
+      // Older (smaller year) first; missing years go to the end
+      if (yearA && yearB) return yearA - yearB;
+      if (yearA) return -1;
+      if (yearB) return 1;
+      return 0;
+    });
+  }, [universities]);
+
   return (
     <PageAnimation>
       <div className="min-h-screen bg-gradient-to-br from-[#e3e8ff] via-[#f5f7ff] to-[#cbd4ff] dark:from-[#0f172a] dark:via-[#1e2a4a] dark:to-[#2a3b6b]">
@@ -211,7 +223,7 @@ export default function UniversitiesPage() {
           {!loading && universities.length > 0 && (
             <ScrollAnimation delay={0.2}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {universities.map((university, index) => {
+                {sortedUniversities.map((university, index) => {
                 const bookmarked = isBookmarked('university', university.id);
                 const universityName = language === 'ar' && university.name_ar ? university.name_ar : university.name;
                 const universityDescription = language === 'ar' && university.description_ar ? university.description_ar : university.description;
@@ -266,35 +278,37 @@ export default function UniversitiesPage() {
                       {universityDescription || (language === 'ar' ? 'لا يوجد وصف متاح' : 'No description available')}
                     </p>
                     
-                    <div className="space-y-3 mb-4">
-                      {university.city && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-gray-500" />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">{universityLocation || university.city}</span>
-                        </div>
-                      )}
-                      
-                      {Number(university.ranking_national ?? 0) > 0 && (
-                        <div className="flex items-center gap-2">
-                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {language === 'ar' ? 'الترتيب المحلي: ' : 'National Rank: '}
-                            #{university.ranking_national}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {Number(university.student_count ?? 0) > 0 && (
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-gray-500" />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {university.student_count.toLocaleString()}+ {language === 'ar' ? 'طالب' : 'Students'}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    {(university.city || Number(university.ranking_national ?? 0) > 0 || Number(university.student_count ?? 0) > 0) && (
+                      <div className="space-y-3 mb-4">
+                        {university.city && (
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-gray-500" />
+                            <span className="text-sm text-gray-600 dark:text-gray-400">{universityLocation || university.city}</span>
+                          </div>
+                        )}
+                        
+                        {Number(university.ranking_national ?? 0) > 0 && (
+                          <div className="flex items-center gap-2">
+                            <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                              {language === 'ar' ? 'الترتيب المحلي: ' : 'National Rank: '}
+                              #{university.ranking_national}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {Number(university.student_count ?? 0) > 0 && (
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4 text-gray-500" />
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                              {university.student_count.toLocaleString()}+ {language === 'ar' ? 'طالب' : 'Students'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     
-                    <div className="flex flex-wrap gap-2 mb-4 flex-grow">
+                    <div className="flex flex-wrap gap-2 mb-4">
                       {university.university_type && (
                         <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm">
                           {getLocalizedType(university.university_type)}
@@ -311,6 +325,8 @@ export default function UniversitiesPage() {
                         </span>
                       )}
                     </div>
+
+                    <div className="flex-1" />
                     
                     <Button
                       variant="outline"

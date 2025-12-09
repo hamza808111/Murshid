@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { PageAnimation } from '@/components/animations/PageAnimation';
 import { ScrollAnimation } from '@/components/animations/ScrollAnimation';
@@ -36,6 +37,7 @@ interface FAQ {
 
 export default function HelpPage() {
   const { language } = useI18n();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -378,7 +380,7 @@ export default function HelpPage() {
       category: 'technical',
       question: {
         en: 'The website is loading slowly. What can I do?',
-        ar: 'الموقع يتحمل ببطء. ماذا يمكنني أن أفعل؟'
+        ar: 'الموقع يتأخر في التحميل. ماذا يمكنني أن أفعل؟'
       },
       answer: {
         en: 'Try these steps: 1) Clear your browser cache and cookies, 2) Ensure you have a stable internet connection, 3) Try a different browser (Chrome, Firefox, Safari), 4) Disable browser extensions temporarily, 5) Refresh the page. If the problem persists, contact our support team.',
@@ -518,7 +520,7 @@ export default function HelpPage() {
                     <ScrollAnimation key={index} delay={0.05 * index}>
                       <Card 
                         className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 border-2 hover:border-blue-400 dark:hover:border-blue-600"
-                        onClick={() => window.location.href = link.link}
+                        onClick={() => navigate(link.link)}
                       >
                         <CardContent className="p-6 text-center">
                           <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
@@ -617,11 +619,11 @@ export default function HelpPage() {
                 <CardContent className="p-8 text-center">
                   <Mail className="w-12 h-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" />
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2" dir={language}>
-                    {language === 'ar' ? 'لا يزال بحاجة للمساعدة؟' : 'Still Need Help?'}
+                    {language === 'ar' ? 'لا تزال بحاجة للمساعدة؟' : 'Still Need Help?'}
                   </h3>
                   <p className="text-gray-700 dark:text-gray-300 mb-6 max-w-2xl mx-auto" dir={language}>
                     {language === 'ar'
-                      ? 'إذا لم تجد ما تبحث عنه، فريق الدعم لدينا هنا لمساعدتك. اتصل بنا وسنعود إليك في أقرب وقت ممكن.'
+                      ? 'إذا لم تجد ما تبحث عنه، فريق الدعم لدينا هنا لمساعدتك. اتصل بنا وسنتواصل معك في أقرب وقت.'
                       : 'If you didn\'t find what you\'re looking for, our support team is here to help. Contact us and we\'ll get back to you as soon as possible.'}
                   </p>
                   <Button 

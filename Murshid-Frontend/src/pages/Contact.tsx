@@ -116,7 +116,10 @@ export default function Contact() {
                   </div>
                 </div>
                 
-                <h1 className="text-4xl md:text-8xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 animate-pulse" dir={language}>
+                <h1
+                  className="text-4xl md:text-8xl font-bold leading-[1.1] md:leading-[1.08] bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 animate-pulse pb-3"
+                  dir={language}
+                >
                   {language === 'ar' ? 'تواصل معنا' : 'Contact Us'}
                 </h1>
                 
@@ -131,7 +134,10 @@ export default function Contact() {
             {/* Team Members Grid */}
             <ScrollAnimation delay={0.3}>
               <div className="mb-20">
-                <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 text-transparent animate-pulse" dir={language}>
+                <h2
+                  className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 animate-pulse leading-tight pb-1"
+                  dir={language}
+                >
                   {language === 'ar' ? 'فريق العمل المتميز' : 'Our Amazing Team'}
                 </h2>
                 
@@ -221,7 +227,10 @@ export default function Contact() {
             <ScrollAnimation delay={0.6}>
               <div className="text-center">
                 <Card className="max-w-4xl mx-auto p-12 rounded-3xl shadow-2xl bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-900 border-0 transform hover:scale-105 transition-all duration-700">
-                  <h2 className="text-4xl font-bold mb-8 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent animate-pulse" dir={language}>
+                  <h2
+                    className="text-4xl font-bold mb-8 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent animate-pulse leading-tight pb-1"
+                    dir={language}
+                  >
                     {language === 'ar' ? 'معلومات التواصل' : 'Get In Touch'}
                   </h2>
                   
