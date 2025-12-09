@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import { PageAnimation } from '@/components/animations/PageAnimation';
 import { ScrollAnimation } from '@/components/animations/ScrollAnimation';
 import { useI18n } from '@/contexts/I18nContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ interface FAQ {
 export default function HelpPage() {
   const { language } = useI18n();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -520,7 +522,14 @@ export default function HelpPage() {
                     <ScrollAnimation key={index} delay={0.05 * index}>
                       <Card 
                         className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 border-2 hover:border-blue-400 dark:hover:border-blue-600"
-                        onClick={() => navigate(link.link)}
+                        onClick={() => {
+                          // Check if user needs to be logged in for community and assessment pages
+                          if ((link.link === '/community' || link.link === '/assessment') && !user) {
+                            navigate('/login');
+                          } else {
+                            navigate(link.link);
+                          }
+                        }}
                       >
                         <CardContent className="p-6 text-center">
                           <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">

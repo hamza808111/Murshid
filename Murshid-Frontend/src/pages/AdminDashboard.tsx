@@ -961,7 +961,7 @@ const AdminDashboard = () => {
               <TableHead className={`${language === "ar" ? "text-right" : "text-left"} hidden xl:table-cell`}>
                 {t("admin.dashboard.table.headers.joined")}
               </TableHead>
-            <TableHead className="text-center">
+            <TableHead className={language === "ar" ? "text-right" : "text-left"}>
               {t("admin.dashboard.table.headers.actions")}
             </TableHead>
           </TableRow>
@@ -1015,8 +1015,8 @@ const AdminDashboard = () => {
                         <TableCell className={`text-sm text-muted-foreground ${language === "ar" ? "text-right" : "text-left"} hidden xl:table-cell`}>
                           {formatDate(userData.created_at)}
                         </TableCell>
-                        <TableCell className={language === "ar" ? "text-left" : "text-right"}>
-                          <div className={`flex items-center gap-1 ${language === "ar" ? "justify-start" : "justify-end"}`}>
+                        <TableCell className={language === "ar" ? "text-right" : "text-left"}>
+                          <div className={`flex items-center gap-1 ${language === "ar" ? "justify-end" : "justify-start"}`}>
                             {isPendingSpecialist(userData) ? (
                               <>
                                 <DropdownMenu>
