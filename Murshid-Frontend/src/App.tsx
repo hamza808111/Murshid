@@ -33,6 +33,7 @@ import AdminUniversities from "./pages/AdminUniversities";
 import AdminMajors from "./pages/AdminMajors";
 import AdminUniversityMajors from "./pages/AdminUniversityMajors";
 import AdminCommunity from "./pages/AdminCommunity";
+import AdminAnalytics from "./pages/AdminAnalytics";
 import Suspended from "./pages/Suspended";
 import Community from "./pages/Community";
 import CreatePost from "./pages/CreatePost";
@@ -125,6 +126,7 @@ const AppContent = () => {
       <Route path="/admin/majors" element={<ProtectedRoute><AdminMajors /></ProtectedRoute>} />
       <Route path="/admin/university-majors" element={<ProtectedRoute><AdminUniversityMajors /></ProtectedRoute>} />
       <Route path="/admin/community" element={<ProtectedRoute><AdminCommunity /></ProtectedRoute>} />
+      <Route path="/admin/analytics" element={<ProtectedRoute><AdminAnalytics /></ProtectedRoute>} />
       <Route path="/suspended" element={<Suspended />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />

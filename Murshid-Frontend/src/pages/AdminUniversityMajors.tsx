@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/contexts/I18nContext';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,7 @@ import { toast } from 'sonner';
 export default function AdminUniversityMajors() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { language } = useI18n();
   const [universities, setUniversities] = useState<University[]>([]);
   const [allMajors, setAllMajors] = useState<Major[]>([]);
   const [selectedUniversity, setSelectedUniversity] = useState<string>('');
@@ -75,7 +77,7 @@ export default function AdminUniversityMajors() {
       setAllMajors(majorsData);
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Failed to load data');
+      toast.error(language === 'ar' ? 'فشل تحميل البيانات' : 'Failed to load data');
     }
   };
 
@@ -87,7 +89,7 @@ export default function AdminUniversityMajors() {
       setUniversityMajors(majors);
     } catch (error) {
       console.error('Error fetching university majors:', error);
-      toast.error('Failed to load university majors');
+      toast.error(language === 'ar' ? 'فشل تحميل تخصصات الجامعة' : 'Failed to load university majors');
     }
   };
 
@@ -95,7 +97,7 @@ export default function AdminUniversityMajors() {
     e.preventDefault();
     
     if (!selectedUniversity || !formData.major_id) {
-      toast.error('Please select a university and major');
+      toast.error(language === 'ar' ? 'يرجى اختيار جامعة وتخصص' : 'Please select a university and major');
       return;
     }
 
@@ -108,27 +110,30 @@ export default function AdminUniversityMajors() {
         program_url: formData.program_url,
       } as any);
 
-      toast.success('Major assigned to university successfully');
+      toast.success(language === 'ar' ? 'تم ربط التخصص للجامعة بنجاح' : 'Major assigned to university successfully');
       setDialogOpen(false);
       resetForm();
       fetchUniversityMajors();
     } catch (error) {
       console.error('Error assigning major:', error);
-      toast.error('Failed to assign major. It may already be assigned to this university.');
+      toast.error(language === 'ar' ? 'فشل ربط التخصص. قد يكون معينًا بالفعل لهذه الجامعة.' : 'Failed to assign major. It may already be assigned to this university.');
     }
   };
 
   const handleRemove = async (majorId: string) => {
     if (!selectedUniversity) return;
-    if (!confirm('Are you sure you want to remove this major from the university?')) return;
+    const confirmMessage = language === 'ar' 
+      ? 'هل أنت متأكد من أنك تريد إزالة هذا التخصص من الجامعة؟'
+      : 'Are you sure you want to remove this major from the university?';
+    if (!confirm(confirmMessage)) return;
 
     try {
       await removeMajorFromUniversity(selectedUniversity, majorId);
-      toast.success('Major removed from university successfully');
+      toast.success(language === 'ar' ? 'تم إزالة التخصص من الجامعة بنجاح' : 'Major removed from university successfully');
       fetchUniversityMajors();
     } catch (error) {
       console.error('Error removing major:', error);
-      toast.error('Failed to remove major');
+      toast.error(language === 'ar' ? 'فشل إزالة التخصص' : 'Failed to remove major');
     }
   };
 
@@ -149,28 +154,28 @@ export default function AdminUniversityMajors() {
   );
 
   return (
-    <div className="admin-layout min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="admin-layout min-h-screen bg-gray-50 dark:bg-gray-900" dir={language}>
       <Navbar />
       
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 pt-12 pb-20">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Assign Majors to Universities
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100" dir={language}>
+            {language === 'ar' ? 'ربط التخصصات للجامعات' : 'Assign Majors to Universities'}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Manage which majors are offered by each university
+          <p className="text-gray-600 dark:text-gray-400 mt-2" dir={language}>
+            {language === 'ar' ? 'إدارة التخصصات التي تقدمها كل جامعة' : 'Manage which majors are offered by each university'}
           </p>
         </div>
 
         {/* University Selector */}
         <Card className="p-6 mb-8">
-          <Label htmlFor="university" className="text-lg font-semibold mb-4 block">
-            Select University
+          <Label htmlFor="university" className="text-lg font-semibold mb-4 block" dir={language}>
+            {language === 'ar' ? 'اختر جامعة' : 'Select University'}
           </Label>
           <Select value={selectedUniversity} onValueChange={setSelectedUniversity}>
             <SelectTrigger id="admin-university-majors-university-select" className="w-full">
-              <SelectValue placeholder="Choose a university..." />
+              <SelectValue placeholder={language === 'ar' ? 'اختر جامعة...' : 'Choose a university...'} />
             </SelectTrigger>
             <SelectContent>
               {universities.map(uni => (
@@ -187,11 +192,13 @@ export default function AdminUniversityMajors() {
           <>
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  Majors at {selectedUniversityData?.name}
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100" dir={language}>
+                  {language === 'ar' ? `التخصصات في ${selectedUniversityData?.name_ar || selectedUniversityData?.name}` : `Majors at ${selectedUniversityData?.name}`}
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">
-                  {universityMajors.length} majors currently offered
+                <p className="text-gray-600 dark:text-gray-400" dir={language}>
+                  {language === 'ar' 
+                    ? `${universityMajors.length} التخصصات المتاحة حاليًا`
+                    : `${universityMajors.length} majors currently offered`}
                 </p>
               </div>
               <Button
@@ -200,8 +207,8 @@ export default function AdminUniversityMajors() {
                 className="bg-blue-500 hover:bg-blue-600"
                 disabled={availableMajors.length === 0}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Assign Major
+                <Plus className={`w-4 h-4 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                {language === 'ar' ? 'ربط تخصص' : 'Assign Major'}
               </Button>
             </div>
 
@@ -244,8 +251,8 @@ export default function AdminUniversityMajors() {
                     size="sm"
                     className="w-full"
                   >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Remove
+                    <Trash2 className={`w-4 h-4 ${language === 'ar' ? 'ml-1' : 'mr-1'}`} />
+                    {language === 'ar' ? 'إزالة' : 'Remove'}
                   </Button>
                 </Card>
               ))}
@@ -254,8 +261,8 @@ export default function AdminUniversityMajors() {
             {universityMajors.length === 0 && (
               <div className="text-center py-20">
                 <LinkIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400">
-                  No majors assigned to this university yet
+                <p className="text-gray-600 dark:text-gray-400" dir={language}>
+                  {language === 'ar' ? 'لم يتم تعيين أي تخصصات لهذه الجامعة بعد' : 'No majors assigned to this university yet'}
                 </p>
               </div>
             )}
@@ -265,8 +272,8 @@ export default function AdminUniversityMajors() {
         {!selectedUniversity && (
           <div className="text-center py-20">
             <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 dark:text-gray-400">
-              Please select a university to view and manage its majors
+            <p className="text-gray-600 dark:text-gray-400" dir={language}>
+              {language === 'ar' ? 'يرجى اختيار جامعة لعرض وإدارة تخصصاتها' : 'Please select a university to view and manage its majors'}
             </p>
           </div>
         )}
@@ -276,21 +283,27 @@ export default function AdminUniversityMajors() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Assign Major to {selectedUniversityData?.name}</DialogTitle>
-            <DialogDescription>
-              Select a major and provide program details
+            <DialogTitle dir={language}>
+              {language === 'ar' 
+                ? `تعيين تخصص لـ ${selectedUniversityData?.name_ar || selectedUniversityData?.name}`
+                : `Assign Major to ${selectedUniversityData?.name}`}
+            </DialogTitle>
+            <DialogDescription dir={language}>
+              {language === 'ar' ? 'اختر تخصصًا وقدم تفاصيل البرنامج' : 'Select a major and provide program details'}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="admin-university-majors-form-major">Major*</Label>
+              <Label htmlFor="admin-university-majors-form-major" dir={language}>
+                {language === 'ar' ? 'التخصص*' : 'Major*'}
+              </Label>
               <Select 
                 value={formData.major_id} 
                 onValueChange={(value) => setFormData({ ...formData, major_id: value })}
               >
                 <SelectTrigger id="admin-university-majors-form-major">
-                  <SelectValue placeholder="Select a major..." />
+                  <SelectValue placeholder={language === 'ar' ? 'اختر تخصصًا...' : 'Select a major...'} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableMajors.map(major => (
@@ -304,51 +317,65 @@ export default function AdminUniversityMajors() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="admin-university-majors-form-tuition">Annual Tuition Fee (SAR)</Label>
+                <Label htmlFor="admin-university-majors-form-tuition" dir={language}>
+                  {language === 'ar' ? 'الرسوم الدراسية السنوية (ريال)' : 'Annual Tuition Fee (SAR)'}
+                </Label>
                 <Input
                   id="admin-university-majors-form-tuition"
                   type="number"
                   value={formData.tuition_fee_annual}
                   onChange={(e) => setFormData({ ...formData, tuition_fee_annual: parseFloat(e.target.value) })}
                   placeholder="0"
+                  dir={language}
                 />
               </div>
               <div>
-                <Label htmlFor="admin-university-majors-form-capacity">Student Capacity</Label>
+                <Label htmlFor="admin-university-majors-form-capacity" dir={language}>
+                  {language === 'ar' ? 'الطاقة الاستيعابية للطلاب' : 'Student Capacity'}
+                </Label>
                 <Input
                   id="admin-university-majors-form-capacity"
                   type="number"
                   value={formData.capacity}
                   onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) })}
                   placeholder="0"
+                  dir={language}
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="admin-university-majors-form-program-url">Program URL</Label>
+              <Label htmlFor="admin-university-majors-form-program-url" dir={language}>
+                {language === 'ar' ? 'رابط البرنامج' : 'Program URL'}
+              </Label>
               <Input
                 id="admin-university-majors-form-program-url"
                 type="url"
                 value={formData.program_url}
                 onChange={(e) => setFormData({ ...formData, program_url: e.target.value })}
                 placeholder="https://..."
+                dir="ltr"
               />
             </div>
 
             <div>
-              <Label htmlFor="admin-university-majors-form-admission-requirements">Admission Requirements (English)</Label>
+              <Label htmlFor="admin-university-majors-form-admission-requirements" dir={language}>
+                {language === 'ar' ? 'متطلبات القبول (الإنجليزية)' : 'Admission Requirements (English)'}
+              </Label>
               <Textarea
                 id="admin-university-majors-form-admission-requirements"
                 value={formData.admission_requirements}
                 onChange={(e) => setFormData({ ...formData, admission_requirements: e.target.value })}
                 rows={3}
-                placeholder="Enter admission requirements..."
+                placeholder={language === 'ar' ? 'أدخل متطلبات القبول...' : 'Enter admission requirements...'}
+                dir="ltr"
               />
             </div>
 
             <div>
-              <Label htmlFor="admin-university-majors-form-admission-requirements-ar">Admission Requirements (Arabic)</Label>
+              <Label htmlFor="admin-university-majors-form-admission-requirements-ar" dir={language}>
+                {language === 'ar' ? 'متطلبات القبول (العربية)' : 'Admission Requirements (Arabic)'}
+              </Label>
               <Textarea
                 id="admin-university-majors-form-admission-requirements-ar"
                 value={formData.admission_requirements_ar}
@@ -369,10 +396,10 @@ export default function AdminUniversityMajors() {
                   resetForm();
                 }}
               >
-                Cancel
+                {language === 'ar' ? 'إلغاء' : 'Cancel'}
               </Button>
               <Button type="submit" id="admin-university-majors-form-submit-button" className="bg-blue-500 hover:bg-blue-600">
-                Assign Major
+                {language === 'ar' ? 'تعيين التخصص' : 'Assign Major'}
               </Button>
             </DialogFooter>
           </form>
