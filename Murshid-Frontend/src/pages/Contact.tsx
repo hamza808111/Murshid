@@ -12,7 +12,7 @@ const teamMembers = [
     id: 1,
     name: 'Hamza Hamdi',
     role: 'Scrum Master & Back end Developer',
-    image: '/hamza.jpg',
+    image: '/Hamza.jpg',
     email: 'hamza.hamdi5@gmail.com',
     github: 'https://github.com/hamza808111 ',
     linkedin: 'https://www.linkedin.com/in/hamza-hamdi-48b316157?utm_source=share_via&utm_content=profile&utm_medium=member_android',
