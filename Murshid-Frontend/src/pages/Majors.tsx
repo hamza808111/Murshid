@@ -238,7 +238,10 @@ export default function MajorsPage() {
                   <ScrollAnimation key={major.id} delay={index * 0.1}>
                     <Card
                       id={`majors-card-${major.id}`}
-                      className="p-6 rounded-3xl shadow-md card-hover border-0 bg-white dark:bg-gray-800 cursor-pointer group relative"
+                      className={`p-6 rounded-3xl shadow-md card-hover border-0 bg-white dark:bg-gray-800 cursor-pointer group relative ${
+                        language === 'ar' ? 'text-right' : 'text-left'
+                      }`}
+                      dir={language === 'ar' ? 'rtl' : 'ltr'}
                       onClick={() => navigate(`/majors/${major.id}`)}
                     >
                     {/* Bookmark Button */}
@@ -266,11 +269,21 @@ export default function MajorsPage() {
                       )}
                     </div>
                     
-                    <h3 className={`text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 ${language === 'ar' ? 'pl-8' : 'pr-8'}`} dir={language}>
+                    <h3
+                      className={`text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 ${
+                        language === 'ar' ? 'pl-8' : 'pr-8'
+                      } ${language === 'ar' ? 'text-right' : 'text-left'}`}
+                      dir={language}
+                    >
                       {majorName}
                     </h3>
                     
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2" dir={language}>
+                    <p
+                      className={`text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 ${
+                        language === 'ar' ? 'text-right' : 'text-left'
+                      }`}
+                      dir={language}
+                    >
                       {majorDescription || (language === 'ar' ? 'لا يوجد وصف متاح' : 'No description available')}
                     </p>
                     
