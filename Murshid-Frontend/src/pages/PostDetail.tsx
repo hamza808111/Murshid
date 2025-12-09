@@ -354,8 +354,8 @@ export default function PostDetail() {
             </Button>
 
             {/* Post */}
-            <Card className={`p-8 mb-8 card-hover ${isPostAuthor ? '!border-2 !border-blue-500 dark:!border-blue-400' : ''}`}>
-              <div className="flex items-start gap-4 mb-6">
+            <Card className={`p-4 sm:p-6 lg:p-8 mb-8 card-hover ${isPostAuthor ? '!border-2 !border-blue-500 dark:!border-blue-400' : ''}`}>
+              <div className="flex items-start gap-3 sm:gap-4 mb-6">
                 <Avatar 
                   className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
                   onClick={() => navigate(`/user/${post.author_id}`)}
@@ -437,7 +437,7 @@ export default function PostDetail() {
                     </div>
                   )}
 
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
                     {post.title}
                   </h1>
 
@@ -452,26 +452,26 @@ export default function PostDetail() {
                   </div>
 
                   {((post.major_tags && post.major_tags.length > 0) || (post.university_tags && post.university_tags.length > 0) || (post.tags && post.tags.length > 0)) && (
-                    <div className="flex flex-wrap gap-2 mb-6">
+                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-4 sm:mb-6">
                       {post.major_tags?.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
+                        <Badge key={tag} variant="outline" className="text-xs break-words">
                           📚 {translateTagSync(tag, language)}
                         </Badge>
                       ))}
                       {post.university_tags?.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
+                        <Badge key={tag} variant="outline" className="text-xs break-words">
                           🏛️ {translateTagSync(tag, language)}
                         </Badge>
                       ))}
                       {post.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
+                        <Badge key={tag} variant="secondary" className="text-xs break-words">
                           {tag}
                         </Badge>
                       ))}
                     </div>
                   )}
 
-                  <div className="flex items-center gap-6 text-sm text-gray-500">
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-500">
                     {user && user.is_admin ? (
                       <div className="flex items-center gap-1">
                         <Heart className="w-4 h-4" />
@@ -511,7 +511,7 @@ export default function PostDetail() {
                             className="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition-colors"
                           >
                             <MessageCircle className="w-4 h-4" />
-                            <span className="text-sm font-medium">{answers.length}</span>
+                            <span className="text-xs sm:text-sm font-medium">{answers.length}</span>
                           </Button>
                         )}
                         {!user && (
@@ -527,7 +527,7 @@ export default function PostDetail() {
                             className="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition-colors"
                           >
                             <MessageCircle className="w-4 h-4" />
-                            <span className="text-sm font-medium">{answers.length}</span>
+                            <span className="text-xs sm:text-sm font-medium">{answers.length}</span>
                           </Button>
                         )}
                       </>
@@ -543,7 +543,7 @@ export default function PostDetail() {
 
             {/* Inline Answer Form (appears below post when comment button clicked) */}
             {showAnswerFormInline && user && post && post.author_id !== user.id && !user.is_admin && (
-              <Card className="p-6 mt-4 border-2 border-blue-500">
+              <Card className="p-4 sm:p-6 mt-4 border-2 border-blue-500">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100" dir={language}>
                     {language === 'ar' ? 'اكتب إجابتك' : 'Write Your Answer'}
@@ -622,10 +622,10 @@ export default function PostDetail() {
                   const canModify = isAnswerAuthor || user?.is_admin;
 
                   return (
-                    <Card key={answer.id} className={`p-6 card-hover ${
+                    <Card key={answer.id} className={`p-4 sm:p-6 card-hover ${
                       isAnswerAuthor ? '!border-2 !border-blue-500 dark:!border-blue-400' : ''
                     }`}>
-                      <div className="flex items-start gap-4">
+                      <div className="flex items-start gap-3 sm:gap-4">
                         <Avatar 
                           className="w-10 h-10 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
                           onClick={() => navigate(`/user/${answer.author_id}`)}
@@ -717,7 +717,7 @@ export default function PostDetail() {
                             {answer.content}
                           </p>
 
-                          <div className="flex items-center gap-4">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                             <LikeButton
                               itemId={answer.id}
                               itemType="answer"
@@ -737,12 +737,13 @@ export default function PostDetail() {
                                 variant={answer.is_accepted ? "default" : "outline"}
                                 size="sm"
                                 onClick={() => handleAcceptAnswer(answer.id, answer.is_accepted)}
-                                className={answer.is_accepted ? "bg-green-600 hover:bg-green-700" : ""}
+                                className={`${answer.is_accepted ? "bg-green-600 hover:bg-green-700" : ""} text-xs sm:text-sm`}
                               >
                                 <Check className="w-4 h-4 mr-1" />
-                                {answer.is_accepted
+                                <span className="hidden sm:inline">{answer.is_accepted
                                   ? (language === 'ar' ? 'مقبولة' : 'Accepted')
-                                  : (language === 'ar' ? 'قبول الإجابة' : 'Accept Answer')}
+                                  : (language === 'ar' ? 'قبول الإجابة' : 'Accept Answer')}</span>
+                                <span className="sm:hidden">{answer.is_accepted ? (language === 'ar' ? 'مقبول' : 'Accepted') : (language === 'ar' ? 'قبول' : 'Accept')}</span>
                               </Button>
                             )}
                           </div>
@@ -758,7 +759,7 @@ export default function PostDetail() {
 
             {/* Answer Form */}
             {user && post && post.author_id !== user.id && !user.is_admin && (
-              <Card ref={answerFormRef} className="p-6 mt-8">
+              <Card ref={answerFormRef} className="p-4 sm:p-6 mt-8">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
                   {language === 'ar' ? 'اكتب إجابتك' : 'Write Your Answer'}
                 </h3>

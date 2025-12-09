@@ -127,26 +127,26 @@ export default function MajorDetail() {
           {language === 'ar' ? 'العودة إلى التخصصات' : 'Back to Majors'}
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
             {/* Header */}
-            <Card className="p-8 mb-6">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900 rounded-2xl flex items-center justify-center text-4xl overflow-hidden shadow-lg">
+            <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+                <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                  <div className="w-16 h-16 sm:w-24 sm:h-24 bg-blue-100 dark:bg-blue-900 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl overflow-hidden shadow-lg flex-shrink-0">
                     {major.icon_name?.startsWith('http') ? (
-                      <img src={major.icon_name} alt={majorName} className="w-full h-full object-contain p-3" />
+                      <img src={major.icon_name} alt={majorName} className="w-full h-full object-contain p-2 sm:p-3" />
                     ) : (
-                      <span className="text-4xl">{major.icon_name || '📚'}</span>
+                      <span className="text-3xl sm:text-4xl">{major.icon_name || '📚'}</span>
                     )}
                   </div>
-                  <div>
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2" dir={language}>
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-1 sm:mb-2 break-words" dir={language}>
                       {majorName}
                     </h1>
                     {major.name_ar && language === 'en' && (
-                      <p className="text-lg text-gray-600 dark:text-gray-400" dir="rtl">
+                      <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 break-words" dir="rtl">
                         {major.name_ar}
                       </p>
                     )}
@@ -158,7 +158,7 @@ export default function MajorDetail() {
                   id="major-detail-bookmark-button"
                   variant="outline"
                   size="lg"
-                  className="rounded-full"
+                  className="rounded-full flex-shrink-0"
                 >
                   {bookmarked ? (
                     <BookmarkCheck className="w-5 h-5 text-blue-500 fill-blue-500" />
@@ -259,14 +259,14 @@ export default function MajorDetail() {
             </Card>
 
             {/* Universities Section */}
-            <Card className="p-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6" dir={language}>
+            <Card className="p-4 sm:p-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 sm:mb-6" dir={language}>
                 {language === 'ar' ? 'الجامعات التي تقدم هذا التخصص' : 'Universities Offering This Major'}
                 <span className="text-gray-500 ml-2">({universities.length})</span>
               </h2>
 
               {universities.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-3 sm:gap-4">
                   {universities.map((university) => {
                     const universityName = language === 'ar' && university.name_ar ? university.name_ar : university.name;
                     const universityLocation = language === 'ar' && university.location_ar ? university.location_ar : university.location;
@@ -275,46 +275,46 @@ export default function MajorDetail() {
                       <Card
                         key={university.id}
                         id={`major-detail-university-card-${university.id}`}
-                        className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                        className="p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer"
                         onClick={() => navigate(`/universities/${university.id}`)}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                           {university.logo_url ? (
                             <img 
                               src={university.logo_url} 
                               alt={universityName} 
-                              className="w-20 h-20 object-cover rounded-xl shadow-md"
+                              className="w-14 h-14 sm:w-20 sm:h-20 object-cover rounded-xl shadow-md flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center shadow-md">
-                              <Building2 className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+                            <div className="w-14 h-14 sm:w-20 sm:h-20 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                              <Building2 className="w-7 h-7 sm:w-10 sm:h-10 text-blue-600 dark:text-blue-400" />
                             </div>
                           )}
-                          <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100" dir={language}>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 break-words" dir={language}>
                               {universityName}
                             </h3>
-                            <div className="flex items-center gap-4 mt-2">
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
                               {university.city && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
                                   📍 {universityLocation || university.city}
                                 </p>
                               )}
                               {university.university_type && (
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge variant="secondary" className="text-xs flex-shrink-0">
                                   {university.university_type}
                                 </Badge>
                               )}
                             </div>
                           </div>
-                          <ArrowLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                          <ArrowLeft className="w-5 h-5 text-gray-400 rotate-180 flex-shrink-0 hidden sm:block" />
                         </div>
                       </Card>
                     );
                   })}
                 </div>
               ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-8" dir={language}>
+                <p className="text-gray-500 dark:text-gray-400 text-center py-8 text-sm sm:text-base" dir={language}>
                   {language === 'ar' ? 'لا توجد جامعات تقدم هذا التخصص حالياً' : 'No universities offer this major at this time'}
                 </p>
               )}
@@ -322,28 +322,28 @@ export default function MajorDetail() {
           </div>
 
           {/* Sidebar */}
-          <div>
-            <Card className="p-6 sticky top-24">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
+          <div className="lg:sticky lg:top-24 lg:h-fit">
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4" dir={language}>
                 {language === 'ar' ? 'تفاصيل البرنامج' : 'Program Details'}
               </h3>
               
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                     {language === 'ar' ? 'الفئة' : 'Category'}
                   </p>
-                  <p className="font-medium text-gray-900 dark:text-gray-100">
+                  <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-gray-100 break-words">
                     {major.category}
                   </p>
                 </div>
 
                 {major.degree_type && (
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                       {language === 'ar' ? 'الدرجة العلمية' : 'Degree Type'}
                     </p>
-                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                    <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-gray-100">
                       {major.degree_type}
                     </p>
                   </div>
@@ -351,20 +351,20 @@ export default function MajorDetail() {
 
                 {major.duration_years && (
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                       {language === 'ar' ? 'المدة' : 'Duration'}
                     </p>
-                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                    <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-gray-100">
                       {major.duration_years} {language === 'ar' ? 'سنوات' : 'years'}
                     </p>
                   </div>
                 )}
 
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-2">
                     {language === 'ar' ? 'الجامعات المتاحة' : 'Available at'}
                   </p>
-                  <p className="font-medium text-gray-900 dark:text-gray-100">
+                  <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-gray-100">
                     {universities.length} {language === 'ar' ? 'جامعة' : 'universities'}
                   </p>
                 </div>
@@ -373,7 +373,7 @@ export default function MajorDetail() {
               <Button 
                 onClick={() => navigate('/assessment')}
                 id="major-detail-assessment-button"
-                className="w-full mt-6"
+                className="w-full mt-6 text-sm sm:text-base"
               >
                 {language === 'ar' ? 'هل هذا التخصص مناسب لي؟' : 'Is This Right for Me?'}
               </Button>

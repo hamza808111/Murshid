@@ -283,19 +283,19 @@ ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
       {/* Action Buttons */}
       <ScrollAnimation delay={0.8}>
         <div className="flex flex-wrap gap-4 justify-center pt-6">
-          <Button onClick={onRetake} variant="outline" size="lg">
+          <Button onClick={onRetake} variant="outline" size="lg" className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-md">
             <ArrowLeft className="w-4 h-4 mr-2" />
             {language === 'ar' ? 'إعادة التقييم' : 'Retake Assessment'}
           </Button>
 
           {onSave && (
-            <Button onClick={onSave} variant="default" size="lg">
+            <Button onClick={onSave} className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl px-8 py-6 shadow-lg transition-all hover:shadow-xl" size="lg">
               <CheckCircle className="w-4 h-4 mr-2" />
               {language === 'ar' ? 'حفظ النتائج' : 'Save Results'}
             </Button>
           )}
 
-          <Button onClick={handleDownload} variant="outline" size="lg">
+          <Button onClick={handleDownload} variant="outline" size="lg" className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-md">
             <Download className="w-4 h-4 mr-2" />
             {language === 'ar' ? 'تحميل' : 'Download'}
           </Button>
@@ -311,6 +311,7 @@ ${i + 1}. ${rec.majorName} (${rec.matchPercentage}% Match)
             }}
             variant="outline"
             size="lg"
+            className="rounded-2xl px-8 py-6 border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-md"
           >
             <Share2 className="w-4 h-4 mr-2" />
             {language === 'ar' ? 'مشاركة' : 'Share'}

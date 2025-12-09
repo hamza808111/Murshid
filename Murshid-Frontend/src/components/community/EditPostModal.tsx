@@ -340,9 +340,9 @@ export const EditPostModal = ({
               )}
             </div>
             {universityTags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2 mt-2">
                 {universityTags.map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="gap-1">
+                  <Badge key={index} variant="secondary" className="gap-1 text-xs sm:text-sm flex-shrink-0">
                     🏛️ {tag}
                     <button
                       type="button"
@@ -399,9 +399,9 @@ export const EditPostModal = ({
               )}
             </div>
             {majorTags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2 mt-2">
                 {majorTags.map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="gap-1">
+                  <Badge key={index} variant="secondary" className="gap-1 text-xs sm:text-sm flex-shrink-0">
                     📚 {tag}
                     <button
                       type="button"

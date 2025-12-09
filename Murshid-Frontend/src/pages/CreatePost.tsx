@@ -481,9 +481,9 @@ export default function CreatePost() {
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
                       {formData.university_tags?.map((tag, index) => (
-                        <Badge key={index} variant="outline" className="flex items-center gap-1">
+                        <Badge key={index} variant="outline" className="flex items-center gap-1 text-xs sm:text-sm flex-shrink-0">
                           🏛️ {tag}
                           <X 
                             className="w-3 h-3 cursor-pointer" 
@@ -537,9 +537,9 @@ export default function CreatePost() {
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
                       {formData.major_tags?.map((tag, index) => (
-                        <Badge key={index} variant="outline" className="flex items-center gap-1">
+                        <Badge key={index} variant="outline" className="flex items-center gap-1 text-xs sm:text-sm flex-shrink-0">
                           📚 {tag}
                           <X 
                             className="w-3 h-3 cursor-pointer" 

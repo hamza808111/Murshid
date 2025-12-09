@@ -350,7 +350,6 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
           </div>
 
           <div className="md:hidden flex items-center gap-1 flex-shrink-0">
-            <LanguageToggle />
             <ThemeToggle />
             {/* Mobile - Always show Notifications icon */}
             {user && !user.is_admin && <NotificationBell />}
@@ -472,6 +471,12 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
                   </Link>
                 </div>
               )}
+              <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{language === 'ar' ? 'اللغة' : 'Language'}</span>
+                  <LanguageToggle />
+                </div>
+              </div>
             </div>
           </div>
         </div>
