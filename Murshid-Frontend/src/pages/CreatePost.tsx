@@ -18,7 +18,6 @@ import type { University, Major } from '@/types/database';
 import { getUniversities } from '@/lib/universitiesApi';
 import { getMajors } from '@/lib/majorsApi';
 import { searchWithFuzzy } from '@/lib/fuzzySearch';
-import { analyzeContent } from '@/lib/contentFilter';
 import { toast } from 'sonner';
 import { createCommunityPost } from '@/lib/communityApi';
 
@@ -214,34 +213,7 @@ export default function CreatePost() {
       }
     }
 
-    // Content moderation
-    const titleAnalysis = analyzeContent(formData.title, language);
-    const contentAnalysis = analyzeContent(formData.content, language);
-
-    if (!titleAnalysis.isAllowed) {
-      toast.error(language === 'ar' ? 
-        `Title not allowed: ${titleAnalysis.issues.join(', ')}` :
-        `Title not allowed: ${titleAnalysis.issues.join(', ')}`
-      );
-      return;
-    }
-
-    if (!contentAnalysis.isAllowed) {
-      toast.error(language === 'ar' ? 
-        `Content not allowed: ${contentAnalysis.issues.join(', ')}` :
-        `Content not allowed: ${contentAnalysis.issues.join(', ')}`
-      );
-      return;
-    }
-
-    // Show warnings for medium severity issues
-    if (titleAnalysis.severity === 'medium' || contentAnalysis.severity === 'medium') {
-      const allIssues = [...titleAnalysis.issues, ...contentAnalysis.issues];
-      toast.warning(language === 'ar' ? 
-        `Warning: ${allIssues.join(', ')}` :
-        `Warning: ${allIssues.join(', ')}`
-      );
-    }
+    // Content moderation removed - allowing all posts
 
     setLoading(true);
     try {
