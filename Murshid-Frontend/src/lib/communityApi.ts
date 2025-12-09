@@ -178,6 +178,62 @@ const checkIsAdmin = async (userId: string): Promise<boolean> => {
   return data.is_admin === true;
 };
 
+/**
+ * Calculate dynamic counts (likes, answers) for posts from actual database tables
+ */
+async function enrichPostsWithDynamicCounts(posts: Post[]): Promise<void> {
+  if (!posts || posts.length === 0) return;
+
+  const postIds = posts.map(p => p.id);
+
+  // Get actual likes counts from community_post_likes table
+  try {
+    const { data: likesData, error: likesError } = await supabase
+      .from("community_post_likes")
+      .select("post_id")
+      .in("post_id", postIds);
+
+    if (!likesError && likesData) {
+      // Count likes per post
+      const likesCountMap = new Map<string, number>();
+      likesData.forEach((like: { post_id: string }) => {
+        likesCountMap.set(like.post_id, (likesCountMap.get(like.post_id) || 0) + 1);
+      });
+
+      // Update posts with actual likes count
+      posts.forEach(post => {
+        post.likes_count = likesCountMap.get(post.id) || 0;
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching likes counts:", error);
+  }
+
+  // Get actual answers counts from community_answers table (excluding deleted)
+  try {
+    const { data: answersData, error: answersError } = await supabase
+      .from("community_answers")
+      .select("post_id")
+      .in("post_id", postIds)
+      .eq("is_deleted", false);
+
+    if (!answersError && answersData) {
+      // Count answers per post
+      const answersCountMap = new Map<string, number>();
+      answersData.forEach((answer: { post_id: string }) => {
+        answersCountMap.set(answer.post_id, (answersCountMap.get(answer.post_id) || 0) + 1);
+      });
+
+      // Update posts with actual answers count
+      posts.forEach(post => {
+        post.answers_count = answersCountMap.get(post.id) || 0;
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching answers counts:", error);
+  }
+}
+
 export async function getCommunityPosts(params?: { search?: string; type?: "all" | "questions" | "discussions" | "announcements" }): Promise<Post[]> {
   const { data: { user } } = await supabase.auth.getUser();
   const isAdmin = user ? await checkIsAdmin(user.id) : false;
@@ -219,6 +275,9 @@ export async function getCommunityPosts(params?: { search?: string; type?: "all"
   const posts = (data ?? []).map(mapPost);
   await enrichPostsWithTargetNames(posts);
   
+  // Calculate dynamic counts from actual database tables
+  await enrichPostsWithDynamicCounts(posts);
+  
   return posts;
 }
 
@@ -249,6 +308,9 @@ export async function getCommunityPostById(id: string): Promise<Post | null> {
 
   const post = mapPost(data);
   await enrichPostsWithTargetNames([post]);
+  
+  // Calculate dynamic counts from actual database tables
+  await enrichPostsWithDynamicCounts([post]);
   
   return post;
 }
@@ -367,6 +429,9 @@ export async function getCommunityPostsByAuthor(authorId: string): Promise<Post[
   const posts = (data ?? []).map(mapPost);
   await enrichPostsWithTargetNames(posts);
   
+  // Calculate dynamic counts from actual database tables
+  await enrichPostsWithDynamicCounts(posts);
+  
   return posts;
 }
 
@@ -384,6 +449,9 @@ export async function getAllCommunityPostsForAdmin(): Promise<Post[]> {
 
   const posts = (data ?? []).map(mapPost);
   await enrichPostsWithTargetNames(posts);
+  
+  // Calculate dynamic counts from actual database tables
+  await enrichPostsWithDynamicCounts(posts);
   
   return posts;
 }
@@ -644,21 +712,36 @@ export async function getUserCommentLike(commentId: string, userId: string): Pro
 // ============================================================================
 
 export async function incrementPostViews(postId: string): Promise<void> {
+  // Use RPC function with SECURITY DEFINER to bypass RLS
+  // This allows any user (including anonymous) to increment views
   const { error } = await supabase.rpc("increment_post_views", { p_post_id: postId });
 
   if (error) {
-    // Fallback to manual increment if RPC doesn't exist
-    const { data: post } = await supabase
-      .from("community_posts")
-      .select("views_count")
-      .eq("id", postId)
-      .single();
-
-    if (post) {
-      await supabase
+    console.error("Error incrementing post views via RPC:", error);
+    console.warn(
+      "Views increment failed. Please run supabase_views_fix.sql to create the increment_post_views function."
+    );
+    
+    // Fallback attempt - will only work for authors/admins due to RLS
+    try {
+      const { data: post } = await supabase
         .from("community_posts")
-        .update({ views_count: (post.views_count ?? 0) + 1 })
-        .eq("id", postId);
+        .select("views_count")
+        .eq("id", postId)
+        .single();
+
+      if (post) {
+        const { error: updateError } = await supabase
+          .from("community_posts")
+          .update({ views_count: (post.views_count ?? 0) + 1 })
+          .eq("id", postId);
+        
+        if (updateError) {
+          console.error("Fallback views increment failed (RLS restriction):", updateError);
+        }
+      }
+    } catch (fallbackError) {
+      console.error("Views fallback error:", fallbackError);
     }
   }
 }
@@ -993,10 +1076,15 @@ export async function getUserLikedPosts(userId: string): Promise<Post[]> {
     throw error;
   }
 
-  return (data ?? [])
+  const posts = (data ?? [])
     .map((item: any) => item.community_posts)
     .filter(Boolean)
     .map(mapPost);
+  
+  // Calculate dynamic counts from actual database tables
+  await enrichPostsWithDynamicCounts(posts);
+  
+  return posts;
 }
 
 export async function getUserLikedAnswers(userId: string): Promise<Answer[]> {
@@ -1361,6 +1449,9 @@ export async function getPendingPosts(): Promise<Post[]> {
 
   const posts = (data ?? []).map(mapPost);
   await enrichPostsWithTargetNames(posts);
+  
+  // Calculate dynamic counts from actual database tables
+  await enrichPostsWithDynamicCounts(posts);
   
   return posts;
 }
