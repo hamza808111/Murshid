@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn, User, Bookmark, LayoutDashboard, MoreHorizontal, ChevronDown ,MessageSquare  } from "lucide-react";
+import { Menu, X, LogIn, User, Bookmark, LayoutDashboard, MoreHorizontal, ChevronDown ,MessageSquare, BarChart3  } from "lucide-react";
 import NotificationBell from "./NotificationBell";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,6 +41,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
 
     if (user?.is_admin) {
       if (location.pathname === '/admin') return 'dashboard';
+      if (location.pathname.startsWith('/admin/analytics')) return 'admin-analytics';
       if (location.pathname.startsWith('/admin/majors')) return 'admin-majors';
       if (location.pathname.startsWith('/admin/universities')) return 'admin-universities';
       if (location.pathname.startsWith('/admin/university-majors')) return 'admin-universities';
@@ -102,6 +103,9 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
         case 'admin-universities':
           navigate('/admin/universities');
           break;
+        case 'admin-analytics':
+          navigate('/admin/analytics');
+          break;
         case 'quiz':
           if (user) {
             navigate('/assessment');
@@ -123,8 +127,9 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
   const navItems = user?.is_admin
     ? [
         { id: "dashboard", label: language === "ar" ? "لوحة التحكم" : "Dashboard", priority: 1 },
-        { id: "admin-majors", label: t("navbar.majors"), priority: 2 },
-        { id: "admin-universities", label: t("navbar.universities"), priority: 3 },
+        { id: "admin-analytics", label: language === "ar" ? "التحليلات" : "Analytics", priority: 2 },
+        { id: "admin-majors", label: t("navbar.majors"), priority: 3 },
+        { id: "admin-universities", label: t("navbar.universities"), priority: 4 },
       ]
     : [
         { id: 'home', label: t('navbar.home'), priority: 1 },

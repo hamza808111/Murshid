@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Shield, Search, Users, Loader2, Trash2, RefreshCw, Building2, BookOpen, Link as LinkIcon, Ban, Undo2, MessageSquare, CheckCircle, XCircle, ChevronDown } from "lucide-react";
+import { Shield, Search, Users, Loader2, Trash2, RefreshCw, Building2, BookOpen, Link as LinkIcon, Ban, Undo2, MessageSquare, CheckCircle, XCircle, ChevronDown, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { Link } from "react-router-dom";
@@ -80,6 +80,7 @@ const AdminDashboard = () => {
   const [userToApprove, setUserToApprove] = useState<UserData | null>(null);
   const [refusalReason, setRefusalReason] = useState("");
   const [processing, setProcessing] = useState(false);
+  
 
   // Open specialist proof with a signed URL (works even if bucket is private)
   const handleViewProof = async (userData: UserData) => {
@@ -620,7 +621,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Card */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
