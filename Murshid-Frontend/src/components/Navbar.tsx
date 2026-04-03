@@ -166,12 +166,12 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
           <button
             onClick={() => handleNavigate(user?.is_admin ? 'dashboard' : 'home')}
             id="navbar-logo-button"
-            className="flex items-center group transition-all duration-300 hover:opacity-80 p-2 md:p-3 flex-shrink-0"
+            className="flex items-center cursor-pointer flex-shrink-0"
           >
              <img 
               src="/logo4.png" 
               alt="Murshid Logo" 
-              className="h-12 md:h-14 object-contain transition-transform group-hover:scale-105"
+              className="h-12 md:h-14 object-contain"
             />
             <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 ${language === "ar" ? "leading-normal pb-1.5" : ""}`}>
               {language === "ar" ? "مرشــــد" : "Murshid"}
