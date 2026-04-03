@@ -166,7 +166,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
           <button
             onClick={() => handleNavigate(user?.is_admin ? 'dashboard' : 'home')}
             id="navbar-logo-button"
-            className="flex items-center cursor-pointer flex-shrink-0"
+            className="flex items-center cursor-pointer flex-shrink-0 bg-transparent border-none outline-none focus:outline-none focus:ring-0 hover:bg-transparent active:bg-transparent appearance-none"
           >
              <img 
               src="/logo4.png" 
