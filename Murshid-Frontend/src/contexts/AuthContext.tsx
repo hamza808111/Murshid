@@ -60,50 +60,62 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Map Supabase auth user to AppUser, augmenting with profile data if present
-  const mapUserWithProfile = async (authUser: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }, useCache: boolean = false) => {
-    let derivedName: string | undefined = (authUser.user_metadata?.["name"] as string | undefined) || undefined;
-    let establishmentName: string | undefined;
-    let level: string | undefined;
-    let gender: string | undefined;
-    let role: string | undefined;
-    let studentType: string | undefined;
-    let track: string | undefined;
-    
-    // Try to get cached profile data first if requested
-    let cachedProfile = null;
-    if (useCache) {
-      try {
-        const cached = localStorage.getItem(`profile_cache_${authUser.id}`);
-        if (cached) {
-          cachedProfile = JSON.parse(cached);
-          console.log("Using cached profile data");
-        }
-      } catch (e) {
-        console.warn("Failed to parse cached profile:", e);
-      }
+  // Build an AppUser from auth data + profile row (which may be null)
+  const buildAppUser = (
+    authUser: { id: string; email?: string | null; user_metadata?: Record<string, unknown> },
+    profileData: Record<string, any> | null
+  ): AppUser => {
+    const metaName = (authUser.user_metadata?.["name"] as string | undefined) || undefined;
+    const fallbackName = authUser.email ? authUser.email.split("@")[0] : undefined;
+
+    if (profileData) {
+      return {
+        id: authUser.id,
+        email: authUser.email || "",
+        name: profileData.name || metaName || fallbackName,
+        establishment_name: profileData.establishment_name,
+        university_id: profileData.university_id || undefined,
+        level: profileData.level,
+        gender: profileData.gender,
+        role: profileData.role,
+        student_type: profileData.student_type,
+        track: profileData.track,
+        is_admin: profileData.is_admin || false,
+        avatar_url: profileData.avatar_url || undefined,
+        is_suspended: profileData.is_suspended || false,
+        suspended_reason: profileData.suspended_reason ?? null,
+        suspended_until: profileData.suspended_until ?? null,
+      };
     }
-    
-    // Always load profile data to get all fields, regardless of whether name is in metadata
-    // Add timeout to prevent hanging
+
+    return {
+      id: authUser.id,
+      email: authUser.email || "",
+      name: metaName || fallbackName,
+      is_admin: false,
+      is_suspended: false,
+      suspended_reason: null,
+      suspended_until: null,
+    };
+  };
+
+  // Fetch profile from Supabase with a timeout, cache result, and return AppUser
+  const mapUserWithProfile = async (authUser: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }) => {
     const profilePromise = supabase
       .from("profiles")
       .select("name, establishment_name, university_id, level, gender, role, student_type, track, is_admin, avatar_url, is_suspended, suspended_reason, suspended_until")
       .eq("id", authUser.id)
       .single();
-    
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Profile fetch timeout")), 10000)
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Profile fetch timeout")), 3000)
     );
-    
-    let profileData, error;
+
+    let profileData: Record<string, any> | null = null;
     try {
       const result = await Promise.race([profilePromise, timeoutPromise]) as any;
-      profileData = result.data;
-      error = result.error;
-      
-      // Cache the profile data on successful fetch
-      if (profileData && !error) {
+      if (result.data && !result.error) {
+        profileData = result.data;
         try {
           localStorage.setItem(`profile_cache_${authUser.id}`, JSON.stringify(profileData));
         } catch (e) {
@@ -111,61 +123,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     } catch (timeoutError) {
-      console.warn("Profile fetch timed out, using cached or fallback data");
-      error = timeoutError;
-      // Use cached data if available
-      if (cachedProfile) {
-        profileData = cachedProfile;
-        error = null;
-      }
+      console.warn("Profile fetch timed out, using fallback data");
+      // Try cached data as last resort
+      try {
+        const cached = localStorage.getItem(`profile_cache_${authUser.id}`);
+        if (cached) profileData = JSON.parse(cached);
+      } catch (e) { /* ignore */ }
     }
-    
-    // Use profile data if available, otherwise fall back to metadata or email
-    if (profileData && !error) {
-      derivedName = profileData.name || derivedName || (authUser.email ? authUser.email.split("@")[0] : undefined);
-      establishmentName = profileData.establishment_name;
-      level = profileData.level;
-      gender = profileData.gender;
-      role = profileData.role;
-      studentType = profileData.student_type;
-      track = profileData.track;
-      
-      // Debug logging
-      console.log("Profile data loaded:", {
-        establishmentName,
-        level,
-        gender,
-        role,
-        studentType,
-        track,
-        is_admin: profileData.is_admin,
-        is_suspended: profileData.is_suspended,
-        suspended_reason: profileData.suspended_reason,
-        suspended_until: profileData.suspended_until
-      });
-    } else {
-      // If no profile data exists, use fallback values
-      derivedName = derivedName || (authUser.email ? authUser.email.split("@")[0] : undefined);
-      console.log("No profile data found for user:", authUser.id, "Error:", error);
-    }
-    
-      return {
-        id: authUser.id,
-        email: authUser.email || "",
-        name: derivedName,
-        establishment_name: establishmentName,
-        university_id: profileData?.university_id || undefined,
-        level: level,
-        gender: gender,
-        role: role,
-        student_type: studentType,
-        track: track,
-        is_admin: profileData?.is_admin || false,
-        avatar_url: profileData?.avatar_url || undefined,
-        is_suspended: profileData?.is_suspended || false,
-        suspended_reason: profileData?.suspended_reason ?? null,
-        suspended_until: profileData?.suspended_until ?? null,
-      } as AppUser;
+
+    return buildAppUser(authUser, profileData);
   };
 
   // Load session and subscribe to auth state changes
@@ -174,26 +140,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     const init = async () => {
       try {
-        // Get session synchronously first (faster)
         const { data: { session } } = await supabase.auth.getSession();
-        
         if (!isMounted) return;
-        
+
         if (session?.user) {
-          // Use cache on initial load to speed up
-          const mapped = await mapUserWithProfile(session.user, true);
-          if (!isMounted) return;
-          setUser(mapped);
+          // FAST PATH: use cached profile to unblock UI immediately
+          let cachedProfile: Record<string, any> | null = null;
+          try {
+            const cached = localStorage.getItem(`profile_cache_${session.user.id}`);
+            if (cached) cachedProfile = JSON.parse(cached);
+          } catch (e) { /* ignore */ }
+
+          if (cachedProfile) {
+            const cachedUser = buildAppUser(session.user, cachedProfile);
+            setUser(cachedUser);
+            setLoading(false);
+
+            // Background refresh: fetch fresh profile and update silently
+            mapUserWithProfile(session.user).then((freshUser) => {
+              if (isMounted) setUser(freshUser);
+            }).catch(console.error);
+          } else {
+            // No cache available: wait for network (with 3s timeout)
+            const mapped = await mapUserWithProfile(session.user);
+            if (!isMounted) return;
+            setUser(mapped);
+            setLoading(false);
+          }
         } else {
           setUser(null);
+          setLoading(false);
         }
       } catch (error) {
         console.error("Error initializing session:", error);
         setUser(null);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
     
@@ -203,8 +184,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!isMounted) return;
       try {
         if (session?.user) {
-          // Use cache for state changes as well
-          const mapped = await mapUserWithProfile(session.user, true);
+          const mapped = await mapUserWithProfile(session.user);
           if (!isMounted) return;
           setUser(mapped);
         } else {
