@@ -163,10 +163,10 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
       <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-10" dir="ltr">
         <div className="flex justify-between items-center h-20 gap-4">
           {/* Logo - Fixed width, never shrinks */}
-          <button
+          <div
             onClick={() => handleNavigate(user?.is_admin ? 'dashboard' : 'home')}
             id="navbar-logo-button"
-            className="flex items-center cursor-pointer flex-shrink-0 bg-transparent border-none outline-none focus:outline-none focus:ring-0 hover:bg-transparent active:bg-transparent appearance-none"
+            className="flex items-center cursor-pointer flex-shrink-0"
           >
              <img 
               src="/logo4.png" 
@@ -176,7 +176,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
             <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 ${language === "ar" ? "leading-normal pb-1.5" : ""}`}>
               {language === "ar" ? "مرشــــد" : "Murshid"}
             </h1>          
-          </button>
+          </div>
 
           {/* Navigation - Flexible, can shrink but never overlap sides */}
           <div className="flex-1 flex justify-center items-center min-w-0">
