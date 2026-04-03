@@ -166,7 +166,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
           <button
             onClick={() => handleNavigate(user?.is_admin ? 'dashboard' : 'home')}
             id="navbar-logo-button"
-            className="flex items-center group rounded-xl hover:shadow-lg hover:-translate-y-1 transition-all duration-300 hover:bg-white-100 dark:hover:bg-white-800 p-2 md:p-3 flex-shrink-0"
+            className="flex items-center group transition-all duration-300 hover:opacity-80 p-2 md:p-3 flex-shrink-0"
           >
              <img 
               src="/logo4.png" 
@@ -179,8 +179,7 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
           </button>
 
           {/* Navigation - Flexible, can shrink but never overlap sides */}
-          <div className="flex-1 flex justify-center items-center min-w-0 overflow-hidden">
-            {/* Desktop Navigation - Show all items on large screens */}
+          <div className="flex-1 flex justify-center items-center min-w-0">
             <div className="hidden xl:flex items-center gap-1 flex-nowrap">
               {navItems.map((item) => (
                 <button
