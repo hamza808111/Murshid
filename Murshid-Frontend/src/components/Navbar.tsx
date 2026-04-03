@@ -182,20 +182,50 @@ const Navbar = ({ currentPage, onNavigate }: NavbarProps = {}) => {
           <div className="flex-1 flex justify-center items-center min-w-0">
             {/* Desktop Navigation - Show all items on large screens */}
             <div className="hidden xl:flex items-center gap-1 flex-nowrap">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavigate(item.id)}
-                  id={`navbar-nav-${item.id}`}
-                  className={`px-4   py-2 rounded-xl transition-all whitespace-nowrap text-md ${
-                    isActive(item.id)
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
+              {navItems
+                .filter((item) => !user?.is_admin && (item.id === 'help' || item.id === 'contact') ? false : true)
+                .map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavigate(item.id)}
+                    id={`navbar-nav-${item.id}`}
+                    className={`px-4   py-2 rounded-xl transition-all whitespace-nowrap text-md ${
+                      isActive(item.id)
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 hover:!text-blue-700 dark:hover:!text-blue-300'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              {/* More dropdown for Help and Contact at 100% zoom */}
+              {!user?.is_admin && navItems.some(item => item.id === 'help' || item.id === 'contact') && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="px-4 py-2 rounded-xl transition-all text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 flex items-center gap-1 text-md whitespace-nowrap">
+                      {language === 'ar' ? 'المزيد' : 'More'}
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    {navItems
+                      .filter((item) => item.id === 'help' || item.id === 'contact')
+                      .map((item) => (
+                        <DropdownMenuItem
+                          key={item.id}
+                          onClick={() => handleNavigate(item.id)}
+                          className={`cursor-pointer ${
+                            isActive(item.id)
+                              ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                              : ''
+                          }`}
+                        >
+                          {item.label}
+                        </DropdownMenuItem>
+                      ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
 
             {/* md..xl-1 screens - progressively collapse one-by-one into More */}
